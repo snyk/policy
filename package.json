@@ -1,6 +1,5 @@
 {
   "name": "snyk-policy",
-  "version": "1.0.0",
   "description": "Snyk's policy parser and matching logic",
   "main": "lib/index.js",
   "scripts": {
@@ -9,7 +8,8 @@
     "env": "node -e 'console.log(process.env, process.versions)'",
     "cover": "tap test/**/*.test.js --cov --coverage-report=lcov",
     "tap": "tap test/**/*.test.js --cov --timeout=60",
-    "test": "npm run check-tests && npm run lint && npm run tap"
+    "test": "npm run check-tests && npm run lint && npm run tap",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "keywords": [
     "snyk"
@@ -21,7 +21,8 @@
     "proxyquire": "^1.7.4",
     "sinon": "^1.17.3",
     "tap": "^5.7.0",
-    "tap-only": "0.0.5"
+    "tap-only": "0.0.5",
+    "semantic-release": "^4.3.5"
   },
   "dependencies": {
     "debug": "^2.2.0",
@@ -31,5 +32,9 @@
     "snyk-module": "^1.6.0",
     "snyk-try-require": "^1.1.1",
     "then-fs": "^2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Snyk/policy.git"
   }
 }
