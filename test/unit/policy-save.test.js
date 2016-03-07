@@ -15,7 +15,7 @@ var policy = proxyquire('../..', {
   }
 });
 
-test.only('policy.save', function (t) {
+test('policy.save', function (t) {
   var filename = path.resolve(fixtures + '/ignore/.snyk');
   var asText = '';
   return fs.readFile(filename, 'utf8')
