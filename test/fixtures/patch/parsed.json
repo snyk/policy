@@ -1,0 +1,23 @@
+{
+  "patch": {
+    "npm:uglify-js:20150824": [
+      {
+        "jade > transformers > uglify-js": {
+          "patched": "2016-03-03T18:06:06.091Z"
+        }
+      }
+    ],
+    "npm:uglify-js:20151024": [
+      {
+        "jade > transformers > uglify-js": {
+          "patched": "2016-03-03T18:06:06.091Z"
+        }
+      }
+    ]
+  },
+  "version": "v1",
+  "ignore": {},
+  "__filename": "test/fixtures/patch/.snyk",
+  "__modified": "2016-03-07T14:55:06.000Z",
+  "__created": "2016-03-07T14:55:06.000Z"
+}

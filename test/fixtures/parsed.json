@@ -1,0 +1,48 @@
+{
+  "patch": {
+    "npm:uglify-js:20150824": [
+      {
+        "jade > transformers > uglify-js": {
+          "patched": "2016-03-03T18:06:06.091Z"
+        }
+      }
+    ],
+    "npm:uglify-js:20151024": [
+      {
+        "jade > transformers > uglify-js": {
+          "patched": "2016-03-03T18:06:06.091Z"
+        }
+      }
+    ]
+  },
+  "version": "v1",
+  "ignore": {
+    "npm:hawk:20160119": [
+      {
+        "sqlite > sqlite3 > node-pre-gyp > request > hawk": {
+          "reason": "None given",
+          "expires": "2016-03-01T14:30:04.136Z"
+        }
+      }
+    ],
+    "npm:is-my-json-valid:20160118": [
+      {
+        "sqlite > sqlite3 > node-pre-gyp > request > har-validator > is-my-json-valid": {
+          "reason": "None given",
+          "expires": "2016-03-01T14:30:04.136Z"
+        }
+      }
+    ],
+    "npm:tar:20151103": [
+      {
+        "sqlite > sqlite3 > node-pre-gyp > tar-pack > tar": {
+          "reason": "None given",
+          "expires": "2016-03-01T14:30:04.137Z"
+        }
+      }
+    ]
+  },
+  "__filename": ".snyk",
+  "__modified": "2016-03-03T18:06:17.000Z",
+  "__created": "2016-03-03T18:06:17.000Z"
+}

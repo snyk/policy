@@ -1,0 +1,15 @@
+{
+  "name": "foo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jade": "^1.11.0",
+    "ngSocket": "angular/ngSocket"
+  },
+  "snyk": true
+}

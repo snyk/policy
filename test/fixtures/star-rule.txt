@@ -1,0 +1,6 @@
+ignore:
+  'npm:hawk:20160119':
+    - 'sqlite > * > hawk':
+        reason: None given
+        expires: '2016-03-01T14:30:04.136Z'
+version: v1

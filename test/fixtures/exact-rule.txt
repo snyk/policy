@@ -1,0 +1,6 @@
+ignore:
+  'npm:hawk:20160119':
+    - 'sqlite@0.0.2 > sqlite3@3.1.1 > node-pre-gyp@0.6.14 > request@2.64.0 > hawk@3.1.0':
+        reason: None given
+        expires: '2016-03-01T14:30:04.136Z'
+version: v1
