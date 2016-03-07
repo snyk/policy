@@ -1,5 +1,6 @@
 var test = require('tap-only');
 var policy = require('../..');
+var demunge = require('../../lib/parser').demunge;
 var path = require('path');
 var fs = require('then-fs');
 var fixtures = __dirname + '/../fixtures';
@@ -66,6 +67,28 @@ test('policy.load (multiple - ignore last - trust deep policy)', function (t) {
     t.deepEqual(Object.keys(res.ignore), ids, 'inherited ignores are correct');
   });
 });
+
+test('policy.load (merge)', function (t) {
+  var id = 'npm:uglify-js:20151024';
+  return policy.load([fixtures + '/patch', fixtures + '/patch-mean']).then(function (res) {
+    t.equal(res.patch[id].length, 3, 'expect 2 from mean, 1 from patch');
+
+    var formatted = demunge(res);
+
+    var single = formatted.patch.filter(function (p) {
+      return p.id === id;
+    }).shift();
+
+    t.equal(single.paths.length, 3, 'still have 3 paths for single patch');
+
+    var filtered = single.paths.filter(function (item) {
+      return item.path.indexOf('mean') === 0;
+    });
+
+    t.equal(filtered.length, 2, 'two of which come from mean');
+  });
+});
+
 
 test('policy.load (ignore option)', function (t) {
   return policy.load(fixtures + '/ignore', { 'ignore-policy': true }).then(function (res) {

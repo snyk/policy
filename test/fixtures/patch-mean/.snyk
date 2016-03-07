@@ -1,0 +1,16 @@
+patch:
+  'npm:hawk:20160119':
+    - 'npm > request > hawk':
+        patched: '2016-02-18T17:02:03.122Z'
+  'npm:ms:20151024':
+    - 'meanio > morgan > debug > ms':
+        patched: '2016-02-18T17:02:03.122Z'
+  'npm:tar:20151103':
+    - 'npm > node-gyp > tar':
+        patched: '2016-02-18T17:02:03.122Z'
+  'npm:uglify-js:20151024':
+    - 'meanio > swig > uglify-js':
+        patched: '2016-02-18T17:02:03.122Z'
+    - 'swig > uglify-js':
+        patched: '2016-02-18T17:02:03.122Z'
+version: v1
