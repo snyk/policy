@@ -1,0 +1,34 @@
+{
+  "name": "snyk-policy",
+  "version": "1.0.0",
+  "description": "Snyk's policy parser and matching logic",
+  "main": "lib/index.js",
+  "scripts": {
+    "lint": "jscs cli/*.js lib/*.js -v",
+    "check-tests": "! grep 'test.only' test/*.test.js -n",
+    "env": "node -e 'console.log(process.env, process.versions)'",
+    "cover": "tap test/*.test.js --cov --coverage-report=lcov",
+    "test": "npm run check-tests && npm run lint && tap test/*.test.js --cov --timeout=60"
+  },
+  "keywords": [
+    "snyk"
+  ],
+  "author": "Remy Sharp",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "jscs": "^2.11.0",
+    "proxyquire": "^1.7.4",
+    "sinon": "^1.17.3",
+    "tap": "^5.7.0",
+    "tap-only": "0.0.5"
+  },
+  "dependencies": {
+    "debug": "^2.2.0",
+    "es6-promise": "^3.1.2",
+    "js-yaml": "^3.5.3",
+    "semver": "^5.1.0",
+    "snyk-module": "^1.6.0",
+    "snyk-try-require": "^1.1.1",
+    "then-fs": "^2.0.0"
+  }
+}
