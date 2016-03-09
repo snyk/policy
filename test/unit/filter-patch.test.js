@@ -2,9 +2,18 @@ var test = require('tap').test;
 var Promise = require('es6-promise').Promise; // jshint ignore:line
 var fixtures = __dirname + '/../fixtures/patch';
 var vulns = require(fixtures + '/vulns.json');
-
+var proxyquire = require('proxyquire');
 var policy = require('../../');
-var patch = require('../../lib/filter/patch');
+var patch = proxyquire('../../lib/filter/patch', {
+  './get-vuln-source': function () {
+    return '.';
+  },
+  fs: {
+    statSync: function () {
+      return true;
+    }
+  }
+});
 
 test('patched vulns do not turn up in tests', function (t) {
   policy.load(fixtures).then(function (config) {
