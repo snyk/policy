@@ -16,7 +16,7 @@ test('policy.load (no args)', function (t) {
       __created: res.__created ? new Date(res.__created) : false
     };
 
-    t.deepEqual(res, expect, 'policy is as expected');
+    t.deepEqual(stripFunctions(res), expect, 'policy is as expected');
   });
 });
 
@@ -31,7 +31,18 @@ test('policy.load (options first)', function (t) {
       __created: res.__created ? new Date(res.__created) : false
     };
 
-    t.deepEqual(res, expect, 'policy is as expected');
+    t.deepEqual(stripFunctions(res), expect, 'policy is as expected');
   });
 });
 
+
+function stripFunctions(res) {
+  // strip functions (as they don't land in the final config)
+  Object.keys(res).map(function (key) {
+    if (typeof res[key] === 'function') {
+      delete res[key];
+    }
+  });
+
+  return res;
+}

@@ -21,12 +21,7 @@ test('policy.load (single)', function (t) {
       __created: res.__created ? new Date(res.__created) : false
     };
 
-    // copy across functions
-    Object.keys(res).map(function (key) {
-      if (typeof res[key] === 'function') {
-        expect[key] = res[key];
-      }
-    });
+    stripFunctions(res);
 
     t.deepEqual(res, expect, 'policy is as expected');
   });
@@ -133,6 +128,12 @@ test('policy.load (multiple - expect ENOENT)', function (t) {
     t.equal(e.code, 'ENOENT', 'errors correctly');
   });
 });
-// save: save,
-// getByVuln: match.getByVuln,
-// matchToRule: match.matchToRule,
+
+function stripFunctions(res) {
+  // strip functions (as they don't land in the final config)
+  Object.keys(res).map(function (key) {
+    if (typeof res[key] === 'function') {
+      delete res[key];
+    }
+  });
+}
