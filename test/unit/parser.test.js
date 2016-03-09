@@ -1,9 +1,10 @@
 var test = require('tap-only');
 var parser = require('../../lib/parser');
 var fixtures = __dirname + '/../fixtures';
+var yaml = require('js-yaml');
 
 test('parser fills out defaults', function (t) {
-  var res = parser();
+  var res = parser.import();
   var expect = {
     version: 'v1',
     ignore: {},
@@ -24,7 +25,8 @@ test('parser does not modify default parsed format', function (t) {
     },
     ignore: {},
   };
-  var res = parser(expect);
+
+  var res = parser.import(yaml.safeDump(expect));
 
   t.deepEqual(res, expect, 'parser does nothing extra (v1 vs v1)');
   t.end();
@@ -32,9 +34,9 @@ test('parser does not modify default parsed format', function (t) {
 
 test('test unsupported version', function (t) {
   t.throws(function () {
-    parser({
+    parser.import(yaml.safeDump({
       version: 'v2'
-    });
+    }));
   }, /unsupported version/, 'unsupported version throws');
   t.end();
 });

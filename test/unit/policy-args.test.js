@@ -35,6 +35,13 @@ test('policy.load (options first)', function (t) {
   });
 });
 
+test('policy loads without args - non simple', function (t) {
+  process.chdir(fixtures + '/ignore');
+  return policy.load().then(function (policy) {
+    t.notEqual(Object.keys(policy.ignore), 0, 'has ignore rules');
+  });
+});
+
 
 function stripFunctions(res) {
   // strip functions (as they don't land in the final config)

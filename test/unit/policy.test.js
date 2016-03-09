@@ -91,13 +91,6 @@ test('policy.load (merge)', function (t) {
   });
 });
 
-
-test('policy.load (ignore option)', function (t) {
-  return policy.load(fixtures + '/ignore', { 'ignore-policy': true }).then(function (res) {
-    t.deepEqual(res, {}, 'ignore policy is empty');
-  });
-});
-
 test('policy.loadFromText', function (t) {
   return fs.readFile(fixtures + '/ignore/.snyk', 'utf8')
     .then(policy.loadFromText)
