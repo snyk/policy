@@ -21,6 +21,13 @@ test('policy.load (single)', function (t) {
       __created: res.__created ? new Date(res.__created) : false
     };
 
+    // copy across functions
+    Object.keys(res).map(function (key) {
+      if (typeof res[key] === 'function') {
+        expect[key] = res[key];
+      }
+    });
+
     t.deepEqual(res, expect, 'policy is as expected');
   });
 });

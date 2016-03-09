@@ -1,0 +1,17 @@
+{
+  "name": "ignore",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "snyk": "*",
+    "sqlite": "0.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "snyk test && echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
