@@ -1,6 +1,6 @@
 # snyk-policy
 
-[![Build Status](https://travis-ci.org/Snyk/policy.svg?branch=master)](https://travis-ci.org/Snyk/policy) [![Coverage Status](https://coveralls.io/repos/Snyk/policy/badge.svg?branch=master&service=github)](https://coveralls.io/github/Snyk/policy?branch=develop)
+[![Build Status](https://travis-ci.org/Snyk/policy.svg?branch=master)](https://travis-ci.org/Snyk/policy) [![Coverage Status](https://coveralls.io/repos/Snyk/policy/badge.svg?branch=master&service=github)](https://coveralls.io/github/Snyk/policy?branch=master)
 
 Loads Snyk policy files, typically name `.snyk`, parses them and returns a structure policy object.
 
