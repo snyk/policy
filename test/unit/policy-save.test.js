@@ -20,8 +20,8 @@ test('policy.save', function (t) {
   var asText = '';
   return fs.readFile(filename, 'utf8')
     .then(function (res) {
-      asText = res;
-      return res;
+      asText = res.trim();
+      return asText;
     })
     .then(policy.loadFromText)
     .then(function (res) {
@@ -30,6 +30,7 @@ test('policy.save', function (t) {
     .then(function () {
       t.equal(writeSpy.callCount, 1, 'write only once');
       t.equal(writeSpy.args[0][0], filename, 'filename correct');
-      t.equal(writeSpy.args[0][1].indexOf(asText), 0, 'body contains original');
+      var parsed = writeSpy.args[0][1].trim();
+      t.equal(parsed, asText, 'body contains original');
     });
 });
