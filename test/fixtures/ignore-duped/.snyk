@@ -1,0 +1,6 @@
+ignore:
+  'npm:hawk:20160119':
+    - 'sqlite > node-pre-gyp > request > hawk':
+        reason: hawk got bumped
+        expires: '2116-03-01T14:30:04.136Z'
+version: v1
