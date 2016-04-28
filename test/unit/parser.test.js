@@ -19,9 +19,9 @@ test('parser does not modify default parsed format', function (t) {
   var expect = {
     version: 'v1',
     patch: {
-      'glue > hapi > joi > moment': {
-        'patched': '2016-02-26T16:19:06.050Z'
-      }
+      'glue > hapi > joi > moment': [{
+        'patched': '2016-02-26T16:19:06.050Z',
+      }],
     },
     ignore: {},
   };
