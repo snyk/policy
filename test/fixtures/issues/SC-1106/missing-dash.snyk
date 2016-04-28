@@ -1,0 +1,11 @@
+ignore:
+  'npm:hawk:20160119':
+    - request > hawk:
+        reason: no patch available
+        expires: '2016-02-19T11:25:17.324Z'
+      octonode > request > hawk:
+        reason: None given
+        expires: '2016-05-24T13:46:19.066Z'
+    - npm > request > hawk:
+        reason: no patch available
+        expires: '2016-02-19T11:25:17.325Z'

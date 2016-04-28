@@ -19,10 +19,10 @@
   "devDependencies": {
     "jscs": "^2.11.0",
     "proxyquire": "^1.7.4",
+    "semantic-release": "^4.3.5",
     "sinon": "^1.17.3",
     "tap": "^5.7.0",
-    "tap-only": "0.0.5",
-    "semantic-release": "^4.3.5"
+    "tap-only": "0.0.5"
   },
   "dependencies": {
     "debug": "^2.2.0",

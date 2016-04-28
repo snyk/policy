@@ -1,0 +1,8 @@
+ignore:
+  'npm:hawk:20160119':
+    - request > hawk:
+        reason: no patch available
+        expires: '2016-02-19T11:25:17.324Z'
+    - npm > request > hawk:
+        reason: no patch available
+        expires: '2016-02-19T11:25:17.325Z'

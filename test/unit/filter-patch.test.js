@@ -5,14 +5,23 @@ var vulns = require(fixtures + '/vulns.json');
 var proxyquire = require('proxyquire');
 var policy = require('../../');
 var patch = proxyquire('../../lib/filter/patch', {
-  './get-vuln-source': function () {
-    return '.';
-  },
+  './get-vuln-source': proxyquire('../../lib/filter/get-vuln-source', {
+    'snyk-resolve': {
+      sync: function () {
+        return '.';
+      },
+    },
+    fs: {
+      statSync: function () {
+        throw new Error('nope');
+      },
+    },
+  }),
   fs: {
     statSync: function () {
       return true;
-    }
-  }
+    },
+  },
 });
 
 test('patched vulns do not turn up in tests', function (t) {
