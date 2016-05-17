@@ -13,7 +13,7 @@ test('module loads', function (t) {
 test('policy.load (single)', function (t) {
   return policy.load(fixtures + '/simple').then(function (res) {
     var expect = {
-      version: 'v1',
+      version: 'v1.0.0',
       ignore: {},
       patch: {},
       __filename: path.relative(process.cwd(), fixtures + '/simple/.snyk'),

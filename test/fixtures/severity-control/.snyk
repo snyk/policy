@@ -1,0 +1,10 @@
+# following is high: npm:tar:20151103
+# following are low: npm:ms:20151024, npm:hawk:20160119, npm:uglify-js:20151024
+
+ignore:
+  'npm:tar:20151103':
+    - '*':
+        reason: None given
+        expires: '2020-03-01T14:30:04.136Z'
+version: v1
+failThreshold: high # can be "high" or "medium"

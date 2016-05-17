@@ -12,4 +12,4 @@ ignore:
         reason: none given
         expires: '2116-03-01T14:30:04.137Z'
 patch: {}
-version: v1
+version: v1.0.0
