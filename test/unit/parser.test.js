@@ -6,7 +6,7 @@ var yaml = require('js-yaml');
 test('parser fills out defaults', function (t) {
   var res = parser.import();
   var expect = {
-    version: 'v1',
+    version: 'v1.0.0',
     ignore: {},
     patch: {},
   };
@@ -17,7 +17,7 @@ test('parser fills out defaults', function (t) {
 
 test('parser does not modify default parsed format', function (t) {
   var expect = {
-    version: 'v1',
+    version: 'v1.0.0',
     patch: {
       'glue > hapi > joi > moment': [{
         'patched': '2016-02-26T16:19:06.050Z',
@@ -35,7 +35,7 @@ test('parser does not modify default parsed format', function (t) {
 test('test unsupported version', function (t) {
   t.throws(function () {
     parser.import(yaml.safeDump({
-      version: 'v2'
+      version: 'v20.0.1'
     }));
   }, /unsupported version/, 'unsupported version throws');
   t.end();
