@@ -1,0 +1,10 @@
+ignore:
+  'npm:hawk:20160119':
+    - sqlite > sqlite3 > node-pre-gyp > request > hawk:
+        reason: hawk got bumped
+        expires: '2116-03-01T14:30:04.136Z'
+patch:
+  'npm:tar:20151103':
+    - sqlite > sqlite3 > node-pre-gyp > tar-pack > tar:
+        patched: '2116-03-01T14:30:04.137Z'
+version: v1.0.0
