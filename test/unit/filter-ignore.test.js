@@ -13,8 +13,7 @@ test('ignored vulns do not turn up in tests', function (t) {
 
     vulns.vulnerabilities = ignore(
       config.ignore,
-      vulns.vulnerabilities,
-      fixtures
+      vulns.vulnerabilities
     );
 
     // should strip 3
