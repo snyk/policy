@@ -12,7 +12,9 @@ test('expired policies do not strip', function (t) {
 
     // should strip all
     vulns = config.filter(vulns);
+    var filtered = config.stripFiltered(vulns);
+
     t.equal(vulns.ok, false, 'post filter, we still have vulns');
-    t.equal(vulns.vulnerabilities.length, start, 'all vulns remained');
+    t.equal(filtered.vulnerabilities.length, start, 'all vulns remained');
   });
 });

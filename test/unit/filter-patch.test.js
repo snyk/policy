@@ -4,6 +4,7 @@ var fixtures = __dirname + '/../fixtures/patch';
 var vulns = require(fixtures + '/vulns.json');
 var proxyquire = require('proxyquire');
 var policy = require('../../');
+var strip = require('../../lib/filter/strip');
 var patch = proxyquire('../../lib/filter/patch', {
   './get-vuln-source': proxyquire('../../lib/filter/get-vuln-source', {
     'snyk-resolve': {
@@ -29,14 +30,13 @@ test('patched vulns do not turn up in tests', function (t) {
     var start = vulns.vulnerabilities.length;
     t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
 
-    vulns.vulnerabilities = patch(
+    patch(
       config.patch,
       vulns.vulnerabilities,
       fixtures
     );
 
     // should strip 2
-
-    t.equal(start - 2, vulns.vulnerabilities.length, 'post filter');
+    t.equal(start - 2, strip(vulns).vulnerabilities.length, 'post filter');
   }).catch(t.threw).then(t.end);
 });

@@ -10,7 +10,7 @@ test('ignored vulns do not turn up in tests', function (t) {
     t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
 
     // should strip all
-    vulns = config.filter(vulns);
+    vulns = config.stripFiltered(config.filter(vulns));
     t.equal(vulns.ok, true, 'post filter, we have no vulns');
     t.deepEqual(vulns.vulnerabilities, [], 'vulns stripped');
   });

@@ -9,9 +9,22 @@ test('filtered vulns can still be reviewed', function (t) {
     policy.skipVerifyPatch = true;
     var res = policy.filter(vulns);
     t.equal(res.ok, false, 'still vulnerable');
-    t.isa(res.filtered.ignore, Array);
-    t.ok(res.filtered.ignore.length > 0, 'some vulns ignored');
-    t.isa(res.filtered.patch, Array);
-    t.notEqual(res.filtered.patch.length, 0, 'some vulns ignored due to patch');
+
+    var ignored = res.vulnerabilities.filter(function (vuln) {
+      if (vuln.filtered) {
+        return vuln.filtered.type === 'ignore';
+      }
+    }).shift();
+
+    t.equal(ignored.id, 'npm:hawk:20160119', 'correct single vuln ignored');
+    t.equal(ignored.filtered.metadata.reason, 'hawk got bumped', 'has reason');
+
+    var patched = res.vulnerabilities.filter(function (vuln) {
+      if (vuln.filtered) {
+        return vuln.filtered.type === 'patch';
+      }
+    }).shift();
+
+    t.equal(patched.id, 'npm:tar:20151103', 'correct single vuln patched');
   });
 });
