@@ -4,10 +4,11 @@
   "main": "lib/index.js",
   "scripts": {
     "lint": "jscs lib/**/*.js -v",
+    "travis-coverage": "node_modules/tap/node_modules/.bin/nyc report --reporter=text-lcov | node_modules/tap/node_modules/.bin/coveralls",
     "check-tests": "! grep 'test.only' test/**/*.test.js -n",
     "env": "node -e 'console.log(process.env, process.versions)'",
     "cover": "tap test/**/*.test.js --cov --coverage-report=lcov",
-    "tap": "tap test/**/*.test.js --cov --timeout=60",
+    "tap": "COVERALLS_REPO_TOKEN=0 tap test/**/*.test.js --cov --timeout=60 --coverage-report=text-summary",
     "test": "npm run check-tests && npm run lint && npm run tap",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
