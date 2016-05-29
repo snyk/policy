@@ -195,6 +195,12 @@ Note that this method is also available on the response object from [`.load`](#p
 
 Returns an `object` in the same structure as `vulns`.
 
+### .stripstripFiltered(vulns)
+
+Reads the vulnerabilities and looks for the `filtered` property removing each so that you're left with only the vulnerabilities that affect the package.
+
+Note that the `vulns` object is expects to be the result of the `policy.filter` method.
+
 ### policy.getByVuln(config, vuln)
 
 Returns any matching rule given a specific vulnerability object. The `vuln` object must contain `id` and `from` to match correctly.
