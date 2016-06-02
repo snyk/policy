@@ -6,7 +6,7 @@ var yaml = require('js-yaml');
 test('parser fills out defaults', function (t) {
   var res = parser.import();
   var expect = {
-    version: 'v1.0.0',
+    version: 'v2.0.0',
     ignore: {},
     patch: {},
   };
