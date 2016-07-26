@@ -208,6 +208,35 @@ The loaded policy object (from `.load`).
 
 Single vulnerability object.
 
+## Sample policies
+
+Note that `<path to package>` below is the dependency chain of package names and valid versions separated by a `>` symbol.
+
+By default, the policy file does not add versions to these packages, so a path would look like: `'jade > transformers > uglify-js'`, but it can include versions. More details and examples can be seen in the [module path rules](#module-path-rules) section.
+
+### Ignore
+
+```text
+ignore:
+  '<snyk-vuln-id>':
+    - '<path to package>':
+        reason: String
+        expires: String(format: Date().toJSON())
+patch: {}
+version: v1.0.0
+```
+
+### Patch
+
+```text
+patch:
+  '<snyk-vuln-id>':
+    - '<path to package>':
+        patched: String(format: Date().toJSON())
+version: v1
+```
+
+
 ## Misc
 
 * [CONTRIBUTING.md](.github/CONTRIBUTING.md)
