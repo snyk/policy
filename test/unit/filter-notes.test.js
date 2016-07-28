@@ -1,12 +1,7 @@
-var test = require('tap').test;
+var test = require('tap-only');
 var Promise = require('es6-promise').Promise; // jshint ignore:line
 var fixtures = __dirname + '/../fixtures';
 var vulns = require(fixtures + '/patch/vulns.json');
-
-// mock the vulns
-vulns.vulnerabilities.forEach(function (v) {
-  // v.from.unshift('ignore@1.0.0');
-});
 
 var policy = require('../../');
 var notes = require('../../lib/filter/notes');

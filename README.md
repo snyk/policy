@@ -177,12 +177,29 @@ Applies the policy to the vulnerabilities object. The `vulns` object is expected
 }
 ```
 
-If all the vulns are stripped because of the policy, then the `ok` bool is set to `true`.
+If all the vulns are filtered because of the policy, then the `ok` bool is set to `true`.
+
+**Important:** the `vulnerabilities` array will contain all the initial vulnerabilities, but each filtered vuln will include a new `filtered` property:
+
+```js
+"filtered": {
+  "type": "ignore", // or `patch`
+  "metadata": { // only included on `type="ignore"`
+    "reason": String,
+    "expires": Date
+  }
+}
+```
 
 Note that this method is also available on the response object from [`.load`](#policyloadroot-options), so can be called as `res.filter()` (where `res` is the loaded config).
 
-
 Returns an `object` in the same structure as `vulns`.
+
+### .stripstripFiltered(vulns)
+
+Reads the vulnerabilities and looks for the `filtered` property removing each so that you're left with only the vulnerabilities that affect the package.
+
+Note that the `vulns` object is expects to be the result of the `policy.filter` method.
 
 ### policy.getByVuln(config, vuln)
 

@@ -25,12 +25,13 @@ test('policy.save', function (t) {
     })
     .then(policy.loadFromText)
     .then(function (res) {
+      // this will change the version
       return policy.save(res, path.dirname(filename));
     })
     .then(function () {
       t.equal(writeSpy.callCount, 1, 'write only once');
       t.equal(writeSpy.args[0][0], filename, 'filename correct');
       var parsed = writeSpy.args[0][1].trim();
-      t.equal(parsed, asText, 'body contains original');
+      t.equal(parsed, asText.replace(/v1/, 'v2'), 'body contains original, but updates version');
     });
 });

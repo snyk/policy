@@ -12,10 +12,10 @@ tap.beforeEach(function (done) {
   done();
 });
 
-test('severity-control: high (ok=true)', function (t) {
+test('severity-control: high (ok=false)', function (t) {
   return policy.loadFromText('failThreshold: high').then(function (res) {
     vulns = res.filter(vulns);
-    t.equal(vulns.ok, true, 'only failing on high severity');
+    t.equal(vulns.ok, false, 'we have 1 high vuln');
     t.notEqual(vulns.vulnerabilities.length, 0, 'vulns still available to read');
   });
 });
@@ -41,5 +41,14 @@ test('severity-control fails on bad value', function (t) {
     t.fail('should have thrown');
   }).catch(function (error) {
     t.equal(error.code, 'POLICY_BAD_THRESHOLD', 'failed correctly');
+  });
+});
+
+test('severity-control ignores filtered vulns', function (t) {
+  return policy.loadFromText(fs.readFileSync(dir + '/.snyk')).then(function (policy) {
+    var res = policy.filter(vulns);
+    t.equal(res.ok, true, 'low vulns ignored and high filtered out');
+    var stripped = policy.stripFiltered(res);
+    t.equal(stripped.vulnerabilities.length, 2, 'high vuln stripped and two left');
   });
 });

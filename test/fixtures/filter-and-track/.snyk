@@ -3,8 +3,12 @@ ignore:
     - sqlite > sqlite3 > node-pre-gyp > request > hawk:
         reason: hawk got bumped
         expires: '2116-03-01T14:30:04.136Z'
+  'npm:is-my-json-valid:20160118':
+    - '*':
+        reason: not used
+        expires: '2116-03-01T14:30:04.136Z'
 patch:
   'npm:tar:20151103':
     - sqlite > sqlite3 > node-pre-gyp > tar-pack > tar:
         patched: '2116-03-01T14:30:04.137Z'
-version: v1.0.0
+version: v2.0.0
