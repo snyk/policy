@@ -11,13 +11,18 @@ test('ignored vulns do not turn up in tests', function (t) {
     var start = vulns.vulnerabilities.length;
     t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
 
+    var filtered = [];
+
     vulns.vulnerabilities = ignore(
       config.ignore,
-      vulns.vulnerabilities
+      vulns.vulnerabilities,
+      filtered
     );
 
     // should strip 3
 
     t.equal(start - 3, vulns.vulnerabilities.length, 'post filter: ' + vulns.vulnerabilities.length);
+    t.equal(3, filtered.length, filtered.length + ' vulns filtered');
+    t.ok(filtered[0].ignore, 'filtered vuln has ignore info');
   }).catch(t.threw).then(t.end);
 });

@@ -29,14 +29,20 @@ test('patched vulns do not turn up in tests', function (t) {
     var start = vulns.vulnerabilities.length;
     t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
 
+    var filtered = [];
+
     vulns.vulnerabilities = patch(
       config.patch,
       vulns.vulnerabilities,
-      fixtures
+      fixtures,
+      true,
+      filtered
     );
 
     // should strip 2
 
     t.equal(start - 2, vulns.vulnerabilities.length, 'post filter');
+    t.equal(2, filtered.length, filtered.length + ' vulns filtered');
+    t.ok(filtered[0].patch, 'filtered vuln has patch info');
   }).catch(t.threw).then(t.end);
 });
