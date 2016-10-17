@@ -43,6 +43,20 @@ test('patched vulns do not turn up in tests', function (t) {
 
     t.equal(start - 2, vulns.vulnerabilities.length, 'post filter');
     t.equal(2, filtered.length, filtered.length + ' vulns filtered');
-    t.ok(filtered[0].patch, 'filtered vuln has patch info');
+
+    var expected = {
+      'npm:uglify-js:20150824': [{ patched: '2016-03-03T18:06:06.091Z' }],
+      'npm:uglify-js:20151024': [{ patched: '2016-03-03T18:06:06.091Z' }],
+    };
+    var actual = filtered.reduce(
+      function (actual, vuln) {
+        actual[vuln.id] = vuln.filtered.patches;
+        return actual;
+      }, {});
+    t.same(actual, expected, 'filtered vulns include patch rules');
+
+    t.notEqual(vulns.vulnerabilities.every(function (vuln) {
+      return !!vuln.patches;
+    }), 'vulns do not have patches property');
   }).catch(t.threw).then(t.end);
 });

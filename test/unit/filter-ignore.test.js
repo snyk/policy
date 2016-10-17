@@ -22,6 +22,21 @@ test('ignored vulns do not turn up in tests', function (t) {
     // should strip 3
     t.equal(start - 3, vulns.vulnerabilities.length, 'post filter: ' + vulns.vulnerabilities.length);
     t.equal(3, filtered.length, filtered.length + ' vulns filtered');
-    t.equal(filtered[0].ignore.reason, 'hawk got bumped', 'filtered vuln has ignore info');
-  }).catch(t.threw).then(t.end);
+    var expected = {
+      'npm:hawk:20160119': [{ reason: 'hawk got bumped', expires: '2116-03-01T14:30:04.136Z' }],
+      'npm:is-my-json-valid:20160118': [{ reason: 'dev tool', expires: '2116-03-01T14:30:04.136Z' }],
+      'npm:tar:20151103': [{ reason: 'none given', expires: '2116-03-01T14:30:04.137Z' }],
+    };
+    var actual = filtered.reduce(
+      function (actual, vuln) {
+        actual[vuln.id] = vuln.filtered.ignored;
+        return actual;
+      },
+      {});
+    t.same(actual, expected, 'filtered vulns include ignore rules');
+
+    t.notEqual(vulns.vulnerabilities.every(function (vuln) {
+      return !!vuln.ignored;
+    }), 'vulns do not have ignored property');
+}).catch(t.threw).then(t.end);
 });
