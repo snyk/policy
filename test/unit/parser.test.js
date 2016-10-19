@@ -15,6 +15,18 @@ test('parser fills out defaults', function (t) {
   t.end();
 });
 
+test('parser fills out defaults for invalid inputs', function (t) {
+  var res = parser.import('test');
+  var expect = {
+    version: 'v1.0.0',
+    ignore: {},
+    patch: {},
+  };
+
+  t.deepEqual(res, expect, 'parser fills defaults for invalid inputs');
+  t.end();
+});
+
 test('parser does not modify default parsed format', function (t) {
   var expect = {
     version: 'v1.0.0',
