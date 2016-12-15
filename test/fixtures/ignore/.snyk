@@ -1,3 +1,5 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
   'npm:hawk:20160119':
     - sqlite > sqlite3 > node-pre-gyp > request > hawk:

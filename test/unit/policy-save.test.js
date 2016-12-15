@@ -32,5 +32,7 @@ test('policy.save', function (t) {
       t.equal(writeSpy.args[0][0], filename, 'filename correct');
       var parsed = writeSpy.args[0][1].trim();
       t.equal(parsed, asText, 'body contains original');
+      t.match(parsed, '# Snyk (https://snyk.io) policy file, patches or ' +
+              'ignores known vulnerabilities.', 'body contains comments');
     });
 });
