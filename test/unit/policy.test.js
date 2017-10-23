@@ -50,6 +50,8 @@ test('policy.load (multiple - ignore last)', function (t) {
       'npm:hawk:20160119',
       'npm:is-my-json-valid:20160118',
       'npm:tar:20151103',
+      'npm:method-override:20170927',
+      'npm:marked:20170907',
     ];
     t.deepEqual(res.ignore, {}, 'nothing is ignored');
     t.ok(res.suggest, 'suggestions are present');
@@ -63,6 +65,8 @@ test('policy.load (multiple - ignore last - trust deep policy)', function (t) {
       'npm:hawk:20160119',
       'npm:is-my-json-valid:20160118',
       'npm:tar:20151103',
+      'npm:method-override:20170927',
+      'npm:marked:20170907',
     ];
     t.notOk(res.suggest, 'no suggestions');
     t.notEqual(Object.keys(res.ignore).length, 0, 'has more than one ignore');

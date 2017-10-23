@@ -19,13 +19,14 @@ test('ignored vulns do not turn up in tests', function (t) {
       filtered
     );
 
-    // should strip 3
-    t.equal(start - 3, vulns.vulnerabilities.length, 'post filter: ' + vulns.vulnerabilities.length);
-    t.equal(3, filtered.length, filtered.length + ' vulns filtered');
+    // should strip 4
+    t.equal(start - 4, vulns.vulnerabilities.length, 'post filter: ' + vulns.vulnerabilities.length);
+    t.equal(4, filtered.length, '4 vulns filtered');
     var expected = {
       'npm:hawk:20160119': [{ reason: 'hawk got bumped', expires: '2116-03-01T14:30:04.136Z' }],
       'npm:is-my-json-valid:20160118': [{ reason: 'dev tool', expires: '2116-03-01T14:30:04.136Z' }],
       'npm:tar:20151103': [{ reason: 'none given', expires: '2116-03-01T14:30:04.137Z' }],
+      'npm:marked:20170907': [{ reason: 'none given', disregardIfFixable: true }],
     };
     var actual = filtered.reduce(
       function (actual, vuln) {
