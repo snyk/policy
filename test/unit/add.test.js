@@ -39,3 +39,38 @@ test('add errors without options', function (t) {
   });
 });
 
+test('add ignore with valid reasonType', function (t) {
+  return create().then(function (policy) {
+    return policy.addIgnore({
+      id: 'a',
+      path: 'a > b',
+      reasonType: 'wont-fix',
+    });
+  })
+  .then(function (policy) {
+    t.ok('error not thrown');
+    t.deepEqual(Object.keys(policy.ignore), ['a'], '`a` is the only root');
+    t.deepEqual(policy.ignore.a[0]['a > b'].reasonType, 'wont-fix',
+      'metadata saved');
+  })
+  .catch(function () {
+    t.fail('error thrown thrown');
+  });
+});
+
+test('add ignore with invalid reasonType', function (t) {
+  return create().then(function (policy) {
+    return policy.addIgnore({
+      id: 'a',
+      path: 'a > b',
+      reasonType: 'invalid',
+    });
+  })
+  .then(function () {
+    t.fail('error not thrown');
+  })
+  .catch(function () {
+    t.ok('error is thrown');
+  });
+});
+
