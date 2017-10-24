@@ -13,5 +13,13 @@ ignore:
     - sqlite > sqlite3 > node-pre-gyp > tar-pack > tar:
         reason: none given
         expires: '2116-03-01T14:30:04.137Z'
+  'npm:method-override:20170927':
+    - '*':
+        reason: none given
+        disregardIfFixable: true
+  'npm:marked:20170907':
+    - '*':
+        reason: none given
+        disregardIfFixable: true
 patch: {}
 version: v1.0.0

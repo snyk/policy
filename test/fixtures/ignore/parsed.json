@@ -23,6 +23,22 @@
           "expires": "2016-03-01T14:30:04.137Z"
         }
       }
+    ],
+    "npm:method-override:20170927": [
+      {
+        "*": {
+          "reason": "none given",
+          "disregardIfFixable": true
+        }
+      }
+    ],
+    "npm:marked:20170907": [
+      {
+        "*": {
+          "reason": "none given",
+          "disregardIfFixable": true
+        }
+      }
     ]
   },
   "version": "v1",

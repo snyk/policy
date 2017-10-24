@@ -214,6 +214,54 @@
         "sqlite3@3.1.1",
         "node-pre-gyp@0.6.14"
       ]
+    },
+    {
+      "title": "Regular Expression Denial of Service (ReDoS)",
+      "credit": [
+        "Cristian-Alexandru Staicu"
+      ],
+      "moduleName": "marked",
+      "packageName": "marked",
+      "language": "js",
+      "packageManager": "npm",
+      "description": "## Overview\n[`marked`](https://www.npmjs.com/package/marked) is a full-featured markdown parser and compiler.\n\nAffected versions of this package are vulnerable to Regular expression Denial of Service (ReDoS) attacks when parsing the input markdown content (1,000 characters costs around 6 seconds matching time).\n\nThe Regular expression Denial of Service (ReDoS) is a type of Denial of Service attack. Many Regular Expression implementations may reach extreme situations that cause them to work very slowly (exponentially related to input size), allowing an attacker to exploit this and can cause the program to enter these extreme situations by using a specially crafted input and cause the service to excessively consume CPU, resulting in a Denial of Service.\n\nYou can read more about `Regular Expression Denial of Service (ReDoS)` on our [blog](https://snyk.io/blog/redos-and-catastrophic-backtracking/).\n\n## Remediation\nThere is no fix version yet. At time of writing, latest version is `0.3.6`.\n\n## References\n- [Github Issue](https://github.com/chjj/marked/issues/937)\n",
+      "identifiers": {
+        "NSP": 531,
+        "CWE": [
+          "CWE-400"
+        ],
+        "CVE": [],
+        "ALTERNATIVE": [
+          "SNYK-JS-MARKED-10782"
+        ]
+      },
+      "semver": {
+        "vulnerable": "*",
+        "unaffected": "<0.0.0"
+      },
+      "cvssScore": 7.5,
+      "patches": [],
+      "severity": "high",
+      "CVSSv3": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+      "disclosureTime": "2017-09-07T21:00:00.000Z",
+      "publicationTime": "2017-09-21T08:07:51.834Z",
+      "modificationTime": "2017-09-21T08:07:51.834Z",
+      "creationTime": "2017-09-21T08:07:51.834Z",
+      "id": "npm:marked:20170907",
+      "alternativeIds": [
+        "SNYK-JS-MARKED-10782"
+      ],
+      "from": [
+        "goof@0.0.3",
+        "marked@0.3.5"
+      ],
+      "upgradePath": [],
+      "version": "0.3.5",
+      "name": "marked",
+      "isUpgradable": false,
+      "isPatchable": false,
+      "__filename": "/Users/Josh/Sites/snyk/goof/node_modules/marked/package.json",
+      "parentDepType": "prod"
     }
   ],
   "dependencyCount": 108
