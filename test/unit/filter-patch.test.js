@@ -45,8 +45,18 @@ test('patched vulns do not turn up in tests', function (t) {
     t.equal(2, filtered.length, filtered.length + ' vulns filtered');
 
     var expected = {
-      'npm:uglify-js:20150824': [{ patched: '2016-03-03T18:06:06.091Z' }],
-      'npm:uglify-js:20151024': [{ patched: '2016-03-03T18:06:06.091Z' }],
+      'npm:uglify-js:20150824': [
+        {
+          patched: '2016-03-03T18:06:06.091Z',
+          path: ['jade', 'transformers', 'uglify-js'],
+        },
+      ],
+      'npm:uglify-js:20151024': [
+        {
+          patched: '2016-03-03T18:06:06.091Z',
+          path: ['jade', 'transformers', 'uglify-js'],
+        },
+      ],
     };
     var actual = filtered.reduce(
       function (actual, vuln) {
