@@ -23,10 +23,37 @@ test('ignored vulns do not turn up in tests', function (t) {
     t.equal(start - 4, vulns.vulnerabilities.length, 'post filter: ' + vulns.vulnerabilities.length);
     t.equal(4, filtered.length, '4 vulns filtered');
     var expected = {
-      'npm:hawk:20160119': [{ reason: 'hawk got bumped', expires: '2116-03-01T14:30:04.136Z' }],
-      'npm:is-my-json-valid:20160118': [{ reason: 'dev tool', expires: '2116-03-01T14:30:04.136Z' }],
-      'npm:tar:20151103': [{ reason: 'none given', expires: '2116-03-01T14:30:04.137Z' }],
-      'npm:marked:20170907': [{ reason: 'none given', disregardIfFixable: true }],
+      'npm:hawk:20160119': [
+        {
+          reason: 'hawk got bumped',
+          expires: '2116-03-01T14:30:04.136Z',
+          path: ['sqlite', 'sqlite3', 'node-pre-gyp', 'request', 'hawk'],
+        },
+      ],
+      'npm:is-my-json-valid:20160118': [
+        {
+          reason: 'dev tool',
+          expires: '2116-03-01T14:30:04.136Z',
+          path: [
+            'sqlite', 'sqlite3', 'node-pre-gyp', 'request', 'har-validator',
+            'is-my-json-valid',
+          ],
+        },
+      ],
+      'npm:tar:20151103': [
+        {
+          reason: 'none given',
+          expires: '2116-03-01T14:30:04.137Z',
+          path: ['sqlite', 'sqlite3', 'node-pre-gyp', 'tar-pack', 'tar'],
+        },
+      ],
+      'npm:marked:20170907': [
+        {
+          reason: 'none given',
+          disregardIfFixable: true,
+          path: ['*'],
+        },
+      ],
     };
     var actual = filtered.reduce(
       function (actual, vuln) {
