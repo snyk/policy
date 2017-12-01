@@ -5,4 +5,6 @@ patch:
   'npm:uglify-js:20151024':
     - 'jade > transformers > uglify-js':
         patched: '2016-03-03T18:06:06.091Z'
+  'npm:semver:20150403':
+    - '*':
 version: v1

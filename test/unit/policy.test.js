@@ -113,6 +113,7 @@ test('policy.load (multiple - ENOENT - loose)', function (t) {
     var ids = [
       'npm:uglify-js:20150824',
       'npm:uglify-js:20151024',
+      'npm:semver:20150403',
     ];
     t.deepEqual(Object.keys(res.patch), ids, 'policy loaded');
   });
