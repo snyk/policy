@@ -39,10 +39,11 @@ test('patched vulns do not turn up in tests', function (t) {
       filtered
     );
 
-    // should strip 2
 
-    t.equal(start - 2, vulns.vulnerabilities.length, 'post filter');
-    t.equal(2, filtered.length, filtered.length + ' vulns filtered');
+    // should strip 3
+
+    t.equal(start - 3, vulns.vulnerabilities.length, 'post filter');
+    t.equal(3, filtered.length, '3 vulns filtered');
 
     var expected = {
       'npm:uglify-js:20150824': [
@@ -57,6 +58,9 @@ test('patched vulns do not turn up in tests', function (t) {
           path: ['jade', 'transformers', 'uglify-js'],
         },
       ],
+      'npm:semver:20150403': [
+        { path: ['*'] }
+      ]
     };
     var actual = filtered.reduce(
       function (actual, vuln) {
