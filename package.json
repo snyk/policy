@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "debug": "^2.2.0",
-    "email-validator": "^1.1.1",
+    "email-validator": "^2.0.3",
     "es6-promise": "^3.1.2",
     "js-yaml": "^3.5.3",
     "lodash.clonedeep": "^4.3.1",
