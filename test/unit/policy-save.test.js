@@ -1,7 +1,6 @@
 var test = require('tap-only');
 var proxyquire = require('proxyquire');
 var fixtures = __dirname + '/../fixtures';
-var Promise = require('es6-promise').Promise; // jshint ignore:line
 var path = require('path');
 var sinon = require('sinon');
 var writeSpy = sinon.spy();

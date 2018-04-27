@@ -1,5 +1,4 @@
 var test = require('tap').test;
-var Promise = require('es6-promise').Promise; // jshint ignore:line
 var fixtures = __dirname + '/../fixtures/ignore';
 var vulns = require(fixtures + '/vulns.json');
 

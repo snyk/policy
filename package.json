@@ -25,14 +25,13 @@
     "tap-only": "0.0.5"
   },
   "dependencies": {
-    "debug": "^2.2.0",
+    "debug": "^3.1.0",
     "email-validator": "^2.0.3",
-    "es6-promise": "^3.1.2",
     "js-yaml": "^3.5.3",
     "lodash.clonedeep": "^4.3.1",
-    "semver": "^5.1.0",
-    "snyk-module": "^1.8.1",
-    "snyk-resolve": "^1.0.0",
+    "semver": "^5.5.0",
+    "snyk-module": "^1.8.2",
+    "snyk-resolve": "^1.0.1",
     "snyk-try-require": "^1.1.1",
     "then-fs": "^2.0.0"
   },
