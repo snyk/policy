@@ -1,6 +1,5 @@
 var test = require('tap-only');
 var policy = require('../../');
-var Promise = require('es6-promise').Promise; // jshint ignore:line
 var fixtures = __dirname + '/../fixtures';
 
 test('load different types of policies', function (t) {

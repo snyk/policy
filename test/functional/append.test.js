@@ -1,5 +1,4 @@
 var test = require('tap-only');
-var Promise = require('es6-promise').Promise; // jshint ignore:line
 var policy = require('../../');
 var fixtures = __dirname + '/../fixtures/issues/SC-1106/';
 var withDash = fixtures + '/pre-update.snyk';
