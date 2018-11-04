@@ -6,16 +6,20 @@ cache:
 notifications:
   email: false
 node_js:
+  - '10'
   - '8'
   - '6'
   - '4'
-before_script:
-  - npm prune
-after_success:
-  - python travis_after_all.py
-  - 'export $(cat .to_export_back) &> /dev/null'
-  - git fetch --tags
-  - npm run semantic-release
+install:
+  - npm install
+script:
+  - npm test
+jobs:
+  include:
+    - stage: Release
+      node_js: '10'
+      script:
+      - test "${TRAVIS_PULL_REQUEST}" != "false" || npx semantic-release
 branches:
-  except:
-    - "/^v\\d+\\.\\d+\\.\\d+$/"
+  only:
+    - master
