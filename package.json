@@ -30,7 +30,7 @@
     "js-yaml": "^3.5.3",
     "lodash.clonedeep": "^4.3.1",
     "semver": "^5.5.0",
-    "snyk-module": "^1.8.2",
+    "snyk-module": "^1.9.0",
     "snyk-resolve": "^1.0.1",
     "snyk-try-require": "^1.1.1",
     "then-fs": "^2.0.0"

@@ -5,6 +5,7 @@ var vulns = JSON.parse(fs.readFileSync(fixtures + '/jsbin.json', 'utf8')).vulner
 var vuln = vulns.filter(function (v) {
   return v.id === 'npm:uglify-js:20150824';
 }).pop();
+var vulnWithGitUrl = JSON.parse(fs.readFileSync(fixtures + '/patch-with-git-url.json', 'utf8'));
 var policy = require('../../');
 
 test('match logic', function (t) {
@@ -72,6 +73,18 @@ test('match star at end', function (t) {
   };
 
   var pathMatch = policy.matchToRule(vuln, rule);
+  t.ok(pathMatch, 'vuln matches rule');
+  t.end();
+});
+
+test('rule with git url as dependency', function (t) {
+  var rule = {
+    'patchable-vuln > qs': {
+      patched: '2018-11-04T12:47:13.696Z',
+    },
+  };
+
+  var pathMatch = policy.matchToRule(vulnWithGitUrl, rule);
   t.ok(pathMatch, 'vuln matches rule');
   t.end();
 });
