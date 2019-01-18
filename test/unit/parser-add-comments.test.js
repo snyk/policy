@@ -26,6 +26,7 @@ test('policy with patches', function (t) {
       'glue > hapi > joi > moment': [
         {
           patched: '2016-02-26T16:19:06.050Z',
+          policyInlineComment: 'http://example.com',
         },
       ],
     },
@@ -37,6 +38,9 @@ test('policy with patches', function (t) {
   t.notMatch(res, '# ignores vulnerabilities until expiry date; change ' +
     'duration by modifying expiry date\nignore:',
     'addComments does not add ignore comment');
+
+  t.notMatch(res, 'policyInlineComment',
+    'policyInlineComment is changed from data props to comment');
   t.end();
 });
 

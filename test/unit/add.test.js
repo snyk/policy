@@ -31,11 +31,14 @@ test('add errors without options', function (t) {
       id: 'a',
       path: 'a > b > c',
       expires: d2,
+      policyInlineComment: 'foo',
     });
 
     t.deepEqual(Object.keys(policy.patch), ['a'], '`a` is the only root');
     t.deepEqual(policy.patch.a.length, 2, 'two paths on `a`');
     t.deepEqual(policy.patch.a[1]['a > b > c'].expires, d2, 'metadata saved');
+    t.deepEqual(policy.patch.a[1]['a > b > c'].policyInlineComment, 'foo',
+      'correctly saves policyInlineComment');
   });
 });
 
@@ -47,14 +50,14 @@ test('add ignore with valid reasonType', function (t) {
       reasonType: 'wont-fix',
     });
   })
-  .then(function (policy) {
-    t.ok('error not thrown');
-    t.deepEqual(policy.ignore.a[0]['a > b'].reasonType, 'wont-fix',
-      'metadata saved');
-  })
-  .catch(function () {
-    t.fail('error thrown thrown');
-  });
+    .then(function (policy) {
+      t.ok('error not thrown');
+      t.deepEqual(policy.ignore.a[0]['a > b'].reasonType, 'wont-fix',
+        'metadata saved');
+    })
+    .catch(function () {
+      t.fail('error thrown thrown');
+    });
 });
 
 test('add ignore with invalid reasonType', function (t) {
@@ -65,13 +68,13 @@ test('add ignore with invalid reasonType', function (t) {
       reasonType: 'test',
     });
   })
-  .then(function () {
-    t.fail('error not thrown');
-  })
-  .catch(function (err) {
-    t.equal(err.message, 'invalid reasonType test',
-      'error is thrown');
-  });
+    .then(function () {
+      t.fail('error not thrown');
+    })
+    .catch(function (err) {
+      t.equal(err.message, 'invalid reasonType test',
+        'error is thrown');
+    });
 });
 
 test('add ignore with valid ignoredBy', function (t) {
@@ -86,14 +89,14 @@ test('add ignore with valid ignoredBy', function (t) {
       ignoredBy: ignoredBy,
     });
   })
-  .then(function (policy) {
-    t.ok('error not thrown');
-    t.deepEqual(policy.ignore.a[0]['a > b'].ignoredBy, ignoredBy,
-      'metadata saved');
-  })
-  .catch(function () {
-    t.fail('error thrown thrown');
-  });
+    .then(function (policy) {
+      t.ok('error not thrown');
+      t.deepEqual(policy.ignore.a[0]['a > b'].ignoredBy, ignoredBy,
+        'metadata saved');
+    })
+    .catch(function () {
+      t.fail('error thrown thrown');
+    });
 });
 
 test('add ignore with invalid ignoredBy', function (t) {
@@ -108,11 +111,11 @@ test('add ignore with invalid ignoredBy', function (t) {
       ignoredBy: ignoredBy,
     });
   })
-  .then(function () {
-    t.fail('error not thrown');
-  })
-  .catch(function (err) {
-    t.equal(err.message, 'ignoredBy.email must be a valid email address',
-      'error is thrown');
-  });
+    .then(function () {
+      t.fail('error not thrown');
+    })
+    .catch(function (err) {
+      t.equal(err.message, 'ignoredBy.email must be a valid email address',
+        'error is thrown');
+    });
 });
