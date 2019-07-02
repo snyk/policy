@@ -12,9 +12,9 @@ test('ignored vulns do not turn up in tests', function (t) {
 
     var filtered = [];
 
-    vulns.vulnerabilities = ignore(
+    ignore(
       config.ignore,
-      vulns.vulnerabilities,
+      vulns,
       filtered
     );
 

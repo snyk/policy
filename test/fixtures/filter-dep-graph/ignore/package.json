@@ -1,0 +1,8 @@
+{
+  "name": "ignore",
+  "version": "1.0.0",
+  "dependencies": {
+    "snyk": "*",
+    "sqlite": "0.0.2"
+  }
+}

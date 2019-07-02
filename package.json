@@ -6,7 +6,7 @@
     "lint": "eslint -c .eslintrc lib",
     "check-tests": "! grep 'test.only' test/**/*.test.js -n",
     "env": "node -e 'console.log(process.env, process.versions)'",
-    "tap": "tap test/**/*.test.js -R spec --timeout=60",
+    "tap": "tap test/**/* -R spec --timeout=60",
     "test": "npm run check-tests && npm run lint && npm run tap"
   },
   "keywords": [
@@ -15,6 +15,7 @@
   "author": "Remy Sharp",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@snyk/dep-graph": "^1.9.0",
     "eslint": "^4.0.0",
     "proxyquire": "^2.1.0",
     "sinon": "^4.0.0",
