@@ -1,13 +1,13 @@
-var test = require('tap-only');
-var policy = require('../..');
-var path = require('path');
-var fixtures = __dirname + '/../fixtures';
+const test = require('tap-only');
+const policy = require('../..');
+const path = require('path');
+const fixtures = __dirname + '/../fixtures';
 
 process.chdir(fixtures + '/simple');
 
 test('policy.load (no args)', function (t) {
   return policy.load().then(function (res) {
-    var expect = {
+    const expect = {
       version: 'v1.0.0',
       ignore: {},
       patch: {},
@@ -22,7 +22,7 @@ test('policy.load (no args)', function (t) {
 
 test('policy.load (options first)', function (t) {
   return policy.load({}).then(function (res) {
-    var expect = {
+    const expect = {
       version: 'v1.0.0',
       ignore: {},
       patch: {},

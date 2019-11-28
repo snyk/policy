@@ -1,11 +1,11 @@
-var test = require('tap-only');
-var parser = require('../../lib/parser');
-var fixtures = __dirname + '/../fixtures';
-var yaml = require('js-yaml');
+const test = require('tap-only');
+const parser = require('../../lib/parser');
+const fixtures = __dirname + '/../fixtures';
+const yaml = require('js-yaml');
 
 test('parser fills out defaults', function (t) {
-  var res = parser.import();
-  var expect = {
+  const res = parser.import();
+  const expect = {
     version: 'v1.0.0',
     ignore: {},
     patch: {},
@@ -16,8 +16,8 @@ test('parser fills out defaults', function (t) {
 });
 
 test('parser fills out defaults for invalid inputs', function (t) {
-  var res = parser.import('test');
-  var expect = {
+  const res = parser.import('test');
+  const expect = {
     version: 'v1.0.0',
     ignore: {},
     patch: {},
@@ -28,7 +28,7 @@ test('parser fills out defaults for invalid inputs', function (t) {
 });
 
 test('parser does not modify default parsed format', function (t) {
-  var expect = {
+  const expect = {
     version: 'v1.0.0',
     patch: {
       'glue > hapi > joi > moment': [{
@@ -38,7 +38,7 @@ test('parser does not modify default parsed format', function (t) {
     ignore: {},
   };
 
-  var res = parser.import(yaml.safeDump(expect));
+  const res = parser.import(yaml.safeDump(expect));
 
   t.deepEqual(res, expect, 'parser does nothing extra (v1 vs v1)');
   t.end();
@@ -54,9 +54,9 @@ test('test unsupported version', function (t) {
 });
 
 test('demunge', function (t) {
-  var source = require(fixtures + '/parsed.json');
-  var res = parser.demunge(source);
-  var ids = Object.keys(source.patch);
+  const source = require(fixtures + '/parsed.json');
+  const res = parser.demunge(source);
+  const ids = Object.keys(source.patch);
   t.ok(Array.isArray(res.ignore), 'array');
   t.ok(Array.isArray(res.patch), 'array');
   t.equal(res.patch.length, 2, 'two patched items');

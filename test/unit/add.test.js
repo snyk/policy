@@ -1,5 +1,5 @@
-var test = require('tap').test;
-var create = require('../../lib').create;
+const test = require('tap').test;
+const create = require('../../lib').create;
 
 test('add errors without options', function (t) {
   return create().then(function (policy) {
@@ -19,8 +19,8 @@ test('add errors without type', function (t) {
 
 test('add errors without options', function (t) {
   return create().then(function (policy) {
-    var d1 = new Date();
-    var d2 = new Date('2016-05-24T13:46:19.066Z');
+    const d1 = new Date();
+    const d2 = new Date('2016-05-24T13:46:19.066Z');
     policy.addPatch({
       id: 'a',
       path: 'a > b',
@@ -75,7 +75,7 @@ test('add ignore with invalid reasonType', function (t) {
 });
 
 test('add ignore with valid ignoredBy', function (t) {
-  var ignoredBy = {
+  const ignoredBy = {
     name: 'Joe Bloggs',
     email: 'joe@acme.org',
   };
@@ -97,7 +97,7 @@ test('add ignore with valid ignoredBy', function (t) {
 });
 
 test('add ignore with invalid ignoredBy', function (t) {
-  var ignoredBy = {
+  const ignoredBy = {
     name: 'Joe Bloggs',
     email: 'joeacme.org',
   };

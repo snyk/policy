@@ -1,8 +1,8 @@
-var test = require('tap-only');
-var policy = require('../../');
-var fixtures = __dirname + '/../fixtures';
-var dir1 = fixtures + '/empty';
-var dir2 = fixtures + '/patch';
+const test = require('tap-only');
+const policy = require('../../');
+const fixtures = __dirname + '/../fixtures';
+const dir1 = fixtures + '/empty';
+const dir2 = fixtures + '/patch';
 
 test('multiple directories, one with policy, one without', function (t) {
   return policy.load([dir1, dir2], { loose: true }).then(function (res) {

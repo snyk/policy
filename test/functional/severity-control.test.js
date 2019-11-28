@@ -1,10 +1,10 @@
-var tap = require('tap');
-var test = require('tap-only');
-var policy = require('../../');
-var fixtures = __dirname + '/../fixtures';
-var dir = fixtures + '/severity-control';
-var fs = require('fs');
-var vulns = {};
+const tap = require('tap');
+const test = require('tap-only');
+const policy = require('../../');
+const fixtures = __dirname + '/../fixtures';
+const dir = fixtures + '/severity-control';
+const fs = require('fs');
+let vulns = {};
 
 tap.beforeEach(function (done) {
   // only contains medium + low - this file is read using fs to ensure refresh

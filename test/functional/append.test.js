@@ -1,8 +1,8 @@
-var test = require('tap-only');
-var policy = require('../../');
-var fixtures = __dirname + '/../fixtures/issues/SC-1106/';
-var withDash = fixtures + '/pre-update.snyk';
-var needsFixing = require('../../lib/parser/v1').needsFixing;
+const test = require('tap-only');
+const policy = require('../../');
+const fixtures = __dirname + '/../fixtures/issues/SC-1106/';
+const withDash = fixtures + '/pre-update.snyk';
+const needsFixing = require('../../lib/parser/v1').needsFixing;
 
 test('merging new policy data does not corrupt', function (t) {
   return policy.load(withDash).then(function (policy) {

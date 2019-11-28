@@ -1,8 +1,8 @@
-var test = require('tap').test;
-var fixtures = __dirname + '/../fixtures/ignore';
-var vulns = require(fixtures + '/vulns.json');
+const test = require('tap').test;
+const fixtures = __dirname + '/../fixtures/ignore';
+let vulns = require(fixtures + '/vulns.json');
 
-var policy = require('../../');
+const policy = require('../../');
 
 test('ignored vulns do not turn up in tests', function (t) {
   return policy.load(fixtures).then(function (config) {

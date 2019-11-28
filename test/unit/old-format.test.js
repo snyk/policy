@@ -1,5 +1,5 @@
-var policy = require('../../lib');
-var test = require('tap').test;
+const policy = require('../../lib');
+const test = require('tap').test;
 
 test('test sensibly bails if gets an old .snyk format', function (t) {
   return policy.load(__dirname + '/../fixtures/old-snyk-config/').then(function () {

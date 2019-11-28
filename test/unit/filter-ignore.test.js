@@ -1,16 +1,16 @@
-var test = require('tap').test;
-var fixtures = __dirname + '/../fixtures/ignore';
-var vulns = require(fixtures + '/vulns.json');
+const test = require('tap').test;
+const fixtures = __dirname + '/../fixtures/ignore';
+const vulns = require(fixtures + '/vulns.json');
 
-var policy = require('../../');
-var ignore = require('../../lib/filter/ignore');
+const policy = require('../../');
+const ignore = require('../../lib/filter/ignore');
 
 test('ignored vulns do not turn up in tests', function (t) {
   policy.load(fixtures).then(function (config) {
-    var start = vulns.vulnerabilities.length;
+    const start = vulns.vulnerabilities.length;
     t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
 
-    var filtered = [];
+    const filtered = [];
 
     vulns.vulnerabilities = ignore(
       config.ignore,
@@ -21,7 +21,7 @@ test('ignored vulns do not turn up in tests', function (t) {
     // should strip 4
     t.equal(start - 4, vulns.vulnerabilities.length, 'post filter: ' + vulns.vulnerabilities.length);
     t.equal(4, filtered.length, '4 vulns filtered');
-    var expected = {
+    const expected = {
       'npm:hawk:20160119': [
         {
           reason: 'hawk got bumped',
@@ -54,7 +54,7 @@ test('ignored vulns do not turn up in tests', function (t) {
         },
       ],
     };
-    var actual = filtered.reduce(
+    const actual = filtered.reduce(
       function (actual, vuln) {
         actual[vuln.id] = vuln.filtered.ignored;
         return actual;
