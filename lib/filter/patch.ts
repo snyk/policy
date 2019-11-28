@@ -75,7 +75,9 @@ export function filterPatched(
         } catch (e) {
           try {
             res = existsSync(oldFlag);
-          } catch (e) {}
+          } catch (e) {
+            res = false;
+          }
         }
 
         debug('flag found for %s? %s', vuln.id);

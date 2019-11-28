@@ -6,12 +6,12 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "lint": "eslint -c .eslintrc lib",
+    "lint": "eslint 'lib/**/*.?s'",
     "format": "prettier --write '{lib,test}/**/*.?s'",
-    "check-tests": "! grep 'test.only' 'test/**/*.test.?s' -n",
+    "check-tests": "! grep 'test.only' test/**/*.test.?s -n",
     "env": "node -e 'console.log(process.env, process.versions)'",
     "tap": "tap  --node-arg=-r --node-arg=ts-node/register 'test/**/*.test.?s' -R spec --timeout=60",
-    "test": "npm run check-tests && npm run lint && npm run tap",
+    "test": "npm run check-tests && npm run tap",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -24,7 +24,10 @@
     "@types/lodash": "^4.14.149",
     "@types/node": "^6.14.9",
     "@types/semver": "^6.2.0",
-    "eslint": "^4.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.9.0",
+    "@typescript-eslint/parser": "^2.9.0",
+    "eslint": "^6.7.1",
+    "eslint-config-prettier": "^6.7.0",
     "prettier": "^1.19.1",
     "proxyquire": "^2.1.0",
     "sinon": "^4.0.0",

@@ -61,6 +61,7 @@ export function exportsOf(policy) {
 
 function readOurVersion() {
   const filename = path.resolve(__dirname, '..', '..', 'package.json');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const version = require(filename).version;
 
   if (version && version !== '0.0.0') {

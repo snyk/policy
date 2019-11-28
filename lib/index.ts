@@ -14,7 +14,7 @@ export { getByVuln, matchToRule } from './match';
 
 const debug = debugModule('snyk:policy');
 
-export function create() {
+export async function create() {
   return loadFromText('');
 }
 
@@ -49,7 +49,7 @@ export async function loadFromText(text) {
   }).then(attachMethods);
 }
 
-export function load(root?, options?) {
+export async function load(root?, options?) {
   if (!Array.isArray(root) && typeof root !== 'string') {
     options = root;
     root = null;
@@ -132,14 +132,14 @@ export function load(root?, options?) {
     .then(attachMethods);
 }
 
-function mergePolicies(policyDirs, options) {
+async function mergePolicies(policyDirs, options) {
   const ignoreTarget = options['trust-policies'] ? 'ignore' : 'suggest';
 
   return Promise.all(
-    policyDirs.map(function(dir) {
+    policyDirs.map(async (dir) => {
       return load(dir, options);
     }),
-  ).then(function(policies) {
+  ).then(async (policies) => {
     // firstly extend the paths in the ignore and patch
     const rootPolicy = policies[0];
     const others = policies.slice(1);
@@ -195,13 +195,13 @@ function mergePath(type, into, pathRoot, rootPolicy, policy) {
   });
 }
 
-export function save(object, root, spinner) {
+export async function save(object, root, spinner) {
   const filename = root ? path.resolve(root, '.snyk') : defaultFilename();
 
   const lbl = 'Saving .snyk policy file...';
 
   if (!spinner) {
-    spinner = function(res) {
+    spinner = async (res) => {
       return Promise.resolve(res);
     };
     spinner.clear = spinner;
