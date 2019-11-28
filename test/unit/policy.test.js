@@ -1,9 +1,9 @@
-var test = require('tap-only');
-var policy = require('../..');
-var demunge = require('../../lib/parser').demunge;
-var path = require('path');
-var fs = require('then-fs');
-var fixtures = __dirname + '/../fixtures';
+const test = require('tap-only');
+const policy = require('../..');
+const demunge = require('../../lib/parser').demunge;
+const path = require('path');
+const fs = require('then-fs');
+const fixtures = __dirname + '/../fixtures';
 
 test('module loads', function (t) {
   t.isa(policy, 'object', 'policy has loaded an object');
@@ -12,7 +12,7 @@ test('module loads', function (t) {
 
 test('policy.load (single)', function (t) {
   return policy.load(fixtures + '/simple').then(function (res) {
-    var expect = {
+    const expect = {
       version: 'v1.0.0',
       ignore: {},
       patch: {},
@@ -29,15 +29,15 @@ test('policy.load (single)', function (t) {
 
 test('policy.load (multiple - ignore first)', function (t) {
   return policy.load([fixtures + '/ignore', fixtures + '/patch']).then(function (res) {
-    var filename = path.relative(process.cwd(), fixtures + '/ignore/.snyk');
+    const filename = path.relative(process.cwd(), fixtures + '/ignore/.snyk');
     t.equal(res.__filename, filename, 'first file is __filename');
 
-    var patchPkg = require(fixtures + '/patch/package.json');
+    const patchPkg = require(fixtures + '/patch/package.json');
 
-    var patchIds = Object.keys(res.patch);
-    var id = patchIds.shift();
+    const patchIds = Object.keys(res.patch);
+    const id = patchIds.shift();
 
-    var deepPatchPath = Object.keys(res.patch[id][0]).shift().split(' > ');
+    const deepPatchPath = Object.keys(res.patch[id][0]).shift().split(' > ');
 
     // FIXME is this right, should it include the version?
     t.equal(deepPatchPath[0], patchPkg.name + '@' + patchPkg.version, 'first policy was prepended');
@@ -46,7 +46,7 @@ test('policy.load (multiple - ignore first)', function (t) {
 
 test('policy.load (multiple - ignore last)', function (t) {
   return policy.load([fixtures + '/patch', fixtures + '/ignore']).then(function (res) {
-    var ids = [
+    const ids = [
       'npm:hawk:20160119',
       'npm:is-my-json-valid:20160118',
       'npm:tar:20151103',
@@ -61,7 +61,7 @@ test('policy.load (multiple - ignore last)', function (t) {
 
 test('policy.load (multiple - ignore last - trust deep policy)', function (t) {
   return policy.load([fixtures + '/patch', fixtures + '/ignore'], { 'trust-policies': true }).then(function (res) {
-    var ids = [
+    const ids = [
       'npm:hawk:20160119',
       'npm:is-my-json-valid:20160118',
       'npm:tar:20151103',
@@ -75,19 +75,19 @@ test('policy.load (multiple - ignore last - trust deep policy)', function (t) {
 });
 
 test('policy.load (merge)', function (t) {
-  var id = 'npm:uglify-js:20151024';
+  const id = 'npm:uglify-js:20151024';
   return policy.load([fixtures + '/patch', fixtures + '/patch-mean']).then(function (res) {
     t.equal(res.patch[id].length, 3, 'expect 2 from mean, 1 from patch');
 
-    var formatted = demunge(res);
+    const formatted = demunge(res);
 
-    var single = formatted.patch.filter(function (p) {
+    const single = formatted.patch.filter(function (p) {
       return p.id === id;
     }).shift();
 
     t.equal(single.paths.length, 3, 'still have 3 paths for single patch');
 
-    var filtered = single.paths.filter(function (item) {
+    const filtered = single.paths.filter(function (item) {
       return item.path.indexOf('mean') === 0;
     });
 
@@ -110,7 +110,7 @@ test('policy.loadFromText', function (t) {
 
 test('policy.load (multiple - ENOENT - loose)', function (t) {
   return policy.load([fixtures + '/patch', fixtures + '/404'], { loose: true }).then(function (res) {
-    var ids = [
+    const ids = [
       'npm:uglify-js:20150824',
       'npm:uglify-js:20151024',
       'npm:semver:20150403',

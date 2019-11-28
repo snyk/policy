@@ -1,9 +1,9 @@
-var test = require('tap').test;
-var fixtures = __dirname + '/../fixtures/patch';
-var vulns = require(fixtures + '/vulns.json');
-var proxyquire = require('proxyquire');
-var policy = require('../../');
-var patch = proxyquire('../../lib/filter/patch', {
+const test = require('tap').test;
+const fixtures = __dirname + '/../fixtures/patch';
+const vulns = require(fixtures + '/vulns.json');
+const proxyquire = require('proxyquire');
+const policy = require('../../');
+const patch = proxyquire('../../lib/filter/patch', {
   './get-vuln-source': proxyquire('../../lib/filter/get-vuln-source', {
     'snyk-resolve': {
       sync: function () {
@@ -25,10 +25,10 @@ var patch = proxyquire('../../lib/filter/patch', {
 
 test('patched vulns do not turn up in tests', function (t) {
   policy.load(fixtures).then(function (config) {
-    var start = vulns.vulnerabilities.length;
+    const start = vulns.vulnerabilities.length;
     t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
 
-    var filtered = [];
+    const filtered = [];
 
     vulns.vulnerabilities = patch(
       config.patch,
@@ -44,7 +44,7 @@ test('patched vulns do not turn up in tests', function (t) {
     t.equal(start - 3, vulns.vulnerabilities.length, 'post filter');
     t.equal(3, filtered.length, '3 vulns filtered');
 
-    var expected = {
+    const expected = {
       'npm:uglify-js:20150824': [
         {
           patched: '2016-03-03T18:06:06.091Z',
@@ -58,10 +58,10 @@ test('patched vulns do not turn up in tests', function (t) {
         },
       ],
       'npm:semver:20150403': [
-        { path: ['*'] }
+        {path: ['*']}
       ]
     };
-    var actual = filtered.reduce(
+    const actual = filtered.reduce(
       function (actual, vuln) {
         actual[vuln.id] = vuln.filtered.patches;
         return actual;

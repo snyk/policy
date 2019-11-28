@@ -1,5 +1,5 @@
-var test = require('tap-only');
-var policy = require('../../');
+const test = require('tap-only');
+const policy = require('../../');
 
 test('broken patch should not be in output', function (t) {
   return policy

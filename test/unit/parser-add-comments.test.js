@@ -1,9 +1,9 @@
-var test = require('tap-only');
-var addComments = require('../../lib/parser/add-comments');
-var yaml = require('js-yaml');
+const test = require('tap-only');
+const addComments = require('../../lib/parser/add-comments');
+const yaml = require('js-yaml');
 
 test('policy with no patches or ignores', function (t) {
-  var res = addComments(yaml.safeDump({
+  const res = addComments(yaml.safeDump({
     version: 'v1.0.0',
     patch: {},
     ignore: {},
@@ -20,7 +20,7 @@ test('policy with no patches or ignores', function (t) {
 });
 
 test('policy with patches', function (t) {
-  var res = addComments(yaml.safeDump({
+  const res = addComments(yaml.safeDump({
     version: 'v1.0.0',
     patch: {
       'glue > hapi > joi > moment': [
@@ -41,7 +41,7 @@ test('policy with patches', function (t) {
 });
 
 test('policy with ignores', function (t) {
-  var res = addComments(yaml.safeDump({
+  const res = addComments(yaml.safeDump({
     version: 'v1.0.0',
     patch: {},
     ignore: {
@@ -62,7 +62,7 @@ test('policy with ignores', function (t) {
 });
 
 test('policy with ignores and patches', function (t) {
-  var res = addComments(yaml.safeDump({
+  const res = addComments(yaml.safeDump({
     version: 'v1.0.0',
     patch: {
       'glue > hapi > joi > moment': [

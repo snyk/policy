@@ -1,10 +1,10 @@
-var test = require('tap-only');
-var policy = require('../../');
-var fixtures = __dirname + '/../fixtures';
+const test = require('tap-only');
+const policy = require('../../');
+const fixtures = __dirname + '/../fixtures';
 
 test('load different types of policies', function (t) {
 
-  var dirs = [
+  const dirs = [
     'patch',
     'deep-policy',
     'ignore',

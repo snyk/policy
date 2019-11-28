@@ -1,6 +1,6 @@
-var test = require('tap-only');
-var policy = require('../..');
-var fixtures = __dirname + '/../fixtures';
+const test = require('tap-only');
+const policy = require('../..');
+const fixtures = __dirname + '/../fixtures';
 
 test('single load', function (t) {
   return policy.load(fixtures + '/ignore', { 'ignore-policy': true }).then(function (res) {

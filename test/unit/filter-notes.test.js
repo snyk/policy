@@ -1,18 +1,18 @@
-var test = require('tap').test;
-var fixtures = __dirname + '/../fixtures';
-var vulns = require(fixtures + '/patch/vulns.json');
+const test = require('tap').test;
+const fixtures = __dirname + '/../fixtures';
+const vulns = require(fixtures + '/patch/vulns.json');
 
 // mock the vulns
 vulns.vulnerabilities.forEach(function (v) {
   // v.from.unshift('ignore@1.0.0');
 });
 
-var policy = require('../../');
-var notes = require('../../lib/filter/notes');
+const policy = require('../../');
+const notes = require('../../lib/filter/notes');
 
 test('ignored vulns do not turn up in tests', function (t) {
   return policy.load([fixtures + '/patch', fixtures + '/deep-policy']).then(function (res) {
-    var start = vulns.vulnerabilities.length;
+    const start = vulns.vulnerabilities.length;
     t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
     t.ok(res.suggest, 'has suggestions');
 
@@ -24,7 +24,9 @@ test('ignored vulns do not turn up in tests', function (t) {
     );
 
     t.equal(start, vulns.vulnerabilities.length, 'post filter nothing changed');
-    var items = vulns.vulnerabilities.map(function (e) { return e.note; }).filter(Boolean);
+    const items = vulns.vulnerabilities.map(function (e) {
+      return e.note;
+    }).filter(Boolean);
 
     t.equal(items.length, 1, 'one has a note');
 
