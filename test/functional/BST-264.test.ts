@@ -1,5 +1,5 @@
-const test = require('tap-only');
-const policy = require('../../');
+import * as test from 'tap-only';
+import * as policy from '../../';
 
 test('broken patch should not be in output', function(t) {
   return policy

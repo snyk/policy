@@ -1,5 +1,6 @@
-const test = require('tap-only');
-const policy = require('../../');
+import * as test from 'tap-only';
+import * as policy from '../../';
+
 const fixtures = __dirname + '/../fixtures';
 
 test('load different types of policies', function(t) {

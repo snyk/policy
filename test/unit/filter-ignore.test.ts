@@ -1,9 +1,9 @@
-const test = require('tap').test;
+import { test } from 'tap';
+import * as policy from '../../';
+import { filterIgnored as ignore } from '../../lib/filter/ignore';
+
 const fixtures = __dirname + '/../fixtures/ignore';
 const vulns = require(fixtures + '/vulns.json');
-
-const policy = require('../../');
-const ignore = require('../../lib/filter/ignore');
 
 test('ignored vulns do not turn up in tests', function(t) {
   policy

@@ -1,11 +1,11 @@
-module.exports = add;
+import * as debugModule from 'debug';
+import * as emailValidator from 'email-validator';
 
-const debug = require('debug')('snyk:policy');
-const emailValidator = require('email-validator');
+const debug = debugModule('snyk:policy');
 
 const validReasonTypes = ['not-vulnerable', 'wont-fix', 'temporary-ignore'];
 
-function add(policy, type, options) {
+export function add(policy, type, options) {
   if (type !== 'ignore' && type !== 'patch') {
     throw new Error('policy.add: unknown type "' + type + '" to add to');
   }

@@ -1,6 +1,6 @@
-const test = require('tap-only');
-const addComments = require('../../lib/parser/add-comments');
-const yaml = require('js-yaml');
+import * as test from 'tap-only';
+import { addComments } from '../../lib/parser/add-comments';
+import * as yaml from 'js-yaml';
 
 test('policy with no patches or ignores', function(t) {
   const res = addComments(

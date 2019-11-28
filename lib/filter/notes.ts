@@ -1,9 +1,9 @@
-module.exports = attachNotes;
+import * as debugModule from 'debug';
+import { matchToRule } from '../match';
 
-const debug = require('debug')('snyk:policy');
-const matchToRule = require('../match').matchToRule;
+const debug = debugModule('snyk:policy');
 
-function attachNotes(notes, vuln) {
+export function attachNotes(notes, vuln) {
   if (!notes) {
     return vuln;
   }

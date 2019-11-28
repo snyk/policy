@@ -1,10 +1,12 @@
-const test = require('tap-only');
-const parser = require('../../lib/parser');
+import * as test from 'tap-only';
+import * as parser from '../../lib/parser';
+import * as yaml from 'js-yaml';
+import { demunge } from '../../lib';
+
 const fixtures = __dirname + '/../fixtures';
-const yaml = require('js-yaml');
 
 test('parser fills out defaults', function(t) {
-  const res = parser.import();
+  const res = parser.imports();
   const expect = {
     version: 'v1.0.0',
     ignore: {},
@@ -16,7 +18,7 @@ test('parser fills out defaults', function(t) {
 });
 
 test('parser fills out defaults for invalid inputs', function(t) {
-  const res = parser.import('test');
+  const res = parser.imports('test');
   const expect = {
     version: 'v1.0.0',
     ignore: {},
@@ -40,7 +42,7 @@ test('parser does not modify default parsed format', function(t) {
     ignore: {},
   };
 
-  const res = parser.import(yaml.safeDump(expect));
+  const res = parser.imports(yaml.safeDump(expect));
 
   t.deepEqual(res, expect, 'parser does nothing extra (v1 vs v1)');
   t.end();
@@ -49,7 +51,7 @@ test('parser does not modify default parsed format', function(t) {
 test('test unsupported version', function(t) {
   t.throws(
     function() {
-      parser.import(
+      parser.imports(
         yaml.safeDump({
           version: 'v20.0.1',
         }),
@@ -63,7 +65,7 @@ test('test unsupported version', function(t) {
 
 test('demunge', function(t) {
   const source = require(fixtures + '/parsed.json');
-  const res = parser.demunge(source);
+  const res = demunge(source);
   const ids = Object.keys(source.patch);
   t.ok(Array.isArray(res.ignore), 'array');
   t.ok(Array.isArray(res.patch), 'array');

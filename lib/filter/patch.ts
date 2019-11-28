@@ -1,14 +1,20 @@
-module.exports = filterPatched;
+import * as cloneDeep from 'lodash.clonedeep';
+import * as debugModule from 'debug';
+import { matchToRule } from '../match';
+import * as path from 'path';
+import { existsSync } from 'fs';
+import { getVulnSource } from './get-vuln-source';
 
-const cloneDeep = require('lodash.clonedeep');
-const debug = require('debug')('snyk:policy');
-const matchToRule = require('../match').matchToRule;
-const path = require('path');
-const statSync = require('fs').statSync;
-const getVulnSource = require('./get-vuln-source');
+const debug = debugModule('snyk:policy');
 
 // cwd is used for testing
-function filterPatched(patched, vulns, cwd, skipVerifyPatch, filteredPatches) {
+export function filterPatched(
+  patched,
+  vulns,
+  cwd,
+  skipVerifyPatch,
+  filteredPatches,
+) {
   if (!patched) {
     return vulns;
   }
@@ -65,10 +71,10 @@ function filterPatched(patched, vulns, cwd, skipVerifyPatch, filteredPatches) {
         const oldFlag = path.resolve(source, '.snyk-' + vuln.id + '.flag');
         let res = false;
         try {
-          res = statSync(flag);
+          res = existsSync(flag);
         } catch (e) {
           try {
-            res = statSync(oldFlag);
+            res = existsSync(oldFlag);
           } catch (e) {}
         }
 

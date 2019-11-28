@@ -1,5 +1,5 @@
-const test = require('tap-only');
-const policy = require('../../');
+import * as test from 'tap-only';
+import * as policy from '../../';
 const fixtures = __dirname + '/../fixtures';
 const dir1 = fixtures + '/empty';
 const dir2 = fixtures + '/patch';

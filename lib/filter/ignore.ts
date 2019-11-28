@@ -1,13 +1,13 @@
-module.exports = filterIgnored;
+import { cloneDeep } from 'lodash';
+import * as debugModule from 'debug';
+import { matchToRule } from '../match';
 
-const cloneDeep = require('lodash.clonedeep');
-const debug = require('debug')('snyk:policy');
-const matchToRule = require('../match').matchToRule;
+const debug = debugModule('snyk:policy');
 
 // given an ignore ruleset (parsed from the .snyk yaml file) and a array of
 // vulnerabilities, return the vulnerabilities that *are not* ignored
 // see http://git.io/vCHmV for example of what ignore structure looks like
-function filterIgnored(ignore, vuln, filtered) {
+export function filterIgnored(ignore, vuln, filtered) {
   if (!ignore) {
     return vuln;
   }

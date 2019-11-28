@@ -1,4 +1,7 @@
-const test = require('tap').test;
+import { test } from 'tap';
+import * as policy from '../../';
+import { attachNotes as notes } from '../../lib/filter/notes';
+
 const fixtures = __dirname + '/../fixtures';
 const vulns = require(fixtures + '/patch/vulns.json');
 
@@ -6,9 +9,6 @@ const vulns = require(fixtures + '/patch/vulns.json');
 vulns.vulnerabilities.forEach(function(v) {
   // v.from.unshift('ignore@1.0.0');
 });
-
-const policy = require('../../');
-const notes = require('../../lib/filter/notes');
 
 test('ignored vulns do not turn up in tests', function(t) {
   return policy
@@ -19,11 +19,7 @@ test('ignored vulns do not turn up in tests', function(t) {
       t.ok(res.suggest, 'has suggestions');
 
       // FIXME patch vulns doesn't match anything in the ignore/.snyk
-      vulns.vulnerabilities = notes(
-        res.suggest,
-        vulns.vulnerabilities,
-        fixtures,
-      );
+      vulns.vulnerabilities = notes(res.suggest, vulns.vulnerabilities);
 
       t.equal(
         start,

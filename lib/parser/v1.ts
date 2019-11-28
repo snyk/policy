@@ -1,6 +1,6 @@
 // eventually we'll have v2 which will point to latestParser, and v1 will
 // need to process the old form of data and upgrade it to v2 structure
-module.exports = function imports(policy) {
+export function imports(policy) {
   if (!policy.ignore) {
     policy.ignore = {};
   }
@@ -26,9 +26,7 @@ module.exports = function imports(policy) {
   }
 
   return policy;
-};
-
-module.exports.needsFixing = needsFixing;
+}
 
 function checkForOldFormat(ignore) {
   // this is a cursory test to ensure that we're working with a snyk format
@@ -36,7 +34,7 @@ function checkForOldFormat(ignore) {
   // alpha format, and we'll throw
   Object.keys(ignore).forEach(function(id) {
     if (!Array.isArray(ignore[id])) {
-      const error = new Error('old, unsupported .snyk format detected');
+      const error: any = new Error('old, unsupported .snyk format detected');
       error.code = 'OLD_DOTFILE_FORMAT';
       throw error;
     }
@@ -55,14 +53,14 @@ function validate(policy) {
   }
 }
 
-function needsFixing(policy) {
+export function needsFixing(policy) {
   const move = [];
   Object.keys(policy).forEach(function(id) {
     policy[id].forEach(function(rule) {
       const keys = Object.keys(rule);
       keys.shift(); // drop the first
 
-      if (keys === 0) {
+      if (keys.length === 0) {
         return;
       }
 
@@ -106,7 +104,7 @@ function getFailThreshold(policy) {
   threshold = threshold.toLowerCase().trim();
 
   if (valid.indexOf(threshold) === -1) {
-    const error = new Error('unknown threshold value "' + threshold + '"');
+    const error: any = new Error('unknown threshold value "' + threshold + '"');
     error.code = 'POLICY_BAD_THRESHOLD';
     throw error;
   }

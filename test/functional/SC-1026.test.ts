@@ -1,5 +1,6 @@
-const test = require('tap-only');
-const policy = require('../../');
+import * as test from 'tap-only';
+import * as policy from '../../';
+
 const fixtures = __dirname + '/../fixtures';
 const dir = fixtures + '/filter-and-track';
 const vulns = require(dir + '/vulns.json');

@@ -1,5 +1,7 @@
-const test = require('tap-only');
-const fs = require('fs');
+import * as test from 'tap-only';
+import * as fs from 'fs';
+import * as policy from '../../';
+
 const fixtures = __dirname + '/../fixtures';
 const vulns = JSON.parse(fs.readFileSync(fixtures + '/jsbin.json', 'utf8'))
   .vulnerabilities;
@@ -11,7 +13,6 @@ const vuln = vulns
 const vulnWithGitUrl = JSON.parse(
   fs.readFileSync(fixtures + '/patch-with-git-url.json', 'utf8'),
 );
-const policy = require('../../');
 
 test('match logic', function(t) {
   const rule = {

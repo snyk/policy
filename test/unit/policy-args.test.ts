@@ -1,6 +1,7 @@
-const test = require('tap-only');
-const policy = require('../..');
-const path = require('path');
+import * as test from 'tap-only';
+import * as policy from '../..';
+import * as path from 'path';
+
 const fixtures = __dirname + '/../fixtures';
 
 process.chdir(fixtures + '/simple');

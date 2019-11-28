@@ -1,10 +1,9 @@
-const test = require('tap').test;
+import { test } from 'tap';
+import * as policy from '../../';
+
 const fixtures = __dirname + '/../fixtures/ignore-expired';
 const fixturesNoQuotes = __dirname + '/../fixtures/ignore-expired-no-quotes';
 let vulns = require(fixtures + '/vulns.json');
-
-const policy = require('../../');
-const notes = require('../../lib/filter/notes');
 
 test('expired policies do not strip', function(t) {
   return policy.load(fixtures).then(function(config) {

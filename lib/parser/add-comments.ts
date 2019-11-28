@@ -1,5 +1,3 @@
-module.exports = addComments;
-
 const initialComment =
   '# Snyk (https://snyk.io) policy file, patches or ' +
   'ignores known vulnerabilities.';
@@ -10,7 +8,7 @@ const inlineComments = {
   patch: '# patches apply the minimum changes required to fix a vulnerability',
 };
 
-function addComments(policyExport) {
+export function addComments(policyExport) {
   const lines = policyExport.split('\n');
   lines.unshift(initialComment);
 

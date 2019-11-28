@@ -1,25 +1,20 @@
-const fs = require('then-fs');
-const path = require('path');
-const debug = require('debug')('snyk:policy');
-const match = require('./match');
-const parse = require('./parser');
-const tryRequire = require('snyk-try-require');
-const filter = require('./filter');
-const add = require('./add');
+import * as fs from 'then-fs';
+import * as path from 'path';
+import * as debugModule from 'debug';
+import * as parse from './parser';
+import * as tryRequire from 'snyk-try-require';
+import { add } from './add';
+import { filter } from './filter';
+import { demunge } from './parser/demunge';
 
-module.exports = {
-  filter: filter,
-  demunge: parse.demunge,
-  load: load,
-  save: save,
-  getByVuln: match.getByVuln,
-  matchToRule: match.matchToRule,
-  loadFromText: loadFromText,
-  add: add,
-  create: create,
-};
+export { add } from './add';
+export { filter } from './filter';
+export { demunge } from './parser/demunge';
+export { getByVuln, matchToRule } from './match';
 
-function create() {
+const debug = debugModule('snyk:policy');
+
+export function create() {
   return loadFromText('');
 }
 
@@ -33,17 +28,17 @@ function attachMethods(policy) {
     return filter(vulns, policy, root || path.dirname(policy.__filename));
   };
   policy.save = save.bind(null, policy);
-  policy.toString = parse.export.bind(null, policy);
-  policy.demunge = parse.demunge.bind(null, policy);
+  policy.toString = parse.exportsOf.bind(null, policy);
+  policy.demunge = demunge.bind(null, policy);
   policy.add = add.bind(null, policy);
   policy.addIgnore = add.bind(null, policy, 'ignore');
   policy.addPatch = add.bind(null, policy, 'patch');
   return policy;
 }
 
-function loadFromText(text) {
+export async function loadFromText(text) {
   return new Promise(function(resolve) {
-    const policy = parse.import(text);
+    const policy = parse.imports(text);
     const now = Date.now();
 
     policy.__filename = '';
@@ -54,7 +49,7 @@ function loadFromText(text) {
   }).then(attachMethods);
 }
 
-function load(root, options) {
+export function load(root?, options?) {
   if (!Array.isArray(root) && typeof root !== 'string') {
     options = root;
     root = null;
@@ -88,20 +83,20 @@ function load(root, options) {
 
   const promise = new Promise(function(resolve) {
     if (ignorePolicy) {
-      return resolve(parse.import());
+      return resolve(parse.imports());
     }
 
     if (!ignorePolicy && Array.isArray(root)) {
       return resolve(
         mergePolicies(root, options).then(function(res) {
           debug('final policy:');
-          debug(JSON.stringify(res, '', 2));
+          debug(JSON.stringify(res, undefined, 2));
           return res;
         }),
       );
     }
 
-    resolve(fs.readFile(filename, 'utf8').then(parse.import));
+    resolve(fs.readFile(filename, 'utf8').then(parse.imports));
   });
 
   const promises = [
@@ -115,7 +110,7 @@ function load(root, options) {
     .catch(function(error) {
       if (options.loose && error.code === 'ENOENT') {
         debug('ENOENT on file, but running loose');
-        return [parse.import(), {}];
+        return [parse.imports(), {}];
       }
 
       throw error;
@@ -151,10 +146,10 @@ function mergePolicies(policyDirs, options) {
 
     return Promise.all(
       others
-        .filter(function(policy) {
+        .filter(function(policy: any) {
           return policy.__filename; // filter out non loaded policies
         })
-        .map(function(policy) {
+        .map(function(policy: any) {
           const filename = path.dirname(policy.__filename) + '/package.json';
 
           return tryRequire(filename).then(function(pkg) {
@@ -200,7 +195,7 @@ function mergePath(type, into, pathRoot, rootPolicy, policy) {
   });
 }
 
-function save(object, root, spinner) {
+export function save(object, root, spinner) {
   const filename = root ? path.resolve(root, '.snyk') : defaultFilename();
 
   const lbl = 'Saving .snyk policy file...';
@@ -214,7 +209,7 @@ function save(object, root, spinner) {
 
   return spinner(lbl)
     .then(function() {
-      return parse.export(object);
+      return parse.exportsOf(object);
     })
     .then(function(yaml) {
       return fs.writeFile(filename, yaml);
@@ -226,7 +221,7 @@ function save(object, root, spinner) {
 if (!module.parent) {
   load(process.argv[2])
     .then(function(res) {
-      console.log(JSON.stringify(res, '', 2));
+      console.log(JSON.stringify(res, undefined, 2));
     })
     .catch(function(e) {
       console.log(e.stack);

@@ -1,8 +1,9 @@
-const test = require('tap-only');
+import * as test from 'tap-only';
+import * as fs from 'then-fs';
+import { getByVuln } from '../../lib';
+import { loadFromText } from '../../';
+
 const fixtures = __dirname + '/../fixtures';
-const fs = require('then-fs');
-const getByVuln = require('../../lib/match').getByVuln;
-const loadFromText = require('../../').loadFromText;
 const policy = require(fixtures + '/ignore/parsed.json');
 const vulns = require(fixtures + '/ignore/vulns.json');
 

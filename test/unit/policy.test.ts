@@ -1,8 +1,8 @@
-const test = require('tap-only');
-const policy = require('../..');
-const demunge = require('../../lib/parser').demunge;
-const path = require('path');
-const fs = require('then-fs');
+import * as test from 'tap-only';
+import * as policy from '../..';
+import { demunge } from '../../lib';
+import * as path from 'path';
+import * as fs from 'then-fs';
 const fixtures = __dirname + '/../fixtures';
 
 test('module loads', function(t) {

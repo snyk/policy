@@ -1,5 +1,5 @@
-const policy = require('../../lib');
-const test = require('tap').test;
+import * as policy from '../../lib';
+import { test } from 'tap';
 
 test('test sensibly bails if gets an old .snyk format', function(t) {
   return policy

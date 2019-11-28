@@ -1,12 +1,12 @@
-module.exports = filter;
+import * as debugModule from 'debug';
+import { filterIgnored as ignore } from './ignore';
+import { filterPatched as patch } from './patch';
+import { attachNotes as notes } from './notes';
 
-const debug = require('debug')('snyk:policy');
-const ignore = require('./ignore');
-const patch = require('./patch');
-const notes = require('./notes');
+const debug = debugModule('snyk:policy');
 
 // warning: mutates vulns
-function filter(vulns, policy, root) {
+export function filter(vulns, policy, root) {
   if (!root) {
     root = process.cwd();
   }
@@ -36,7 +36,7 @@ function filter(vulns, policy, root) {
   );
 
   if (policy.suggest) {
-    vulns.vulnerabilities = notes(policy.suggest, vulns.vulnerabilities, root);
+    vulns.vulnerabilities = notes(policy.suggest, vulns.vulnerabilities);
   }
 
   // if there's no vulns after the ignore process, let's reset the `ok`
@@ -65,6 +65,8 @@ function filter(vulns, policy, root) {
         vulns.ok = false;
         return true; // breaks
       }
+
+      return false;
     });
   }
 

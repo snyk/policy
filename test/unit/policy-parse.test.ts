@@ -1,5 +1,6 @@
-const test = require('tap-only');
-const policy = require('../../');
+import * as test from 'tap-only';
+import * as policy from '../../';
+
 const fixtures = __dirname + '/../fixtures/issues/SC-1106/';
 const withoutDash = fixtures + '/missing-dash.snyk';
 const withDash = fixtures + '/with-dash.snyk';

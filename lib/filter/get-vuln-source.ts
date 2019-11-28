@@ -1,14 +1,14 @@
 // FIXME move to ext module
 
-module.exports = getVulnSource;
+import * as debugModule from 'debug';
+import * as resolve from 'snyk-resolve';
+import * as path from 'path';
+import { statSync } from 'fs';
+import { parsePackageString as moduleToObject } from 'snyk-module';
 
-const debug = require('debug')('snyk:policy');
-const resolve = require('snyk-resolve');
-const path = require('path');
-const statSync = require('fs').statSync;
-let { parsePackageString: moduleToObject } = require('snyk-module');
+const debug = debugModule('snyk:policy');
 
-function getVulnSource(vuln, cwd, live) {
+export function getVulnSource(vuln, cwd, live) {
   const from = vuln.from.slice(1).map(function(pkg) {
     return moduleToObject(pkg).name;
   });

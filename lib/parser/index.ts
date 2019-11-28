@@ -1,21 +1,15 @@
-const path = require('path');
-const cloneDeep = require('lodash.clonedeep');
-const semver = require('semver');
-const yaml = require('js-yaml');
-const addComments = require('./add-comments');
+import * as path from 'path';
+import { cloneDeep } from 'lodash';
+import * as semver from 'semver';
+import * as yaml from 'js-yaml';
+import { addComments } from './add-comments';
+import { imports as v1 } from './v1';
 
-module.exports = {
-  import: imports,
-  export: exports,
-  demunge: require('./demunge'),
-  version: version(),
-};
+const parsers = { v1 };
 
-const parsers = {
-  v1: require('./v1'),
-};
+export const version = readOurVersion();
 
-function imports(rawYaml) {
+export function imports(rawYaml?) {
   let data = yaml.safeLoad(rawYaml || '');
 
   if (!data || typeof data !== 'object') {
@@ -23,7 +17,7 @@ function imports(rawYaml) {
   }
 
   if (!data.version) {
-    data.version = version();
+    data.version = version;
   }
 
   if (data.version === 'v1') {
@@ -39,7 +33,7 @@ function imports(rawYaml) {
   return parser(data);
 }
 
-function exports(policy) {
+export function exportsOf(policy) {
   const data = cloneDeep(policy);
 
   // remove any private information on the policy
@@ -60,12 +54,12 @@ function exports(policy) {
   });
 
   // ensure we always update the version of the policy format
-  data.version = version();
+  data.version = version;
   // put inline comments into the exported yaml file
   return addComments(yaml.safeDump(data));
 }
 
-function version() {
+function readOurVersion() {
   const filename = path.resolve(__dirname, '..', '..', 'package.json');
   const version = require(filename).version;
 

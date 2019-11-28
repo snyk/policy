@@ -1,8 +1,10 @@
-const test = require('tap').test;
+import { test } from 'tap';
+import * as proxyquire from 'proxyquire';
+import * as policy from '../../';
+
 const fixtures = __dirname + '/../fixtures/patch';
 const vulns = require(fixtures + '/vulns.json');
-const proxyquire = require('proxyquire');
-const policy = require('../../');
+
 const patch = proxyquire('../../lib/filter/patch', {
   './get-vuln-source': proxyquire('../../lib/filter/get-vuln-source', {
     'snyk-resolve': {
@@ -32,7 +34,7 @@ test('patched vulns do not turn up in tests', function(t) {
 
       const filtered = [];
 
-      vulns.vulnerabilities = patch(
+      vulns.vulnerabilities = patch.filterPatched(
         config.patch,
         vulns.vulnerabilities,
         fixtures,

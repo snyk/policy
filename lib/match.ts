@@ -1,12 +1,9 @@
-module.exports = {
-  matchToRule: matchToRule,
-  getByVuln: getByVuln,
-};
+import * as debugModule from 'debug';
+import * as semver from 'semver';
+import { parsePackageString as moduleToObject } from 'snyk-module';
 
-const debug = require('debug')('snyk:policy');
-const debugPolicy = require('debug')('snyk:protect');
-const semver = require('semver');
-let { parsePackageString: moduleToObject } = require('snyk-module');
+const debug = debugModule('snyk:policy');
+const debugPolicy = debugModule('snyk:protect');
 
 // matchPath will take the array of dependencies that a vulnerability came from
 // and try to match it to a string `path`. The path will look like this:
@@ -23,7 +20,7 @@ function matchPath(from, path) {
   let offset = 0;
   const res = parts.every(function(pkg, i) {
     debugPolicy('for %s...(against %s)', pkg, from[i + offset]);
-    let fromPkg = from[i + offset] ? moduleToObject(from[i + offset]) : {};
+    let fromPkg: any = from[i + offset] ? moduleToObject(from[i + offset]) : {};
 
     if (pkg === '*') {
       debugPolicy('star rule');
@@ -105,7 +102,7 @@ function matchPath(from, path) {
   return res;
 }
 
-function matchToRule(vuln, rule) {
+export function matchToRule(vuln, rule) {
   return Object.keys(rule).some(function(path) {
     return matchToSingleRule(vuln, path);
   });
@@ -125,7 +122,11 @@ function matchToSingleRule(vuln, path) {
   return pathMatch;
 }
 
-function getByVuln(policy, vuln) {
+// if policy or vuln are missing, it will return null
+export function getByVuln(policy?: any): null;
+export function getByVuln(policy: any, vuln: any): any;
+
+export function getByVuln(policy?: any, vuln?: any): any {
   let found = null;
 
   if (!policy || !vuln) {

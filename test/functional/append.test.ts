@@ -1,8 +1,9 @@
-const test = require('tap-only');
-const policy = require('../../');
+import * as test from 'tap-only';
+import * as policy from '../../';
+import { needsFixing } from '../../lib/parser/v1';
+
 const fixtures = __dirname + '/../fixtures/issues/SC-1106/';
 const withDash = fixtures + '/pre-update.snyk';
-const needsFixing = require('../../lib/parser/v1').needsFixing;
 
 test('merging new policy data does not corrupt', function(t) {
   return policy.load(withDash).then(function(policy) {

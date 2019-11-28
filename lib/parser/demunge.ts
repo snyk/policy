@@ -1,16 +1,14 @@
-module.exports = demunge;
-
-function demunge(policy, apiRoot) {
+export function demunge(policy, apiRoot?) {
   if (!apiRoot) {
     apiRoot = '';
   }
 
-  const res = ['ignore', 'patch'].reduce(function(acc, type) {
+  const res: any = ['ignore', 'patch'].reduce(function(acc: any, type) {
     acc[type] = policy[type]
       ? Object.keys(policy[type]).map(function(id) {
           const paths = policy[type][id].map(function(pathObj) {
             const path = Object.keys(pathObj).pop();
-            const res = {
+            const res: any = {
               path: path,
             };
             if (type === 'ignore') {

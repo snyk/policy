@@ -1,5 +1,5 @@
-const test = require('tap').test;
-const create = require('../../lib').create;
+import { test } from 'tap';
+import { create } from '../../lib';
 
 test('add errors without options', function(t) {
   return create().then(function(policy) {

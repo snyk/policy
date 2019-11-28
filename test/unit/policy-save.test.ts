@@ -1,10 +1,12 @@
-const test = require('tap-only');
-const proxyquire = require('proxyquire');
+import * as test from 'tap-only';
+import * as proxyquire from 'proxyquire';
+import * as path from 'path';
+import * as sinon from 'sinon';
+import * as fs from 'then-fs';
+
 const fixtures = __dirname + '/../fixtures';
-const path = require('path');
-const sinon = require('sinon');
 const writeSpy = sinon.spy();
-const fs = require('then-fs');
+
 const policy = proxyquire('../..', {
   'then-fs': {
     writeFile: function(filename, body) {

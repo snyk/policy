@@ -1,9 +1,11 @@
-const tap = require('tap');
-const test = require('tap-only');
-const policy = require('../../');
+import * as tap from 'tap';
+import * as test from 'tap-only';
+import * as policy from '../../';
+import * as fs from 'fs';
+
 const fixtures = __dirname + '/../fixtures';
 const dir = fixtures + '/severity-control';
-const fs = require('fs');
+
 let vulns = {};
 
 tap.beforeEach(function(done) {
@@ -14,10 +16,10 @@ tap.beforeEach(function(done) {
 
 test('severity-control: high (ok=true)', function(t) {
   return policy.loadFromText('failThreshold: high').then(function(res) {
-    vulns = res.filter(vulns);
-    t.equal(vulns.ok, true, 'only failing on high severity');
+    const result = res.filter(vulns);
+    t.equal(result.ok, true, 'only failing on high severity');
     t.notEqual(
-      vulns.vulnerabilities.length,
+      result.vulnerabilities.length,
       0,
       'vulns still available to read',
     );
@@ -26,10 +28,10 @@ test('severity-control: high (ok=true)', function(t) {
 
 test('severity-control: medium (ok=false)', function(t) {
   return policy.loadFromText('failThreshold: medium').then(function(res) {
-    vulns = res.filter(vulns);
-    t.equal(vulns.ok, false, 'only failing on medium severity');
+    const result = res.filter(vulns);
+    t.equal(result.ok, false, 'only failing on medium severity');
     t.notEqual(
-      vulns.vulnerabilities.length,
+      result.vulnerabilities.length,
       0,
       'vulns still available to read',
     );
@@ -38,10 +40,10 @@ test('severity-control: medium (ok=false)', function(t) {
 
 test('severity-control: low (ok=false)', function(t) {
   return policy.loadFromText('failThreshold: low').then(function(res) {
-    vulns = res.filter(vulns);
-    t.equal(vulns.ok, false, 'only failing on low severity');
+    const result = res.filter(vulns);
+    t.equal(result.ok, false, 'only failing on low severity');
     t.notEqual(
-      vulns.vulnerabilities.length,
+      result.vulnerabilities.length,
       0,
       'vulns still available to read',
     );
