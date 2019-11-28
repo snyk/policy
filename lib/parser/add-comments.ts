@@ -8,7 +8,7 @@ const inlineComments = {
   patch: '# patches apply the minimum changes required to fix a vulnerability',
 };
 
-export function addComments(policyExport) {
+export function addComments(policyExport: string): string {
   const lines = policyExport.split('\n');
   lines.unshift(initialComment);
 

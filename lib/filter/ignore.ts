@@ -1,13 +1,18 @@
 import { cloneDeep } from 'lodash';
 import * as debugModule from 'debug';
 import { matchToRule } from '../match';
+import { SubPolicy, Vuln } from '../types';
 
 const debug = debugModule('snyk:policy');
 
 // given an ignore ruleset (parsed from the .snyk yaml file) and a array of
 // vulnerabilities, return the vulnerabilities that *are not* ignored
 // see http://git.io/vCHmV for example of what ignore structure looks like
-export function filterIgnored(ignore, vuln, filtered) {
+export function filterIgnored(
+  ignore: SubPolicy,
+  vuln: Vuln[],
+  filtered,
+): Vuln[] {
   if (!ignore) {
     return vuln;
   }
@@ -20,7 +25,7 @@ export function filterIgnored(ignore, vuln, filtered) {
   const now = new Date().toJSON();
 
   return vuln
-    .map(function(vuln) {
+    .map(function(vuln: Vuln): Vuln | boolean {
       if (!ignore[vuln.id]) {
         return vuln;
       }
@@ -87,5 +92,5 @@ export function filterIgnored(ignore, vuln, filtered) {
 
       return appliedRules.length ? false : vuln;
     })
-    .filter(Boolean);
+    .filter(Boolean) as Vuln[];
 }

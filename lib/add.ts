@@ -1,11 +1,22 @@
 import * as debugModule from 'debug';
 import * as emailValidator from 'email-validator';
+import { Policy, PolicyTypeName } from './types';
 
 const debug = debugModule('snyk:policy');
 
 const validReasonTypes = ['not-vulnerable', 'wont-fix', 'temporary-ignore'];
 
-export function add(policy, type, options) {
+export interface AddOptions {
+  id: string;
+  path: string;
+  [key: string]: unknown;
+}
+
+export function add<P extends Policy>(
+  policy: P,
+  type: PolicyTypeName,
+  options: AddOptions,
+): P {
   if (type !== 'ignore' && type !== 'patch') {
     throw new Error('policy.add: unknown type "' + type + '" to add to');
   }
@@ -23,7 +34,7 @@ export function add(policy, type, options) {
 
     if (
       curr === 'reasonType' &&
-      validReasonTypes.indexOf(options[curr]) === -1
+      validReasonTypes.indexOf(options[curr] as string) === -1
     ) {
       throw new Error('invalid reasonType ' + options[curr]);
     }
@@ -33,7 +44,7 @@ export function add(policy, type, options) {
         throw new Error('ignoredBy must be an object');
       }
 
-      if (!emailValidator.validate(options[curr].email)) {
+      if (!emailValidator.validate((options[curr] as any).email)) {
         throw new Error('ignoredBy.email must be a valid email address');
       }
     }

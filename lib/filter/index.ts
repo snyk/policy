@@ -2,11 +2,22 @@ import * as debugModule from 'debug';
 import { filterIgnored as ignore } from './ignore';
 import { filterPatched as patch } from './patch';
 import { attachNotes as notes } from './notes';
+import { Policy, Vuln } from '../types';
 
 const debug = debugModule('snyk:policy');
 
+interface Filtration {
+  vulnerabilities: Vuln[];
+  ok?: boolean;
+  filtered?: unknown;
+}
+
 // warning: mutates vulns
-export function filter(vulns, policy, root) {
+export function filter(
+  vulns: Filtration,
+  policy: Policy,
+  root?: string,
+): Filtration {
   if (!root) {
     root = process.cwd();
   }
@@ -31,7 +42,7 @@ export function filter(vulns, policy, root) {
     policy.patch,
     vulns.vulnerabilities,
     root,
-    policy.skipVerifyPatch ? true : false,
+    !!policy.skipVerifyPatch,
     filtered.patch,
   );
 

@@ -1,6 +1,8 @@
 // eventually we'll have v2 which will point to latestParser, and v1 will
 // need to process the old form of data and upgrade it to v2 structure
-export function imports(policy) {
+import { Policy, SubPolicy } from '../types';
+
+export function imports(policy: Policy): Policy {
   if (!policy.ignore) {
     policy.ignore = {};
   }
@@ -28,11 +30,11 @@ export function imports(policy) {
   return policy;
 }
 
-function checkForOldFormat(ignore) {
+function checkForOldFormat(ignore: SubPolicy): void {
   // this is a cursory test to ensure that we're working with a snyk format
   // that we recognise. if the property is an object, then it's the early
   // alpha format, and we'll throw
-  Object.keys(ignore).forEach(function(id) {
+  Object.keys(ignore).forEach(function(id: string): void {
     if (!Array.isArray(ignore[id])) {
       const error: any = new Error('old, unsupported .snyk format detected');
       error.code = 'OLD_DOTFILE_FORMAT';
@@ -41,20 +43,22 @@ function checkForOldFormat(ignore) {
   });
 }
 
-function validate(policy) {
-  const fix = needsFixing(policy);
-
-  if (fix) {
-    fix.forEach(function(item) {
-      const o = {};
-      o[item.key] = item.rule;
-      policy[item.id].push(o);
-    });
-  }
+function validate(policy): void {
+  needsFixing(policy).forEach((item: Fix): void => {
+    const o = {};
+    o[item.key] = item.rule;
+    policy[item.id].push(o);
+  });
 }
 
-export function needsFixing(policy) {
-  const move = [];
+export interface Fix {
+  id: string;
+  key: string;
+  rule: unknown;
+}
+
+export function needsFixing(policy): Fix[] {
+  const move: Fix[] = [];
   Object.keys(policy).forEach(function(id) {
     policy[id].forEach(function(rule) {
       const keys = Object.keys(rule);
@@ -77,11 +81,11 @@ export function needsFixing(policy) {
     });
   });
 
-  return move.length ? move : false;
+  return move;
 }
 
-function getFailThreshold(policy) {
-  let threshold = null;
+function getFailThreshold(policy: Policy): string | null {
+  let threshold: string | null = null;
 
   // pluck the value out, and support all sorts of silly typos
   [

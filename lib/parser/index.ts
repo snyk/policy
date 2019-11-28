@@ -4,13 +4,14 @@ import * as semver from 'semver';
 import * as yaml from 'js-yaml';
 import { addComments } from './add-comments';
 import { imports as v1 } from './v1';
+import { Policy } from '../types';
 
 const parsers = { v1 };
 
 export const version = readOurVersion();
 
-export function imports(rawYaml?) {
-  let data = yaml.safeLoad(rawYaml || '');
+export function imports(rawYaml?: string): Policy {
+  let data: any = yaml.safeLoad(rawYaml || '');
 
   if (!data || typeof data !== 'object') {
     data = {};
@@ -33,7 +34,7 @@ export function imports(rawYaml?) {
   return parser(data);
 }
 
-export function exportsOf(policy) {
+export function exportsOf(policy: Policy): string {
   const data = cloneDeep(policy);
 
   // remove any private information on the policy
@@ -59,7 +60,7 @@ export function exportsOf(policy) {
   return addComments(yaml.safeDump(data));
 }
 
-function readOurVersion() {
+function readOurVersion(): string {
   const filename = path.resolve(__dirname, '..', '..', 'package.json');
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const version = require(filename).version;

@@ -5,10 +5,11 @@ import * as resolve from 'snyk-resolve';
 import * as path from 'path';
 import { statSync } from 'fs';
 import { parsePackageString as moduleToObject } from 'snyk-module';
+import { Vuln } from '../types';
 
 const debug = debugModule('snyk:policy');
 
-export function getVulnSource(vuln, cwd, live) {
+export function getVulnSource(vuln: Vuln, cwd: string, live: boolean): string {
   const from = vuln.from.slice(1).map(function(pkg) {
     return moduleToObject(pkg).name;
   });

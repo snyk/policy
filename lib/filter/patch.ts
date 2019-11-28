@@ -4,17 +4,18 @@ import { matchToRule } from '../match';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import { getVulnSource } from './get-vuln-source';
+import { SubPolicy, Vuln } from '../types';
 
 const debug = debugModule('snyk:policy');
 
 // cwd is used for testing
 export function filterPatched(
-  patched,
-  vulns,
-  cwd,
-  skipVerifyPatch,
-  filteredPatches,
-) {
+  patched: SubPolicy,
+  vulns: Vuln[],
+  cwd: string,
+  skipVerifyPatch: boolean,
+  filteredPatches: unknown[],
+): Vuln[] {
   if (!patched) {
     return vulns;
   }
@@ -25,7 +26,7 @@ export function filterPatched(
 
   debug('filtering patched');
   return vulns
-    .map(function(vuln) {
+    .map(function(vuln: Vuln) {
       if (!patched[vuln.id]) {
         return vuln;
       }
@@ -99,5 +100,5 @@ export function filterPatched(
 
       return appliedRules.length ? false : vuln;
     })
-    .filter(Boolean);
+    .filter(Boolean) as Vuln[];
 }

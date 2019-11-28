@@ -6,6 +6,7 @@ import * as tryRequire from 'snyk-try-require';
 import { add } from './add';
 import { filter } from './filter';
 import { demunge } from './parser/demunge';
+import { LoadedPolicy, MethodsPolicy, Policy } from './types';
 
 export { add } from './add';
 export { filter } from './filter';
@@ -14,19 +15,19 @@ export { getByVuln, matchToRule } from './match';
 
 const debug = debugModule('snyk:policy');
 
-export async function create() {
+export async function create(): Promise<MethodsPolicy> {
   return loadFromText('');
 }
 
 // this is a function to allow our tests and fixtures to change cwd
-function defaultFilename() {
+function defaultFilename(): string {
   return path.resolve(process.cwd(), '.snyk');
 }
 
-function attachMethods(policy) {
-  policy.filter = function(vulns, root) {
-    return filter(vulns, policy, root || path.dirname(policy.__filename));
-  };
+function attachMethods(loaded: LoadedPolicy): MethodsPolicy {
+  const policy = loaded as MethodsPolicy;
+  policy.filter = (vulns, root) =>
+    filter(vulns, policy, root || path.dirname(policy.__filename));
   policy.save = save.bind(null, policy);
   policy.toString = parse.exportsOf.bind(null, policy);
   policy.demunge = demunge.bind(null, policy);
@@ -36,20 +37,23 @@ function attachMethods(policy) {
   return policy;
 }
 
-export async function loadFromText(text) {
+export async function loadFromText(text: string): Promise<MethodsPolicy> {
   return new Promise(function(resolve) {
     const policy = parse.imports(text);
     const now = Date.now();
 
-    policy.__filename = '';
-    policy.__modified = now;
-    policy.__created = now;
+    const loaded: LoadedPolicy = {
+      ...policy,
+      __filename: '',
+      __modified: now,
+      __created: now,
+    };
 
-    resolve(policy);
+    resolve(loaded);
   }).then(attachMethods);
 }
 
-export async function load(root?, options?) {
+export async function load(root?: string, options?): Promise<MethodsPolicy> {
   if (!Array.isArray(root) && typeof root !== 'string') {
     options = root;
     root = null;
@@ -116,7 +120,7 @@ export async function load(root?, options?) {
       throw error;
     })
     .then(function(res) {
-      const policy = res[0];
+      const policy: LoadedPolicy = res[0];
 
       policy.__modified = res[1].mtime;
       policy.__created = res[1].birthtime || res[1].ctime;
@@ -195,13 +199,17 @@ function mergePath(type, into, pathRoot, rootPolicy, policy) {
   });
 }
 
-export async function save(object, root, spinner) {
+export async function save<T>(
+  object: Policy,
+  root?: string,
+  spinner?: any,
+): Promise<unknown> {
   const filename = root ? path.resolve(root, '.snyk') : defaultFilename();
 
   const lbl = 'Saving .snyk policy file...';
 
   if (!spinner) {
-    spinner = async (res) => {
+    spinner = async (res: unknown): Promise<unknown> => {
       return Promise.resolve(res);
     };
     spinner.clear = spinner;

@@ -14,7 +14,7 @@ const debugPolicy = debugModule('snyk:protect');
 // The matchPath will break the `path` down into it's component parts, and loop
 // through trying to get a positive match or not. For full examples of options
 // see http://git.io/vCH3N
-function matchPath(from, path) {
+function matchPath(from: string[], path: string): boolean {
   const parts = path.split(' > ');
   debugPolicy('checking path: %s vs. %s', path, from);
   let offset = 0;
@@ -102,13 +102,13 @@ function matchPath(from, path) {
   return res;
 }
 
-export function matchToRule(vuln, rule) {
+export function matchToRule(vuln, rule): boolean {
   return Object.keys(rule).some(function(path) {
     return matchToSingleRule(vuln, path);
   });
 }
 
-function matchToSingleRule(vuln, path) {
+function matchToSingleRule(vuln, path: string): boolean {
   // check for an exact match
   let pathMatch = false;
   const from = vuln.from.slice(1);
