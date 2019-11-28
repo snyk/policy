@@ -1,6 +1,7 @@
 import * as debugModule from 'debug';
 import * as semver from 'semver';
 import { parsePackageString as moduleToObject } from 'snyk-module';
+import {Policy, PolicyTypeName, Vuln} from './types';
 
 const debug = debugModule('snyk:policy');
 const debugPolicy = debugModule('snyk:protect');
@@ -20,7 +21,7 @@ function matchPath(from: string[], path: string): boolean {
   let offset = 0;
   const res = parts.every(function(pkg, i) {
     debugPolicy('for %s...(against %s)', pkg, from[i + offset]);
-    let fromPkg: any = from[i + offset] ? moduleToObject(from[i + offset]) : {};
+    let fromPkg = from[i + offset] ? moduleToObject(from[i + offset]) : { version: undefined, name: undefined};
 
     if (pkg === '*') {
       debugPolicy('star rule');
@@ -102,13 +103,13 @@ function matchPath(from: string[], path: string): boolean {
   return res;
 }
 
-export function matchToRule(vuln, rule): boolean {
+export function matchToRule(vuln: Vuln, rule: object): boolean {
   return Object.keys(rule).some(function(path) {
     return matchToSingleRule(vuln, path);
   });
 }
 
-function matchToSingleRule(vuln, path: string): boolean {
+function matchToSingleRule(vuln: Vuln, path: string): boolean {
   // check for an exact match
   let pathMatch = false;
   const from = vuln.from.slice(1);
@@ -124,17 +125,17 @@ function matchToSingleRule(vuln, path: string): boolean {
 
 // if policy or vuln are missing, it will return null
 export function getByVuln(policy?: any): null;
-export function getByVuln(policy: any, vuln: any): any;
+export function getByVuln(policy: Policy, vuln: Vuln): any;
 
-export function getByVuln(policy?: any, vuln?: any): any {
+export function getByVuln(policy?: Policy, vuln?: Vuln): any {
   let found = null;
 
   if (!policy || !vuln) {
     return found;
   }
 
-  ['ignore', 'patch'].forEach(function(key) {
-    Object.keys(policy[key] || []).forEach(function(p) {
+  ['ignore', 'patch'].forEach((key: PolicyTypeName) => {
+    Object.keys(policy[key] || []).forEach((p) => {
       if (p === vuln.id) {
         policy[key][p].forEach(function(rule) {
           if (matchToRule(vuln, rule)) {
