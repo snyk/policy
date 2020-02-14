@@ -1,14 +1,14 @@
-var test = require('tap').test;
-var fixtures = __dirname + '/../fixtures/ignore-expired';
-var fixturesNoQuotes = __dirname + '/../fixtures/ignore-expired-no-quotes';
-var vulns = require(fixtures + '/vulns.json');
+const test = require('tap').test;
+const fixtures = __dirname + '/../fixtures/ignore-expired';
+const fixturesNoQuotes = __dirname + '/../fixtures/ignore-expired-no-quotes';
+let vulns = require(fixtures + '/vulns.json');
 
-var policy = require('../../');
-var notes = require('../../lib/filter/notes');
+const policy = require('../../');
+const notes = require('../../lib/filter/notes');
 
-test('expired policies do not strip', function (t) {
-  return policy.load(fixtures).then(function (config) {
-    var start = vulns.vulnerabilities.length;
+test('expired policies do not strip', function(t) {
+  return policy.load(fixtures).then(function(config) {
+    const start = vulns.vulnerabilities.length;
     t.ok(start > 0, 'we have vulns to start with');
 
     // should keep all vulns, because all of the ignores expired
@@ -18,9 +18,9 @@ test('expired policies do not strip', function (t) {
   });
 });
 
-test('expired policies do not strip (no quotes)', function (t) {
-  return policy.load(fixturesNoQuotes).then(function (config) {
-    var start = vulns.vulnerabilities.length;
+test('expired policies do not strip (no quotes)', function(t) {
+  return policy.load(fixturesNoQuotes).then(function(config) {
+    const start = vulns.vulnerabilities.length;
     t.ok(start > 0, 'we have vulns to start with');
 
     // should keep all vulns, because all of the ignores expired

@@ -1,10 +1,9 @@
-var test = require('tap-only');
-var policy = require('../../');
-var fixtures = __dirname + '/../fixtures';
+const test = require('tap-only');
+const policy = require('../../');
+const fixtures = __dirname + '/../fixtures';
 
-test('load different types of policies', function (t) {
-
-  var dirs = [
+test('load different types of policies', function(t) {
+  const dirs = [
     'patch',
     'deep-policy',
     'ignore',
@@ -17,9 +16,13 @@ test('load different types of policies', function (t) {
     'issues/BST-264/missing-path-to-package.snyk',
   ];
 
-  return Promise.all(dirs.map(function (dir) {
-    return policy.load(fixtures + '/' + dir, { loose: true }).then(function (res) {
-      t.ok('load succeeded for ' + dir);
-    });
-  }));
+  return Promise.all(
+    dirs.map(function(dir) {
+      return policy
+        .load(fixtures + '/' + dir, { loose: true })
+        .then(function(res) {
+          t.ok('load succeeded for ' + dir);
+        });
+    })
+  );
 });

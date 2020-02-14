@@ -103,9 +103,9 @@ The first example rule (above) is how the policy is stored by default. However, 
 Installed via npm: `npm install -S snyk-policy`. Typically loaded and applied to vulnerabilities:
 
 ```js
-var policy = require('snyk-policy');
+const policy = require('snyk-policy');
 
-var vulns = snyk.test('snyk-demo-app@1.0.0'); // assumes snyk is loaded
+const vulns = snyk.test('snyk-demo-app@1.0.0'); // assumes snyk is loaded
 policy.load(process.cwd()).then(rules => {
   console.log(rules.filter(vulns));
 });
