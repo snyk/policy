@@ -1,6 +1,4 @@
-module.exports = demunge;
-
-function demunge(policy, apiRoot) {
+export function demunge(policy, apiRoot) {
   if (!apiRoot) {
     apiRoot = '';
   }

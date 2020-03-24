@@ -1,11 +1,11 @@
-var fs = require('then-fs');
-var path = require('path');
-var debug = require('debug')('snyk:policy');
-var match = require('./match');
-var parse = require('./parser');
-var tryRequire = require('snyk-try-require');
-var filter = require('./filter');
-var add = require('./add');
+import * as  fs from 'then-fs';
+import * as path from 'path';
+import * as debugLib from 'debug';
+import * as match from './match';
+import * as parse from './parser';
+import * as tryRequire from 'snyk-try-require';
+import * as filter from './filter';
+import * as add from './add';
 
 module.exports = {
   filter: filter,
@@ -18,6 +18,7 @@ module.exports = {
   add: add,
   create: create,
 };
+const debug = debugLib('snyk:policy');
 
 function create() {
   return loadFromText('');
