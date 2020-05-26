@@ -2,7 +2,7 @@ const test = require('tap-only');
 const addComments = require('../../lib/parser/add-comments');
 const yaml = require('js-yaml');
 
-test('policy with no patches or ignores', function(t) {
+test('policy with no patches or ignores', function (t) {
   const res = addComments(
     yaml.safeDump({
       version: 'v1.0.0',
@@ -30,7 +30,7 @@ test('policy with no patches or ignores', function(t) {
   t.end();
 });
 
-test('policy with patches', function(t) {
+test('policy with patches', function (t) {
   const res = addComments(
     yaml.safeDump({
       version: 'v1.0.0',
@@ -60,7 +60,7 @@ test('policy with patches', function(t) {
   t.end();
 });
 
-test('policy with ignores', function(t) {
+test('policy with ignores', function (t) {
   const res = addComments(
     yaml.safeDump({
       version: 'v1.0.0',
@@ -90,7 +90,7 @@ test('policy with ignores', function(t) {
   t.end();
 });
 
-test('policy with ignores and patches', function(t) {
+test('policy with ignores and patches', function (t) {
   const res = addComments(
     yaml.safeDump({
       version: 'v1.0.0',

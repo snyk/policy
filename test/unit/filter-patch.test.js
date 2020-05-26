@@ -6,27 +6,27 @@ const policy = require('../../');
 const patch = proxyquire('../../lib/filter/patch', {
   './get-vuln-source': proxyquire('../../lib/filter/get-vuln-source', {
     'snyk-resolve': {
-      sync: function() {
+      sync: function () {
         return '.';
       },
     },
     fs: {
-      statSync: function() {
+      statSync: function () {
         throw new Error('nope');
       },
     },
   }),
   fs: {
-    statSync: function() {
+    statSync: function () {
       return true;
     },
   },
 });
 
-test('patched vulns do not turn up in tests', function(t) {
+test('patched vulns do not turn up in tests', function (t) {
   policy
     .load(fixtures)
-    .then(function(config) {
+    .then(function (config) {
       const start = vulns.vulnerabilities.length;
       t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
 
@@ -60,14 +60,14 @@ test('patched vulns do not turn up in tests', function(t) {
         ],
         'npm:semver:20150403': [{ path: ['*'] }],
       };
-      const actual = filtered.reduce(function(actual, vuln) {
+      const actual = filtered.reduce(function (actual, vuln) {
         actual[vuln.id] = vuln.filtered.patches;
         return actual;
       }, {});
       t.same(actual, expected, 'filtered vulns include patch rules');
 
       t.notEqual(
-        vulns.vulnerabilities.every(function(vuln) {
+        vulns.vulnerabilities.every(function (vuln) {
           return !!vuln.patches;
         }),
         'vulns do not have patches property'

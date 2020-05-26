@@ -1,10 +1,10 @@
 const test = require('tap').test;
 const create = require('../../lib').create;
 
-test('add errors without options', function(t) {
-  return create().then(function(policy) {
+test('add errors without options', function (t) {
+  return create().then(function (policy) {
     t.throws(
-      function() {
+      function () {
         policy.addPatch();
       },
       /^policy.add: required option/,
@@ -13,10 +13,10 @@ test('add errors without options', function(t) {
   });
 });
 
-test('add errors without type', function(t) {
-  return create().then(function(policy) {
+test('add errors without type', function (t) {
+  return create().then(function (policy) {
     t.throws(
-      function() {
+      function () {
         policy.add();
       },
       /^policy.add: unknown type/,
@@ -25,8 +25,8 @@ test('add errors without type', function(t) {
   });
 });
 
-test('add errors without options', function(t) {
-  return create().then(function(policy) {
+test('add errors without options', function (t) {
+  return create().then(function (policy) {
     const d1 = new Date();
     const d2 = new Date('2016-05-24T13:46:19.066Z');
     policy.addPatch({
@@ -47,16 +47,16 @@ test('add errors without options', function(t) {
   });
 });
 
-test('add ignore with valid reasonType', function(t) {
+test('add ignore with valid reasonType', function (t) {
   return create()
-    .then(function(policy) {
+    .then(function (policy) {
       return policy.addIgnore({
         id: 'a',
         path: 'a > b',
         reasonType: 'wont-fix',
       });
     })
-    .then(function(policy) {
+    .then(function (policy) {
       t.ok('error not thrown');
       t.deepEqual(
         policy.ignore.a[0]['a > b'].reasonType,
@@ -64,42 +64,42 @@ test('add ignore with valid reasonType', function(t) {
         'metadata saved'
       );
     })
-    .catch(function() {
+    .catch(function () {
       t.fail('error thrown thrown');
     });
 });
 
-test('add ignore with invalid reasonType', function(t) {
+test('add ignore with invalid reasonType', function (t) {
   return create()
-    .then(function(policy) {
+    .then(function (policy) {
       return policy.addIgnore({
         id: 'a',
         path: 'a > b',
         reasonType: 'test',
       });
     })
-    .then(function() {
+    .then(function () {
       t.fail('error not thrown');
     })
-    .catch(function(err) {
+    .catch(function (err) {
       t.equal(err.message, 'invalid reasonType test', 'error is thrown');
     });
 });
 
-test('add ignore with valid ignoredBy', function(t) {
+test('add ignore with valid ignoredBy', function (t) {
   const ignoredBy = {
     name: 'Joe Bloggs',
     email: 'joe@acme.org',
   };
   return create()
-    .then(function(policy) {
+    .then(function (policy) {
       return policy.addIgnore({
         id: 'a',
         path: 'a > b',
         ignoredBy: ignoredBy,
       });
     })
-    .then(function(policy) {
+    .then(function (policy) {
       t.ok('error not thrown');
       t.deepEqual(
         policy.ignore.a[0]['a > b'].ignoredBy,
@@ -107,28 +107,28 @@ test('add ignore with valid ignoredBy', function(t) {
         'metadata saved'
       );
     })
-    .catch(function() {
+    .catch(function () {
       t.fail('error thrown thrown');
     });
 });
 
-test('add ignore with invalid ignoredBy', function(t) {
+test('add ignore with invalid ignoredBy', function (t) {
   const ignoredBy = {
     name: 'Joe Bloggs',
     email: 'joeacme.org',
   };
   return create()
-    .then(function(policy) {
+    .then(function (policy) {
       return policy.addIgnore({
         id: 'a',
         path: 'a > b',
         ignoredBy: ignoredBy,
       });
     })
-    .then(function() {
+    .then(function () {
       t.fail('error not thrown');
     })
-    .catch(function(err) {
+    .catch(function (err) {
       t.equal(
         err.message,
         'ignoredBy.email must be a valid email address',

@@ -4,8 +4,8 @@ let vulns = require(fixtures + '/vulns.json');
 
 const policy = require('../../');
 
-test('ignored vulns do not turn up in tests', function(t) {
-  return policy.load(fixtures).then(function(config) {
+test('ignored vulns do not turn up in tests', function (t) {
+  return policy.load(fixtures).then(function (config) {
     t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
 
     // should strip all
