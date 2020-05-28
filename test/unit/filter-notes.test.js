@@ -3,17 +3,17 @@ const fixtures = __dirname + '/../fixtures';
 const vulns = require(fixtures + '/patch/vulns.json');
 
 // mock the vulns
-vulns.vulnerabilities.forEach(function(v) {
+vulns.vulnerabilities.forEach(function (v) {
   // v.from.unshift('ignore@1.0.0');
 });
 
 const policy = require('../../');
 const notes = require('../../lib/filter/notes');
 
-test('ignored vulns do not turn up in tests', function(t) {
+test('ignored vulns do not turn up in tests', function (t) {
   return policy
     .load([fixtures + '/patch', fixtures + '/deep-policy'])
-    .then(function(res) {
+    .then(function (res) {
       const start = vulns.vulnerabilities.length;
       t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
       t.ok(res.suggest, 'has suggestions');
@@ -31,7 +31,7 @@ test('ignored vulns do not turn up in tests', function(t) {
         'post filter nothing changed'
       );
       const items = vulns.vulnerabilities
-        .map(function(e) {
+        .map(function (e) {
           return e.note;
         })
         .filter(Boolean);

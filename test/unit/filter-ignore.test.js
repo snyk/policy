@@ -5,10 +5,10 @@ const vulns = require(fixtures + '/vulns.json');
 const policy = require('../../');
 const ignore = require('../../lib/filter/ignore');
 
-test('ignored vulns do not turn up in tests', function(t) {
+test('ignored vulns do not turn up in tests', function (t) {
   policy
     .load(fixtures)
-    .then(function(config) {
+    .then(function (config) {
       const start = vulns.vulnerabilities.length;
       t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
 
@@ -64,14 +64,14 @@ test('ignored vulns do not turn up in tests', function(t) {
           },
         ],
       };
-      const actual = filtered.reduce(function(actual, vuln) {
+      const actual = filtered.reduce(function (actual, vuln) {
         actual[vuln.id] = vuln.filtered.ignored;
         return actual;
       }, {});
       t.same(actual, expected, 'filtered vulns include ignore rules');
 
       t.notEqual(
-        vulns.vulnerabilities.every(function(vuln) {
+        vulns.vulnerabilities.every(function (vuln) {
           return !!vuln.ignored;
         }),
         'vulns do not have ignored property'

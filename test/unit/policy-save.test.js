@@ -7,27 +7,27 @@ const writeSpy = sinon.spy();
 const fs = require('then-fs');
 const policy = proxyquire('../..', {
   'then-fs': {
-    writeFile: function(filename, body) {
+    writeFile: function (filename, body) {
       writeSpy(filename, body);
       return Promise.resolve();
     },
   },
 });
 
-test('policy.save', function(t) {
+test('policy.save', function (t) {
   const filename = path.resolve(fixtures + '/ignore/.snyk');
   let asText = '';
   return fs
     .readFile(filename, 'utf8')
-    .then(function(res) {
+    .then(function (res) {
       asText = res.trim();
       return asText;
     })
     .then(policy.loadFromText)
-    .then(function(res) {
+    .then(function (res) {
       return policy.save(res, path.dirname(filename));
     })
-    .then(function() {
+    .then(function () {
       t.equal(writeSpy.callCount, 1, 'write only once');
       t.equal(writeSpy.args[0][0], filename, 'filename correct');
       const parsed = writeSpy.args[0][1].trim();

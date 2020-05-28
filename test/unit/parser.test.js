@@ -3,7 +3,7 @@ const parser = require('../../lib/parser');
 const fixtures = __dirname + '/../fixtures';
 const yaml = require('js-yaml');
 
-test('parser fills out defaults', function(t) {
+test('parser fills out defaults', function (t) {
   const res = parser.import();
   const expect = {
     version: 'v1.0.0',
@@ -15,7 +15,7 @@ test('parser fills out defaults', function(t) {
   t.end();
 });
 
-test('parser fills out defaults for invalid inputs', function(t) {
+test('parser fills out defaults for invalid inputs', function (t) {
   const res = parser.import('test');
   const expect = {
     version: 'v1.0.0',
@@ -27,7 +27,7 @@ test('parser fills out defaults for invalid inputs', function(t) {
   t.end();
 });
 
-test('parser does not modify default parsed format', function(t) {
+test('parser does not modify default parsed format', function (t) {
   const expect = {
     version: 'v1.0.0',
     patch: {
@@ -46,9 +46,9 @@ test('parser does not modify default parsed format', function(t) {
   t.end();
 });
 
-test('test unsupported version', function(t) {
+test('test unsupported version', function (t) {
   t.throws(
-    function() {
+    function () {
       parser.import(
         yaml.safeDump({
           version: 'v20.0.1',
@@ -61,7 +61,7 @@ test('test unsupported version', function(t) {
   t.end();
 });
 
-test('demunge', function(t) {
+test('demunge', function (t) {
   const source = require(fixtures + '/parsed.json');
   const res = parser.demunge(source);
   const ids = Object.keys(source.patch);
@@ -69,7 +69,7 @@ test('demunge', function(t) {
   t.ok(Array.isArray(res.patch), 'array');
   t.equal(res.patch.length, 2, 'two patched items');
   t.deepEqual(
-    res.patch.map(function(o) {
+    res.patch.map(function (o) {
       return o.id;
     }),
     ids,
