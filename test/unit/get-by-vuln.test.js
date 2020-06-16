@@ -1,6 +1,6 @@
 const test = require('tap-only');
 const fixtures = __dirname + '/../fixtures';
-const fs = require('then-fs');
+const fs = require('fs');
 const getByVuln = require('../../lib/match').getByVuln;
 const loadFromText = require('../../').loadFromText;
 const policy = require(fixtures + '/ignore/parsed.json');
@@ -35,8 +35,7 @@ test('getByVuln with star rules', function (t) {
     })
     .pop();
 
-  return fs
-    .readFile(fixtures + '/star-rule.txt', 'utf8')
+  return Promise.resolve(fs.readFileSync(fixtures + '/star-rule.txt', 'utf8'))
     .then(loadFromText)
     .then(function (policy) {
       const res = getByVuln(policy, vuln);
@@ -54,8 +53,7 @@ test('getByVuln with exact match rules', function (t) {
     })
     .pop();
 
-  return fs
-    .readFile(fixtures + '/exact-rule.txt', 'utf8')
+  return Promise.resolve(fs.readFileSync(fixtures + '/exact-rule.txt', 'utf8'))
     .then(loadFromText)
     .then(function (policy) {
       const res = getByVuln(policy, vuln);

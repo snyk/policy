@@ -4,12 +4,12 @@ const fixtures = __dirname + '/../fixtures';
 const path = require('path');
 const sinon = require('sinon');
 const writeSpy = sinon.spy();
-const fs = require('then-fs');
+const fs = require('fs');
 const policy = proxyquire('../..', {
-  'then-fs': {
-    writeFile: function (filename, body) {
+  fs: {
+    writeFileSync: function (filename, body) {
       writeSpy(filename, body);
-      return Promise.resolve();
+      return;
     },
   },
 });
@@ -17,8 +17,7 @@ const policy = proxyquire('../..', {
 test('policy.save', function (t) {
   const filename = path.resolve(fixtures + '/ignore/.snyk');
   let asText = '';
-  return fs
-    .readFile(filename, 'utf8')
+  return Promise.resolve(fs.readFileSync(filename, 'utf8'))
     .then(function (res) {
       asText = res.trim();
       return asText;

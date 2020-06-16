@@ -2,7 +2,7 @@ const test = require('tap-only');
 const policy = require('../..');
 const demunge = require('../../lib/parser').demunge;
 const path = require('path');
-const fs = require('then-fs');
+const fs = require('fs');
 const fixtures = __dirname + '/../fixtures';
 
 test('module loads', function (t) {
@@ -120,8 +120,7 @@ test('policy.load (merge)', function (t) {
 });
 
 test('policy.loadFromText', function (t) {
-  return fs
-    .readFile(fixtures + '/ignore/.snyk', 'utf8')
+  return Promise.resolve(fs.readFileSync(fixtures + '/ignore/.snyk', 'utf8'))
     .then(policy.loadFromText)
     .then(function (fromText) {
       return policy.load(fixtures + '/ignore').then(function (fromDir) {
