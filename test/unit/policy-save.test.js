@@ -4,9 +4,9 @@ const fixtures = __dirname + '/../fixtures';
 const path = require('path');
 const sinon = require('sinon');
 const writeSpy = sinon.spy();
-const fs = require('then-fs');
+const fs = require('promise-fs');
 const policy = proxyquire('../..', {
-  'then-fs': {
+  'promise-fs': {
     writeFile: function (filename, body) {
       writeSpy(filename, body);
       return Promise.resolve();

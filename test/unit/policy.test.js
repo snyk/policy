@@ -2,7 +2,7 @@ const test = require('tap-only');
 const policy = require('../..');
 const demunge = require('../../lib/parser').demunge;
 const path = require('path');
-const fs = require('then-fs');
+const fs = require('promise-fs');
 const fixtures = __dirname + '/../fixtures';
 
 test('module loads', function (t) {
