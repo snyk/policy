@@ -16,8 +16,8 @@ commands:
             - v1-npm-cache-{{ checksum "package-lock.json" }}
             - v1-npm-cache-
       - run:
-          name: Use snyk npmjs user
-          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+          name: Create .npmrc
+          command: echo "//registry.npmjs.org/:_authToken=${NPMJS_TOKEN}" >> .npmrc
       - run:
           name: Install dependencies
           command: npm install
