@@ -46,7 +46,7 @@ The metadata for patch is:
 
 ```js
 {
-  patched: '<JSON date format>'
+  patched: '<JSON date format>';
 }
 ```
 
@@ -106,7 +106,7 @@ Installed via npm: `npm install -S snyk-policy`. Typically loaded and applied to
 const policy = require('snyk-policy');
 
 const vulns = snyk.test('snyk-demo-app@1.0.0'); // assumes snyk is loaded
-policy.load(process.cwd()).then(rules => {
+policy.load(process.cwd()).then((rules) => {
   console.log(rules.filter(vulns));
 });
 ```
@@ -181,7 +181,6 @@ If all the vulns are stripped because of the policy, then the `ok` bool is set t
 
 Note that this method is also available on the response object from [`.load`](#policyloadroot-options), so can be called as `res.filter()` (where `res` is the loaded config).
 
-
 Returns an `object` in the same structure as `vulns`.
 
 ### policy.getByVuln(config, vuln)
@@ -236,8 +235,7 @@ patch:
 version: v1
 ```
 
-
 ## Misc
 
-* [CONTRIBUTING.md](.github/CONTRIBUTING.md)
-* [License: Apache License, Version 2.0](LICENSE)
+- [CONTRIBUTING.md](.github/CONTRIBUTING.md)
+- [License: Apache License, Version 2.0](LICENSE)
