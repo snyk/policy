@@ -10,7 +10,7 @@
     "check-tests": "! grep 'test.only' test/**/*.test.js -n",
     "env": "node -e 'console.log(process.env, process.versions)'",
     "tap": "tap test/**/*.test.js -R spec --timeout=60",
-    "test": "npm run check-tests && npm run lint && npm run tap"
+    "test": "npm run check-tests && npm run tap"
   },
   "keywords": [
     "snyk"
