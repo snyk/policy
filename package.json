@@ -3,7 +3,9 @@
   "description": "Snyk's policy parser and matching logic",
   "main": "lib/index.js",
   "scripts": {
-    "lint": "eslint -c .eslintrc lib",
+    "lint": "run-p --max-parallel=${JOBS:-6} --aggregate-output lint:*",
+    "lint:eslint": "eslint -c .eslintrc lib",
+    "lint:commits": "commitlint --from=HEAD~20",
     "format": "prettier --write '{lib,test}/**/*.?s'",
     "check-tests": "! grep 'test.only' test/**/*.test.js -n",
     "env": "node -e 'console.log(process.env, process.versions)'",
@@ -16,8 +18,10 @@
   "author": "Remy Sharp",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@commitlint/cli": "^12.1.4",
     "eslint": "^5.0.0",
     "eslint-config-prettier": "^5.0.0",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "proxyquire": "^2.1.0",
     "sinon": "^4.0.0",
