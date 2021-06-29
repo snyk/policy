@@ -17,17 +17,19 @@ executors:
       - image: cimg/node:<<parameters.version>>
 
 commands:
+  create_npmrc:
+    steps:
+      - run:
+          name: Create .npmrc
+          command: echo "//registry.npmjs.org/:_authToken=${NPMJS_TOKEN}" >> .npmrc
+
   install_deps:
     description: Install dependencies
     steps:
-      - checkout
       - restore_cache:
           keys:
             - v1-npm-cache-{{ checksum "package-lock.json" }}
             - v1-npm-cache-
-      - run:
-          name: Create .npmrc
-          command: echo "//registry.npmjs.org/:_authToken=${NPMJS_TOKEN}" >> .npmrc
       - run:
           name: Install dependencies
           command: npm install
@@ -46,6 +48,8 @@ jobs:
     executor:
       name: docker-node-10
     steps:
+      - checkout
+      - create_npmrc
       - install_deps
   lint:
     <<: *defaults
@@ -84,6 +88,7 @@ jobs:
       name: docker-node-10
     steps:
       - checkout
+      - create_npmrc
       - install_deps
       - run:
           name: Release on GitHub
