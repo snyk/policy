@@ -2,9 +2,19 @@ version: 2.1
 
 defaults: &defaults
   resource_class: small
-  docker:
-    - image: cimg/node:10.24.1
   working_directory: ~/policy
+
+executors:
+  docker-node-10:
+    docker:
+      - image: cimg/node:10.24.1
+  docker-node:
+    parameters:
+      version:
+        default: '10.24.1'
+        type: string
+    docker:
+      - image: cimg/node:<<parameters.version>>
 
 commands:
   install_deps:
@@ -33,10 +43,14 @@ commands:
 jobs:
   install:
     <<: *defaults
+    executor:
+      name: docker-node-10
     steps:
       - install_deps
   lint:
     <<: *defaults
+    executor:
+      name: docker-node-10
     steps:
       - checkout
       - attach_workspace:
@@ -46,6 +60,13 @@ jobs:
           command: npm run lint
   test:
     <<: *defaults
+    parameters:
+      version:
+        default: '10.24.1'
+        type: string
+    executor:
+      name: docker-node
+      version: <<parameters.version>>
     steps:
       - checkout
       - attach_workspace:
@@ -59,8 +80,11 @@ jobs:
           path: reports/jest/
   release:
     <<: *defaults
+    executor:
+      name: docker-node-10
     steps:
       - checkout
+      - install_deps
       - run:
           name: Release on GitHub
           command: npx semantic-release
@@ -90,6 +114,12 @@ workflows:
           context: nodejs-lib-release
           requires:
             - Lint
+          matrix:
+            parameters:
+              version:
+                - 8.17.0
+                - 10.24.1
+                - 12.22.1
           filters:
             branches:
               ignore:
