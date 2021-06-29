@@ -5,38 +5,26 @@ defaults: &defaults
   working_directory: ~/policy
 
 executors:
-  docker-node-10:
-    docker:
-      - image: cimg/node:10.24.1
   docker-node:
     parameters:
       version:
-        default: '10.24.1'
+        default: '12.22.1'
         type: string
     docker:
       - image: cimg/node:<<parameters.version>>
 
 commands:
-  create_npmrc:
+  npmrc:
     steps:
       - run:
           name: Create .npmrc
-          command: echo "//registry.npmjs.org/:_authToken=${NPMJS_TOKEN}" >> .npmrc
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
 
-  install_deps:
-    description: Install dependencies
+  install:
     steps:
-      - restore_cache:
-          keys:
-            - v1-npm-cache-{{ checksum "package-lock.json" }}
-            - v1-npm-cache-
       - run:
           name: Install dependencies
           command: npm install
-      - save_cache:
-          key: v1-npm-cache-{{ checksum "package-lock.json" }}
-          paths:
-            - ~/.npm
       - persist_to_workspace:
           root: .
           paths:
@@ -46,15 +34,15 @@ jobs:
   install:
     <<: *defaults
     executor:
-      name: docker-node-10
+      name: docker-node
     steps:
       - checkout
-      - create_npmrc
-      - install_deps
+      - npmrc
+      - install
   lint:
     <<: *defaults
     executor:
-      name: docker-node-10
+      name: docker-node
     steps:
       - checkout
       - attach_workspace:
@@ -66,7 +54,7 @@ jobs:
     <<: *defaults
     parameters:
       version:
-        default: '10.24.1'
+        default: '12.22.1'
         type: string
     executor:
       name: docker-node
@@ -85,11 +73,11 @@ jobs:
   release:
     <<: *defaults
     executor:
-      name: docker-node-10
+      name: docker-node
     steps:
       - checkout
-      - create_npmrc
-      - install_deps
+      - npmrc
+      - install
       - run:
           name: Release on GitHub
           command: npx semantic-release
