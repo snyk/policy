@@ -1,3 +1,4 @@
+const cloneDeep = require('lodash.clonedeep');
 const test = require('tap').test;
 const fixtures = __dirname + '/../fixtures/ignore';
 const vulns = require(fixtures + '/vulns.json');
@@ -242,6 +243,37 @@ test('does not accept incomplete security policy to ignore vulns', function (t) 
         'vulns that were not filtered: ' + vulns.vulnerabilities.length
       );
       t.equal(4, filtered.length, '4 vulns filtered');
+    })
+    .catch(t.threw)
+    .then(t.end);
+});
+
+test('filters vulnerabilities by exact match', function (t) {
+  const vulns = {
+    vulnerabilities: [
+      {
+        id: 'a-vuln',
+        from: ['dir/file.json', 'foo', 'bar'],
+      },
+      {
+        id: 'a-vuln',
+        from: ['file.json', 'foo', 'bar'],
+      },
+      {
+        id: 'another-vuln',
+        from: ['file.json', 'foo', 'bar'],
+      },
+    ],
+  };
+
+  const expected = cloneDeep(vulns);
+  expected.vulnerabilities.splice(1, 1);
+
+  policy
+    .load(__dirname + '/../fixtures/ignore-exact')
+    .then(function (config) {
+      const filtered = config.filter(vulns, undefined, 'exact');
+      t.same(filtered.vulnerabilities, expected.vulnerabilities);
     })
     .catch(t.threw)
     .then(t.end);

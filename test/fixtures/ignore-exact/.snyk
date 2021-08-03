@@ -1,0 +1,8 @@
+# vi: syntax=yaml
+version: v1.19.0
+ignore:
+  a-vuln:
+    - 'file.json > foo > bar':
+        reason: None Given
+        created: 2021-07-26T13:09:08.459Z
+patch: {}

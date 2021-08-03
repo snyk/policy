@@ -1,8 +1,9 @@
 const test = require('tap-only');
 const fs = require('fs');
 const fixtures = __dirname + '/../fixtures';
-const vulns = JSON.parse(fs.readFileSync(fixtures + '/jsbin.json', 'utf8'))
-  .vulnerabilities;
+const vulns = JSON.parse(
+  fs.readFileSync(fixtures + '/jsbin.json', 'utf8')
+).vulnerabilities;
 const vuln = vulns
   .filter(function (v) {
     return v.id === 'npm:uglify-js:20150824';
@@ -11,6 +12,9 @@ const vuln = vulns
 const vulnWithGitUrl = JSON.parse(
   fs.readFileSync(fixtures + '/patch-with-git-url.json', 'utf8')
 );
+const exactMatchVuln = {
+  from: ['a-dir/a-file.json', 'foo', 'bar'],
+};
 const policy = require('../../');
 
 test('match logic', function (t) {
@@ -103,6 +107,56 @@ test('no match', function (t) {
   };
 
   const pathMatch = policy.matchToRule(vuln, rule);
+  t.notOk(pathMatch, 'correctly does not match');
+  t.end();
+});
+
+test('exact match  does not match when path arrays are not equal', function (t) {
+  const rule = {
+    'a-dir/a-file.json': {},
+  };
+
+  const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');
+  t.notOk(pathMatch, 'does not match when path arrays are not equal');
+  t.end();
+});
+
+test('exact match  matches when path arrays are equal', function (t) {
+  const rule = {
+    'a-dir/a-file.json > foo > bar': {},
+  };
+
+  const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');
+  t.ok(pathMatch, 'vuln matches rule');
+  t.end();
+});
+
+test('exact match  matches when rule is *', function (t) {
+  const rule = {
+    '*': {},
+  };
+
+  const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');
+  t.ok(pathMatch, 'vuln matches rule');
+  t.end();
+});
+
+test('exact match  matches when path matches before *', function (t) {
+  const rule = {
+    'a-dir/a-file.json > *': {},
+  };
+
+  const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');
+  t.ok(pathMatch, 'vuln matches rule');
+  t.end();
+});
+
+test('exact match  does not match when path does not match before *', function (t) {
+  const rule = {
+    'a-dir/a-file.json > wrong > *': {},
+  };
+
+  const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');
   t.notOk(pathMatch, 'correctly does not match');
   t.end();
 });
