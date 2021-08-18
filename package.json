@@ -37,7 +37,7 @@
     "semver": "^7.3.4",
     "snyk-module": "^3.0.0",
     "snyk-resolve": "^1.1.0",
-    "snyk-try-require": "^2.0.0"
+    "snyk-try-require": "^2.0.2"
   },
   "repository": {
     "type": "git",
