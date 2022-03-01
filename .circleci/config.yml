@@ -8,7 +8,7 @@ executors:
   docker-node:
     parameters:
       version:
-        default: '12.22.1'
+        default: '14.19.0'
         type: string
     docker:
       - image: cimg/node:<<parameters.version>>
@@ -54,7 +54,7 @@ jobs:
     <<: *defaults
     parameters:
       version:
-        default: '12.22.1'
+        default: '14.19.0'
         type: string
     executor:
       name: docker-node
@@ -110,9 +110,9 @@ workflows:
           matrix:
             parameters:
               version:
-                - 8.17.0
-                - 10.24.1
-                - 12.22.1
+                - 12.22.10
+                - 14.19.0
+                - 16.14.0
           filters:
             branches:
               ignore:
