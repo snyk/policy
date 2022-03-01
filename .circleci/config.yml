@@ -112,7 +112,7 @@ workflows:
               version:
                 - 12.22.10
                 - 14.19.0
-                - 16.24.0
+                - 16.14.0
           filters:
             branches:
               ignore:
