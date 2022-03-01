@@ -14,6 +14,9 @@ test('load different types of policies', function (t) {
     'issues/SC-1106/with-dash.snyk',
     'patch-mean',
     'issues/BST-264/missing-path-to-package.snyk',
+    'project.snyk',
+    'project.snyk/project1',
+    'project.snyk/project1.snyk',
   ];
 
   return Promise.all(

@@ -27,6 +27,68 @@ test('policy.load (single)', function (t) {
   });
 });
 
+test('policy.load (single .snyk in path name)', function (t) {
+  return policy.load(fixtures + '/project.snyk').then(function (res) {
+    const expect = {
+      version: 'v1.0.0',
+      ignore: {},
+      patch: {},
+      __filename: path.relative(
+        process.cwd(),
+        fixtures + '/project.snyk/.snyk'
+      ),
+      __modified: res.__modified ? new Date(res.__modified) : false,
+      __created: res.__created ? new Date(res.__created) : false,
+    };
+
+    stripFunctions(res);
+
+    t.deepEqual(res, expect, 'policy is as expected');
+  });
+});
+
+test('policy.load (double .snyk in path name)', function (t) {
+  return policy
+    .load(fixtures + '/project.snyk/project1.snyk')
+    .then(function (res) {
+      const expect = {
+        version: 'v1.0.0',
+        ignore: {},
+        patch: {},
+        __filename: path.relative(
+          process.cwd(),
+          fixtures + '/project.snyk/project1.snyk/.snyk'
+        ),
+        __modified: res.__modified ? new Date(res.__modified) : false,
+        __created: res.__created ? new Date(res.__created) : false,
+      };
+
+      stripFunctions(res);
+
+      t.deepEqual(res, expect, 'policy is as expected');
+    });
+});
+
+test('policy.load (single .snyk in path name but at upper level)', function (t) {
+  return policy.load(fixtures + '/project.snyk/project1').then(function (res) {
+    const expect = {
+      version: 'v1.0.0',
+      ignore: {},
+      patch: {},
+      __filename: path.relative(
+        process.cwd(),
+        fixtures + '/project.snyk/project1/.snyk'
+      ),
+      __modified: res.__modified ? new Date(res.__modified) : false,
+      __created: res.__created ? new Date(res.__created) : false,
+    };
+
+    stripFunctions(res);
+
+    t.deepEqual(res, expect, 'policy is as expected');
+  });
+});
+
 test('policy.load (multiple - ignore first)', function (t) {
   return policy
     .load([fixtures + '/ignore', fixtures + '/patch'])
