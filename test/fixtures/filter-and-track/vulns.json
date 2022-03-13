@@ -151,7 +151,7 @@
       "creationTime": "2015-11-06T02:09:36.182Z",
       "modificationTime": "2015-11-06T02:09:36.182Z",
       "publicationTime": "2015-11-03T07:15:12.900Z",
-      "description": "## Overview\nThe [`tar`](https://www.npmjs.com/package/tar) module prior to version 2.0.0 does not properly normalize symbolic links pointing to targets outside the extraction root. As a result, packages may hold symbolic links to parent and sibling directories and overwrite those files when the package is extracted.\n\n## Remediation\nUpgrade to version 2.0.0 or greater. \nIf a direct dependency update is not possible, use [`snyk wizard`](https://snyk.io/documentation/#wizard) to patch this vulnerability.\n\n## References\n- https://nodesecurity.io/advisories/57\n- https://github.com/npm/node-tar/commit/a5337a6cd58a2d800fc03b3781a25751cf459f28\n- https://github.com/npm/npm/releases/tag/v2.7.5\n",
+      "description": "## Overview\nThe [`tar`](https://www.npmjs.com/package/tar) module prior to version 2.0.0 does not properly normalize symbolic links pointing to targets outside the extraction root. As a result, packages may hold symbolic links to parent and sibling directories and overwrite those files when the package is extracted.\n\n## Remediation\nUpgrade to version 2.0.0 or greater. \n\n## References\n- https://nodesecurity.io/advisories/57\n- https://github.com/npm/node-tar/commit/a5337a6cd58a2d800fc03b3781a25751cf459f28\n- https://github.com/npm/npm/releases/tag/v2.7.5\n",
       "semver": {
         "vulnerable": "<2.0.0",
         "unaffected": ">=2.0.0"
