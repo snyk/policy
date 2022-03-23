@@ -8,9 +8,7 @@
     "snyk": "0.5.0"
   },
   "scripts": {
-    "test": "snyk test && echo \"Error: no test specified\" && exit 1",
-    "snyk-protect": "snyk protect",
-    "postinstall": "npm run snyk-protect"
+    "test": "snyk test && echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
