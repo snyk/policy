@@ -42,6 +42,26 @@
       }
     ]
   },
+  "exclude": {
+    "global:": [
+      {
+        "path/to/folder": {
+          "reason": "None given",
+          "expires": "2016-03-01T14:30:04.137Z"
+        }
+      },
+      {
+        "path/to/file.extension": {
+          "reason": "None given",
+          "expires": "2016-03-01T14:30:04.137Z"
+        }
+      }
+    ],
+    "code": [
+      "path/to/folder",
+      "path/to/file.extension"
+    ]
+  },
   "__filename": ".snyk",
   "__modified": "2016-03-03T18:06:17.000Z",
   "__created": "2016-03-03T18:06:17.000Z"

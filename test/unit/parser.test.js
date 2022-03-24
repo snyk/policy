@@ -64,16 +64,35 @@ test('test unsupported version', function (t) {
 test('demunge', function (t) {
   const source = require(fixtures + '/parsed.json');
   const res = parser.demunge(source);
-  const ids = Object.keys(source.patch);
+  const patchIds = Object.keys(source.patch);
+  const ignoreIds = Object.keys(source.ignore);
+  const excludeIds = Object.keys(source.exclude);
   t.ok(Array.isArray(res.ignore), 'array');
   t.ok(Array.isArray(res.patch), 'array');
+  t.ok(Array.isArray(res.exclude), 'array');
   t.equal(res.patch.length, 2, 'two patched items');
+  t.equal(res.ignore.length, 3, 'three ignored items');
+  t.equal(res.exclude.length, 2, 'two excluded categories');
   t.deepEqual(
     res.patch.map(function (o) {
       return o.id;
     }),
-    ids,
-    'ids found in the right place'
+    patchIds,
+    'patch ids found in the right place'
+  );
+  t.deepEqual(
+    res.ignore.map(function (o) {
+      return o.id;
+    }),
+    ignoreIds,
+    'ignore ids found in the right place'
+  );
+  t.deepEqual(
+    res.exclude.map(function (o) {
+      return o.id;
+    }),
+    excludeIds,
+    'exclude ids found in the right place'
   );
   t.end();
 });
