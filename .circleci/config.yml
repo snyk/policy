@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  snyk: snyk/snyk@1.2.3
+
 defaults: &defaults
   resource_class: small
   working_directory: ~/policy
@@ -50,6 +53,33 @@ jobs:
       - run:
           name: Run linting
           command: npm run lint
+  scan:
+    <<: *defaults
+    executor:
+      name: docker-node
+    resource_class: medium
+    parameters:
+      monitor:
+        default: false
+        type: boolean
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/policy
+      - snyk/scan:
+          organization: narwhal-xqs
+          project: snyk/policy
+          fail-on-issues: true
+          severity-threshold: high
+          monitor-on-build: <<parameters.monitor>>
+      - snyk/scan:
+          command: code test
+          organization: narwhal-xqs
+          project: snyk/policy
+          fail-on-issues: true
+          severity-threshold: high
+          monitor-on-build: <<parameters.monitor>>
+
   test:
     <<: *defaults
     parameters:
@@ -117,6 +147,18 @@ workflows:
             branches:
               ignore:
                 - master
+
+      - scan:
+          name: Snyk Vuln Scan
+          context: 
+            - nodejs-lib-release
+          requires:
+            - Install
+          filters:
+            branches:
+              ignore:
+                - master
+
       - release:
           name: Release
           context: nodejs-lib-release
@@ -124,3 +166,23 @@ workflows:
             branches:
               only:
                 - master
+
+  Daily_Scan:
+    jobs:
+      - install:
+          name: Install
+          context: nodejs-lib-release
+      - scan:
+          name: Snyk Vuln Scan
+          context: 
+            - nodejs-lib-release
+          monitor: true
+          requires:
+            - Install
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - main
