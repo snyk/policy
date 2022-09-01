@@ -1,7 +1,68 @@
 version: 2.1
 
 orbs:
-  snyk: snyk/snyk@1.2.3
+  snyk:
+    commands:
+      install:
+        description: Install Snyk
+        steps:
+          - run:
+              name: Install Snyk
+              command: |
+                if [[ ! -x "/usr/local/bin/snyk" ]]; then
+                  LATEST_SNYK_CLI_VERSION=$(curl https://static.snyk.io/cli/latest/version)
+                  echo "Downloading Snyk CLI version ${LATEST_SNYK_CLI_VERSION}"
+                  curl -sO https://static.snyk.io/cli/v${LATEST_SNYK_CLI_VERSION}/snyk-linux
+                  curl -sO https://static.snyk.io/cli/v${LATEST_SNYK_CLI_VERSION}/snyk-linux.sha256
+                  sha256sum -c snyk-linux.sha256
+                  sudo mv snyk-linux /usr/local/bin/snyk
+                  sudo chmod +x /usr/local/bin/snyk
+                fi
+                snyk config set disableSuggestions=true
+                snyk auth $SNYK_TOKEN
+      scan_open_source:
+        parameters:
+          project:
+            description: The name of the Snyk project to publish results
+            type: string
+          current_branch:
+            description: |
+              If current_branch equals the monitor_branch, then report the results to Snyk.
+              The variable `pipeline.git.branch` is not in scope in orbs
+            type: string
+          monitor_branch:
+            description: If current_branch equals the monitor_branch, then report the results to Snyk
+            type: string
+            default: main
+          severity_threshold:
+            description: Fail the build if issues are found with severity equal to or above this threshold 
+            type: enum
+            enum: [critical, high, medium, low]
+            default: low
+        steps:
+          - install
+          - run:
+              name: Snyk OpenSource Scan
+              command: snyk test --severity-threshold=<<parameters.severity_threshold>>
+          - when:
+              condition:
+                equal: [ <<parameters.current_branch>>, <<parameters.monitor_branch>> ]
+              steps:
+                - run:
+                    name: Report OpenSource results
+                    command: snyk monitor --project-name=<<parameters.project>> --org=narwhal-xqs
+      scan_code:
+        parameters:
+          severity_threshold:
+            description: Fail the build if issues are found with severity equal to or above this threshold 
+            type: enum
+            enum: [critical, high, medium, low]
+            default: low
+        steps:
+          - install
+          - run:
+              name: Snyk Code Scan
+              command: snyk code test --severity-threshold=<<parameters.severity_threshold>>
 
 defaults: &defaults
   resource_class: small
@@ -58,27 +119,16 @@ jobs:
     executor:
       name: docker-node
     resource_class: medium
-    parameters:
-      monitor:
-        default: false
-        type: boolean
     steps:
       - checkout
       - attach_workspace:
           at: ~/policy
-      - snyk/scan:
-          organization: narwhal-xqs
+      - snyk/scan_open_source:
           project: snyk/policy
-          fail-on-issues: true
-          severity-threshold: high
-          monitor-on-build: <<parameters.monitor>>
-      - snyk/scan:
-          command: code test
-          organization: narwhal-xqs
-          project: snyk/policy
-          fail-on-issues: true
-          severity-threshold: high
-          monitor-on-build: <<parameters.monitor>>
+          current_branch: << pipeline.git.branch >>
+          monitor_branch: master
+      - snyk/scan_code:
+          severity_threshold: high
 
   test:
     <<: *defaults
@@ -119,10 +169,6 @@ workflows:
       - install:
           name: Install
           context: nodejs-lib-release
-          filters:
-            branches:
-              ignore:
-                - master
       - lint:
           name: Lint
           context: nodejs-lib-release
@@ -154,10 +200,6 @@ workflows:
             - nodejs-lib-release
           requires:
             - Install
-          filters:
-            branches:
-              ignore:
-                - master
 
       - release:
           name: Release
@@ -176,7 +218,6 @@ workflows:
           name: Snyk Vuln Scan
           context: 
             - nodejs-lib-release
-          monitor: true
           requires:
             - Install
     triggers:
@@ -185,4 +226,4 @@ workflows:
           filters:
             branches:
               only:
-                - main
+                - master
