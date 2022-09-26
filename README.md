@@ -98,6 +98,13 @@ The following are examples of module paths that could target the semver vulnerab
 
 The first example rule (above) is how the policy is stored by default. However, policy files can be manually edited if desired.
 
+[Version ranges](https://github.com/npm/node-semver#versions) may also be used. For example, the following will all match the root dependency above:
+```
+@remy/protect-test@1.x
+@remy/protect-test@>=1.0.1
+@remy/protect-test@^1.0.2
+```
+
 ## Usage
 
 Installed via npm: `npm install -S snyk-policy`. Typically loaded and applied to vulnerabilities:
