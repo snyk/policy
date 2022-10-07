@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "snyk": "*",
-    "sqlite": "0.0.2"
+    "sqlite": "4.0.1"
   },
   "devDependencies": {},
   "scripts": {
