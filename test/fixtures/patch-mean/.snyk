@@ -1,16 +1,40 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+# patches apply the minimum changes required to fix a vulnerability
 patch:
   'npm:hawk:20160119':
-    - 'npm > request > hawk':
+    - npm > request > hawk:
         patched: '2016-02-18T17:02:03.122Z'
   'npm:ms:20151024':
-    - 'meanio > morgan > debug > ms':
+    - meanio > morgan > debug > ms:
         patched: '2016-02-18T17:02:03.122Z'
   'npm:tar:20151103':
-    - 'npm > node-gyp > tar':
+    - npm > node-gyp > tar:
         patched: '2016-02-18T17:02:03.122Z'
   'npm:uglify-js:20151024':
-    - 'meanio > swig > uglify-js':
+    - meanio > swig > uglify-js:
         patched: '2016-02-18T17:02:03.122Z'
-    - 'swig > uglify-js':
+    - swig > uglify-js:
         patched: '2016-02-18T17:02:03.122Z'
-version: v1
+  'npm:debug:20170905':
+    - meanio > morgan > debug:
+        patched: '2022-10-09T14:35:35.258Z'
+  'npm:hoek:20180212':
+    - phantomjs > request > hawk > hoek:
+        patched: '2022-10-09T14:35:35.258Z'
+    - phantomjs > request > hawk > boom > hoek:
+        patched: '2022-10-09T14:35:35.258Z'
+    - phantomjs > request > hawk > sntp > hoek:
+        patched: '2022-10-09T14:35:35.258Z'
+    - phantomjs > request > hawk > cryptiles > boom > hoek:
+        patched: '2022-10-09T14:35:35.258Z'
+  'npm:request:20160119':
+    - phantomjs > request:
+        patched: '2022-10-09T14:35:35.258Z'
+  'npm:tough-cookie:20170905':
+    - phantomjs > request > tough-cookie:
+        patched: '2022-10-09T14:35:35.258Z'
+  'npm:tunnel-agent:20170305':
+    - phantomjs > request > tunnel-agent:
+        patched: '2022-10-09T14:35:35.258Z'
+version: v1.25.0
+ignore: {}
