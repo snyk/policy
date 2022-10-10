@@ -1,10 +1,37 @@
-# following is high: npm:tar:20151103
-# following are low: npm:ms:20151024, npm:hawk:20160119, npm:uglify-js:20151024
-
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
   'npm:tar:20151103':
     - '*':
         reason: None given
         expires: '2020-03-01T14:30:04.136Z'
-version: v1
-failThreshold: high # can be "high" or "medium"
+version: v1.25.0
+failThreshold: high
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:debug:20170905':
+    - meanio > morgan > debug:
+        patched: '2022-10-10T13:07:37.794Z'
+  'npm:hoek:20180212':
+    - phantomjs > request > hawk > hoek:
+        patched: '2022-10-10T13:07:37.794Z'
+    - phantomjs > request > hawk > boom > hoek:
+        patched: '2022-10-10T13:07:37.794Z'
+    - phantomjs > request > hawk > sntp > hoek:
+        patched: '2022-10-10T13:07:37.794Z'
+    - phantomjs > request > hawk > cryptiles > boom > hoek:
+        patched: '2022-10-10T13:07:37.794Z'
+  'npm:request:20160119':
+    - phantomjs > request:
+        patched: '2022-10-10T13:07:37.794Z'
+  'npm:tough-cookie:20170905':
+    - phantomjs > request > tough-cookie:
+        patched: '2022-10-10T13:07:37.794Z'
+  'npm:tunnel-agent:20170305':
+    - phantomjs > request > tunnel-agent:
+        patched: '2022-10-10T13:07:37.794Z'
+  'npm:uglify-js:20151024':
+    - swig > uglify-js:
+        patched: '2022-10-10T13:07:37.794Z'
+    - meanio > swig > uglify-js:
+        patched: '2022-10-10T13:07:37.794Z'
