@@ -6,10 +6,9 @@ const dir = fixtures + '/severity-control';
 const fs = require('fs');
 let vulns = {};
 
-tap.beforeEach(function (done) {
+tap.beforeEach(function () {
   // only contains medium + low - this file is read using fs to ensure refresh
   vulns = JSON.parse(fs.readFileSync(dir + '/vulns.json', 'utf8'));
-  done();
 });
 
 test('severity-control: high (ok=true)', function (t) {
