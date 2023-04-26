@@ -1,29 +1,23 @@
-const test = require('tap').test;
+const fs = require('fs');
+const sinon = require('sinon');
+const resolve = require('snyk-resolve');
+const { test, afterEach } = require('tap');
+const policy = require('../../');
+const patch = require('../../lib/filter/patch')
+
 const fixtures = __dirname + '/../fixtures/patch';
 const vulns = require(fixtures + '/vulns.json');
-const proxyquire = require('proxyquire');
-const policy = require('../../');
-const patch = proxyquire('../../lib/filter/patch', {
-  './get-vuln-source': proxyquire('../../lib/filter/get-vuln-source', {
-    'snyk-resolve': {
-      sync: function () {
-        return '.';
-      },
-    },
-    fs: {
-      statSync: function () {
-        throw new Error('nope');
-      },
-    },
-  }),
-  fs: {
-    statSync: function () {
-      return true;
-    },
-  },
+
+var sandbox = sinon.createSandbox();
+
+afterEach(function () {
+  sandbox.restore();
 });
 
 test('patched vulns do not turn up in tests', function (t) {
+  sandbox.stub(fs, 'statSync').returns(true);
+  sandbox.stub(resolve, 'sync').returns('.');
+
   policy
     .load(fixtures)
     .then(function (config) {

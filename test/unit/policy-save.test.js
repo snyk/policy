@@ -1,22 +1,20 @@
-const test = require('tap-only');
-const proxyquire = require('proxyquire');
-const fixtures = __dirname + '/../fixtures';
+const { promises: fs } = require('fs');
 const path = require('path');
 const sinon = require('sinon');
-const writeSpy = sinon.spy();
-const { promises: fs } = require('fs');
-const policy = proxyquire('../..', {
-  'fs': {
-    promises:{
-      writeFile: function (filename, body) {
-        writeSpy(filename, body);
-        return Promise.resolve();
-      },
-    }
-  },
+const { test, afterEach } = require('tap');
+const policy = require('../..')
+
+const fixtures = __dirname + '/../fixtures';
+
+var sandbox = sinon.createSandbox();
+
+afterEach(function () {
+  sandbox.restore();
 });
 
 test('policy.save', function (t) {
+  const writeFileStub = sandbox.stub(fs, 'writeFile').resolves();
+
   const filename = path.resolve(fixtures + '/ignore/.snyk');
   let asText = '';
   return fs
@@ -30,9 +28,9 @@ test('policy.save', function (t) {
       return policy.save(res, path.dirname(filename));
     })
     .then(function () {
-      t.equal(writeSpy.callCount, 1, 'write only once');
-      t.equal(writeSpy.args[0][0], filename, 'filename correct');
-      const parsed = writeSpy.args[0][1].trim();
+      t.equal(writeFileStub.callCount, 1, 'write only once');
+      t.equal(writeFileStub.args[0][0], filename, 'filename correct');
+      const parsed = writeFileStub.args[0][1].trim();
       t.equal(parsed, asText, 'body contains original');
       t.match(
         parsed,
