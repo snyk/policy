@@ -6,7 +6,7 @@ const fs = require('promise-fs');
 const fixtures = __dirname + '/../fixtures';
 
 test('module loads', function (t) {
-  t.isa(policy, 'object', 'policy has loaded an object');
+  t.type(policy, 'object', 'policy has loaded an object');
   t.end();
 });
 
@@ -23,7 +23,7 @@ test('policy.load (single)', function (t) {
 
     stripFunctions(res);
 
-    t.deepEqual(res, expect, 'policy is as expected');
+    t.same(res, expect, 'policy is as expected');
   });
 });
 
@@ -43,7 +43,7 @@ test('policy.load (single .snyk in path name)', function (t) {
 
     stripFunctions(res);
 
-    t.deepEqual(res, expect, 'policy is as expected');
+    t.same(res, expect, 'policy is as expected');
   });
 });
 
@@ -65,7 +65,7 @@ test('policy.load (double .snyk in path name)', function (t) {
 
       stripFunctions(res);
 
-      t.deepEqual(res, expect, 'policy is as expected');
+      t.same(res, expect, 'policy is as expected');
     });
 });
 
@@ -85,7 +85,7 @@ test('policy.load (single .snyk in path name but at upper level)', function (t) 
 
     stripFunctions(res);
 
-    t.deepEqual(res, expect, 'policy is as expected');
+    t.same(res, expect, 'policy is as expected');
   });
 });
 
@@ -123,9 +123,9 @@ test('policy.load (multiple - ignore last)', function (t) {
         'npm:method-override:20170927',
         'npm:marked:20170907',
       ];
-      t.deepEqual(res.ignore, {}, 'nothing is ignored');
+      t.same(res.ignore, {}, 'nothing is ignored');
       t.ok(res.suggest, 'suggestions are present');
-      t.deepEqual(
+      t.same(
         Object.keys(res.suggest),
         ids,
         'suggestions are present and correct'
@@ -147,8 +147,8 @@ test('policy.load (multiple - ignore last - trust deep policy)', function (t) {
         'npm:marked:20170907',
       ];
       t.notOk(res.suggest, 'no suggestions');
-      t.notEqual(Object.keys(res.ignore).length, 0, 'has more than one ignore');
-      t.deepEqual(
+      t.not(Object.keys(res.ignore).length, 0, 'has more than one ignore');
+      t.same(
         Object.keys(res.ignore),
         ids,
         'inherited ignores are correct'
@@ -187,8 +187,8 @@ test('policy.loadFromText', function (t) {
     .then(policy.loadFromText)
     .then(function (fromText) {
       return policy.load(fixtures + '/ignore').then(function (fromDir) {
-        t.deepEqual(fromText.patch, fromDir.patch);
-        t.deepEqual(fromText.ignore, fromDir.ignore);
+        t.same(fromText.patch, fromDir.patch);
+        t.same(fromText.ignore, fromDir.ignore);
         t.equal(fromText.version, fromDir.version);
       });
     });
@@ -203,7 +203,7 @@ test('policy.load (multiple - ENOENT - loose)', function (t) {
         'npm:uglify-js:20151024',
         'npm:semver:20150403',
       ];
-      t.deepEqual(Object.keys(res.patch), ids, 'policy loaded');
+      t.same(Object.keys(res.patch), ids, 'policy loaded');
     });
 });
 

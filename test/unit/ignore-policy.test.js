@@ -8,7 +8,7 @@ test('single load', function (t) {
     .then(function (res) {
       t.equal(Object.keys(res.ignore).length, 0, 'ignore policy is empty');
       t.equal(Object.keys(res.patch).length, 0, 'patch policy is empty');
-      t.isa(res.filter, 'function', 'helper methods attached');
+      t.type(res.filter, 'function', 'helper methods attached');
     });
 });
 
@@ -17,7 +17,7 @@ test('multiple load', function (t) {
     .load([fixtures + '/patch', fixtures + '/patch-mean'])
     .then(function (res) {
       t.equal(Object.keys(res.ignore).length, 0, 'ignore policy is empty');
-      t.notEqual(Object.keys(res.patch).length, 0, 'patch policy is not empty');
-      t.isa(res.filter, 'function', 'helper methods attached');
+      t.not(Object.keys(res.patch).length, 0, 'patch policy is not empty');
+      t.type(res.filter, 'function', 'helper methods attached');
     });
 });

@@ -71,7 +71,7 @@ test('ignored vulns do not turn up in tests', function (t) {
       }, {});
       t.same(actual, expected, 'filtered vulns include ignore rules');
 
-      t.notEqual(
+      t.not(
         vulns.vulnerabilities.every(function (vuln) {
           return !!vuln.ignored;
         }),

@@ -21,8 +21,8 @@ test('getByVuln (no vulns)', function (t) {
 test('getByVuln', function (t) {
   const res = vulns.vulnerabilities.map(getByVuln.bind(null, policy));
   res.forEach(function (res, i) {
-    t.equals(res.type, 'ignore', 'expect ignore for ' + res.id);
-    t.equals(res.id, vulns.vulnerabilities[i].id, 'matched id: ' + res.id);
+    t.equal(res.type, 'ignore', 'expect ignore for ' + res.id);
+    t.equal(res.id, vulns.vulnerabilities[i].id, 'matched id: ' + res.id);
   });
   t.end();
 });

@@ -11,6 +11,6 @@ test('ignored vulns do not turn up in tests', function (t) {
     // should strip all
     vulns = config.filter(vulns);
     t.equal(vulns.ok, true, 'post filter, we have no vulns');
-    t.deepEqual(vulns.vulnerabilities, [], 'vulns stripped');
+    t.same(vulns.vulnerabilities, [], 'vulns stripped');
   });
 });
