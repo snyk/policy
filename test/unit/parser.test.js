@@ -11,7 +11,7 @@ test('parser fills out defaults', function (t) {
     patch: {},
   };
 
-  t.deepEqual(res, expect, 'parser fills defaults');
+  t.same(res, expect, 'parser fills defaults');
   t.end();
 });
 
@@ -23,7 +23,7 @@ test('parser fills out defaults for invalid inputs', function (t) {
     patch: {},
   };
 
-  t.deepEqual(res, expect, 'parser fills defaults for invalid inputs');
+  t.same(res, expect, 'parser fills defaults for invalid inputs');
   t.end();
 });
 
@@ -42,7 +42,7 @@ test('parser does not modify default parsed format', function (t) {
 
   const res = parser.import(yaml.safeDump(expect));
 
-  t.deepEqual(res, expect, 'parser does nothing extra (v1 vs v1)');
+  t.same(res, expect, 'parser does nothing extra (v1 vs v1)');
   t.end();
 });
 
@@ -73,21 +73,21 @@ test('demunge', function (t) {
   t.equal(res.patch.length, 2, 'two patched items');
   t.equal(res.ignore.length, 3, 'three ignored items');
   t.equal(res.exclude.length, 2, 'two excluded categories');
-  t.deepEqual(
+  t.same(
     res.patch.map(function (o) {
       return o.id;
     }),
     patchIds,
     'patch ids found in the right place'
   );
-  t.deepEqual(
+  t.same(
     res.ignore.map(function (o) {
       return o.id;
     }),
     ignoreIds,
     'ignore ids found in the right place'
   );
-  t.deepEqual(
+  t.same(
     res.exclude.map(function (o) {
       return o.id;
     }),

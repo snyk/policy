@@ -8,6 +8,6 @@ test('broken patch should not be in output', function (t) {
       { loose: true }
     )
     .then(function (policy) {
-      t.deepEqual(policy.patch, {}, 'patch section is empty');
+      t.same(policy.patch, {}, 'patch section is empty');
     });
 });

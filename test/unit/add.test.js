@@ -41,9 +41,9 @@ test('add errors without options', function (t) {
       expires: d2,
     });
 
-    t.deepEqual(Object.keys(policy.patch), ['a'], '`a` is the only root');
-    t.deepEqual(policy.patch.a.length, 2, 'two paths on `a`');
-    t.deepEqual(policy.patch.a[1]['a > b > c'].expires, d2, 'metadata saved');
+    t.same(Object.keys(policy.patch), ['a'], '`a` is the only root');
+    t.same(policy.patch.a.length, 2, 'two paths on `a`');
+    t.same(policy.patch.a[1]['a > b > c'].expires, d2, 'metadata saved');
   });
 });
 
@@ -58,7 +58,7 @@ test('add ignore with valid reasonType', function (t) {
     })
     .then(function (policy) {
       t.ok('error not thrown');
-      t.deepEqual(
+      t.same(
         policy.ignore.a[0]['a > b'].reasonType,
         'wont-fix',
         'metadata saved'
@@ -101,7 +101,7 @@ test('add ignore with valid ignoredBy', function (t) {
     })
     .then(function (policy) {
       t.ok('error not thrown');
-      t.deepEqual(
+      t.same(
         policy.ignore.a[0]['a > b'].ignoredBy,
         ignoredBy,
         'metadata saved'

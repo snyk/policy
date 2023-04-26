@@ -17,7 +17,7 @@ test('add a new file pattern to default group', function (t) {
 
       const expected = { global: ['./deps/*.ts'] };
 
-      t.deepEqual(policy.exclude, expected, 'pattern added');
+      t.same(policy.exclude, expected, 'pattern added');
     });
   });
 });
@@ -30,7 +30,7 @@ test('add a new file pattern to global-group', function (t) {
 
       const expected = { global: ['./deps/*.ts'] };
 
-      t.deepEqual(policy.exclude, expected, 'pattern added');
+      t.same(policy.exclude, expected, 'pattern added');
     });
   });
 });
@@ -43,7 +43,7 @@ test('add a new file pattern to code-group', function (t) {
 
       const expected = { code: ['./deps/*.ts'] };
 
-      t.deepEqual(policy.exclude, expected, 'pattern added');
+      t.same(policy.exclude, expected, 'pattern added');
     });
   });
 });
@@ -60,7 +60,7 @@ test('add a new file pattern to iac drift-group', function (t) {
         [validGroup]: ['!aws_iam_*', 'aws_s3_bucket.*'],
       };
 
-      t.deepEqual(policy.exclude, expected, 'pattern added to iac-drift');
+      t.same(policy.exclude, expected, 'pattern added to iac-drift');
     });
   });
 });
@@ -72,7 +72,7 @@ test('add two new unique file pattern to a group', function (t) {
       policy.addExclude('./vendor/*.ts');
       const expected = { global: ['./deps/*.ts', './vendor/*.ts'] };
 
-      t.deepEqual(policy.exclude, expected, 'pattern added');
+      t.same(policy.exclude, expected, 'pattern added');
     });
   });
 });
@@ -87,7 +87,7 @@ test('replace duplicates patterns', function (t) {
 
       const expected = { global: ['./vendor/*.ts', './deps/*.ts'] };
 
-      t.deepEqual(policy.exclude, expected, 'pattern added');
+      t.same(policy.exclude, expected, 'pattern added');
     });
   });
 });
@@ -100,12 +100,12 @@ test('add dates and reasons', function (t) {
         reason: 'incidents already fixed by user',
       });
 
-      t.deepEqual(
+      t.same(
         policy.exclude['global'][0]['./deps/*.ts'].expires,
         '2092-12-24',
         'expires added with the correct format'
       );
-      t.deepEqual(
+      t.same(
         policy.exclude['global'][0]['./deps/*.ts'].reason,
         'incidents already fixed by user',
         'reason added with the correct format'
@@ -127,12 +127,12 @@ test('replace existing objects', function (t) {
         reason: 'it will never happen',
       });
 
-      t.deepEqual(
+      t.same(
         policy.exclude['global'][0]['./deps/*.ts'].expires,
         '2192-12-24',
         'expire replaced'
       );
-      t.deepEqual(
+      t.same(
         policy.exclude['global'][0]['./deps/*.ts'].reason,
         'it will never happen',
         'reason replaced'
@@ -156,18 +156,18 @@ test('only replace duplicates', function (t) {
         reason: 'it will never happen',
       });
 
-      t.deepEqual(
+      t.same(
         policy.exclude['global'][0],
         './vendor/*.go',
         'should keep unique pattern'
       );
 
-      t.deepEqual(
+      t.same(
         policy.exclude['global'][1]['./deps/*.ts'].expires,
         '2192-12-24',
         'expire replaced'
       );
-      t.deepEqual(
+      t.same(
         policy.exclude['global'][1]['./deps/*.ts'].reason,
         'it will never happen',
         'reason replaced'

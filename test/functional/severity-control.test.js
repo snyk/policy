@@ -15,7 +15,7 @@ test('severity-control: high (ok=true)', function (t) {
   return policy.loadFromText('failThreshold: high').then(function (res) {
     vulns = res.filter(vulns);
     t.equal(vulns.ok, true, 'only failing on high severity');
-    t.notEqual(
+    t.not(
       vulns.vulnerabilities.length,
       0,
       'vulns still available to read'
@@ -27,7 +27,7 @@ test('severity-control: medium (ok=false)', function (t) {
   return policy.loadFromText('failThreshold: medium').then(function (res) {
     vulns = res.filter(vulns);
     t.equal(vulns.ok, false, 'only failing on medium severity');
-    t.notEqual(
+    t.not(
       vulns.vulnerabilities.length,
       0,
       'vulns still available to read'
@@ -39,7 +39,7 @@ test('severity-control: low (ok=false)', function (t) {
   return policy.loadFromText('failThreshold: low').then(function (res) {
     vulns = res.filter(vulns);
     t.equal(vulns.ok, false, 'only failing on low severity');
-    t.notEqual(
+    t.not(
       vulns.vulnerabilities.length,
       0,
       'vulns still available to read'

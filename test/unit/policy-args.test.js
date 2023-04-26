@@ -16,7 +16,7 @@ test('policy.load (no args)', function (t) {
       __created: res.__created ? new Date(res.__created) : false,
     };
 
-    t.deepEqual(stripFunctions(res), expect, 'policy is as expected');
+    t.same(stripFunctions(res), expect, 'policy is as expected');
   });
 });
 
@@ -31,14 +31,14 @@ test('policy.load (options first)', function (t) {
       __created: res.__created ? new Date(res.__created) : false,
     };
 
-    t.deepEqual(stripFunctions(res), expect, 'policy is as expected');
+    t.same(stripFunctions(res), expect, 'policy is as expected');
   });
 });
 
 test('policy loads without args - non simple', function (t) {
   process.chdir(fixtures + '/ignore');
   return policy.load().then(function (policy) {
-    t.notEqual(Object.keys(policy.ignore), 0, 'has ignore rules');
+    t.not(Object.keys(policy.ignore), 0, 'has ignore rules');
   });
 });
 

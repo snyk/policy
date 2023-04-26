@@ -16,7 +16,7 @@ test('missing dash on policy is fixed up', function (t) {
 
     t.equal(paths1.length, 3, 'has 3 paths');
     t.equal(paths1.length, paths2.length, 'has equal length');
-    t.deepEqual(paths1, paths2, 'missing dash was hotfixed');
+    t.same(paths1, paths2, 'missing dash was hotfixed');
   });
 });
 
