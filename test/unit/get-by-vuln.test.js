@@ -1,6 +1,6 @@
 const test = require('tap-only');
 const fixtures = __dirname + '/../fixtures';
-const fs = require('promise-fs');
+const { promises: fs } = require('fs');
 const getByVuln = require('../../lib/match').getByVuln;
 const loadFromText = require('../../').loadFromText;
 const policy = require(fixtures + '/ignore/parsed.json');
