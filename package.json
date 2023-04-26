@@ -33,7 +33,6 @@
     "email-validator": "^2.0.4",
     "js-yaml": "^3.13.1",
     "lodash.clonedeep": "^4.5.0",
-    "promise-fs": "^2.1.1",
     "semver": "^7.3.4",
     "snyk-module": "^3.0.0",
     "snyk-resolve": "^1.1.0",
