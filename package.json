@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "Snyk's policy parser and matching logic",
   "files": [
+    "dist/package.json",
     "dist/lib",
     "LICENSE",
     "README.md"
