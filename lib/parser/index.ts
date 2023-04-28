@@ -22,7 +22,7 @@ function imports(rawYaml = '') {
   }
 
   if (!data.version) {
-    data.version = version();
+    data.version = 'v1';
   }
 
   if (data.version === 'v1') {
