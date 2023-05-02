@@ -1,66 +1,53 @@
 import { promises as fs } from 'fs';
-import test from 'tap-only';
+import { expect, test } from 'vitest';
 import { getByVuln, loadFromText } from '../../lib';
 
 const fixtures = __dirname + '/../fixtures';
 const policy = require(fixtures + '/ignore/parsed.json');
 const vulns = require(fixtures + '/ignore/vulns.json');
 
-test('getByVuln (no args)', function (t) {
+test('getByVuln (no args)', () => {
   const res = getByVuln();
-  t.equal(res, null, 'no args means null');
-  t.end();
+  expect(res).toBeNull();
 });
 
-test('getByVuln (no vulns)', function (t) {
+test('getByVuln (no vulns)', () => {
   const res = getByVuln(policy);
-  t.equal(res, null, 'no args means null');
-  t.end();
+  expect(res).toBeNull();
 });
 
-test('getByVuln', function (t) {
+test('getByVuln', () => {
   const res = vulns.vulnerabilities.map(getByVuln.bind(null, policy));
-  res.forEach(function (res, i) {
-    t.equal(res.type, 'ignore', 'expect ignore for ' + res.id);
-    t.equal(res.id, vulns.vulnerabilities[i].id, 'matched id: ' + res.id);
+  res.forEach((res, i) => {
+    expect(res.type).toBe('ignore');
+    expect(res.id).toBe(vulns.vulnerabilities[i].id);
   });
-  t.end();
 });
 
-test('getByVuln with star rules', function (t) {
+test('getByVuln with star rules', async () => {
   const id = 'npm:hawk:20160119';
   const vuln = vulns.vulnerabilities
-    .filter(function (v) {
+    .filter((v) => {
       return v.id === id;
     })
     .pop();
 
-  return fs
-    .readFile(fixtures + '/star-rule.txt', 'utf8')
-    .then(loadFromText)
-    .then(function (policy) {
-      const res = getByVuln(policy, vuln);
-      t.equal(res.id, id, 'found the vuln');
-      t.ok(res.rule.length > 0, 'rule has length');
-      t.ok(true);
-    });
+  const file = await fs.readFile(fixtures + '/star-rule.txt', 'utf8');
+  const policy = await loadFromText(file);
+  const res = getByVuln(policy, vuln);
+
+  expect(res.id).toBe(id);
+  expect(res.rule).not.empty;
 });
 
-test('getByVuln with exact match rules', function (t) {
+test('getByVuln with exact match rules', async () => {
   const id = 'npm:hawk:20160119';
-  const vuln = vulns.vulnerabilities
-    .filter(function (v) {
-      return v.id === id;
-    })
-    .pop();
+  const vuln = vulns.vulnerabilities.filter((v) => v.id === id).pop();
 
-  return fs
-    .readFile(fixtures + '/exact-rule.txt', 'utf8')
-    .then(loadFromText)
-    .then(function (policy) {
-      const res = getByVuln(policy, vuln);
-      t.equal(res.id, id, 'found the vuln');
-      t.ok(res.rule.length > 0, 'rule has length');
-      t.ok(true);
-    });
+  const file = await fs.readFile(fixtures + '/exact-rule.txt', 'utf8');
+  const policy = await loadFromText(file);
+  const res = getByVuln(policy, vuln);
+
+  expect(res.id).toBe(id);
+  expect(res.rule).not.empty;
 });

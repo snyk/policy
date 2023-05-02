@@ -1,30 +1,29 @@
-import test from 'tap-only';
+import { expect, test } from 'vitest';
 import * as policy from '../../lib';
 
 const fixtures = __dirname + '/../fixtures/ignore-expired';
 const fixturesNoQuotes = __dirname + '/../fixtures/ignore-expired-no-quotes';
 let vulns = require(fixtures + '/vulns.json');
 
-test('expired policies do not strip', function (t) {
-  return policy.load(fixtures).then(function (config) {
-    const start = vulns.vulnerabilities.length;
-    t.ok(start > 0, 'we have vulns to start with');
+test('expired policies do not strip', async () => {
+  const config = await policy.load(fixtures);
+  const start = vulns.vulnerabilities.length;
+  expect(start).toBeGreaterThan(0);
 
-    // should keep all vulns, because all of the ignores expired
-    vulns = config.filter(vulns);
-    t.equal(vulns.ok, false, 'post filter, we still have vulns');
-    t.equal(vulns.vulnerabilities.length, start, 'all vulns remained');
-  });
+  // should keep all vulns, because all of the ignores expired
+  vulns = config.filter(vulns);
+  expect(vulns.ok).toBe(false);
+  expect(vulns.vulnerabilities).toHaveLength(start);
 });
 
-test('expired policies do not strip (no quotes)', function (t) {
-  return policy.load(fixturesNoQuotes).then(function (config) {
+test('expired policies do not strip (no quotes)', () => {
+  return policy.load(fixturesNoQuotes).then((config) => {
     const start = vulns.vulnerabilities.length;
-    t.ok(start > 0, 'we have vulns to start with');
+    expect(start).toBeGreaterThan(0);
 
     // should keep all vulns, because all of the ignores expired
     vulns = config.filter(vulns);
-    t.equal(vulns.ok, false, 'post filter, we still have vulns');
-    t.equal(vulns.vulnerabilities.length, start, 'all vulns remained');
+    expect(vulns.ok).toBe(false);
+    expect(vulns.vulnerabilities).toHaveLength(start);
   });
 });

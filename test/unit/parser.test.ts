@@ -1,35 +1,33 @@
 import * as yaml from 'js-yaml';
-import test from 'tap-only';
+import { expect, test } from 'vitest';
 import * as parser from '../../lib/parser';
 
 const fixtures = __dirname + '/../fixtures';
 
-test('parser fills out defaults', function (t) {
+test('parser fills out defaults', () => {
   const res = parser.import();
-  const expect = {
+  const expected = {
     version: 'v1.0.0',
     ignore: {},
     patch: {},
   };
 
-  t.same(res, expect, 'parser fills defaults');
-  t.end();
+  expect(res).toStrictEqual(expected);
 });
 
-test('parser fills out defaults for invalid inputs', function (t) {
+test('parser fills out defaults for invalid inputs', () => {
   const res = parser.import('test');
-  const expect = {
+  const expected = {
     version: 'v1.0.0',
     ignore: {},
     patch: {},
   };
 
-  t.same(res, expect, 'parser fills defaults for invalid inputs');
-  t.end();
+  expect(res).toStrictEqual(expected);
 });
 
-test('parser does not modify default parsed format', function (t) {
-  const expect = {
+test('parser does not modify default parsed format', () => {
+  const expected = {
     version: 'v1.0.0',
     patch: {
       'glue > hapi > joi > moment': [
@@ -41,59 +39,36 @@ test('parser does not modify default parsed format', function (t) {
     ignore: {},
   };
 
-  const res = parser.import(yaml.safeDump(expect));
+  const res = parser.import(yaml.dump(expected));
 
-  t.same(res, expect, 'parser does nothing extra (v1 vs v1)');
-  t.end();
+  expect(res).toStrictEqual(expected);
 });
 
-test('test unsupported version', function (t) {
-  t.throws(
-    function () {
-      parser.import(
-        yaml.safeDump({
-          version: 'v20.0.1',
-        })
-      );
-    },
-    /unsupported version/,
-    'unsupported version throws'
-  );
-  t.end();
+test('test unsupported version', () => {
+  expect(() => {
+    parser.import(
+      yaml.dump({
+        version: 'v20.0.1',
+      })
+    );
+  }).toThrow(/unsupported version/);
 });
 
-test('demunge', function (t) {
+test('demunge', () => {
   const source = require(fixtures + '/parsed.json');
   const res = parser.demunge(source);
   const patchIds = Object.keys(source.patch);
   const ignoreIds = Object.keys(source.ignore);
   const excludeIds = Object.keys(source.exclude);
-  t.ok(Array.isArray(res.ignore), 'array');
-  t.ok(Array.isArray(res.patch), 'array');
-  t.ok(Array.isArray(res.exclude), 'array');
-  t.equal(res.patch.length, 2, 'two patched items');
-  t.equal(res.ignore.length, 3, 'three ignored items');
-  t.equal(res.exclude.length, 2, 'two excluded categories');
-  t.same(
-    res.patch.map(function (o) {
-      return o.id;
-    }),
-    patchIds,
-    'patch ids found in the right place'
-  );
-  t.same(
-    res.ignore.map(function (o) {
-      return o.id;
-    }),
-    ignoreIds,
-    'ignore ids found in the right place'
-  );
-  t.same(
-    res.exclude.map(function (o) {
-      return o.id;
-    }),
-    excludeIds,
-    'exclude ids found in the right place'
-  );
-  t.end();
+
+  expect(res.ignore).toBeInstanceOf(Array);
+  expect(res.patch).toBeInstanceOf(Array);
+  expect(res.exclude).toBeInstanceOf(Array);
+  expect(res.patch).toHaveLength(2);
+  expect(res.ignore).toHaveLength(3);
+  expect(res.exclude).toHaveLength(2);
+
+  expect(res.patch.map((o) => o.id)).toStrictEqual(patchIds);
+  expect(res.ignore.map((o) => o.id)).toStrictEqual(ignoreIds);
+  expect(res.exclude.map((o) => o.id)).toStrictEqual(excludeIds);
 });

@@ -1,47 +1,45 @@
 import fs from 'fs';
-import { beforeEach, test } from 'tap';
+import { beforeEach, expect, test } from 'vitest';
 import * as policy from '../../lib';
 
 const fixtures = __dirname + '/../fixtures';
 const dir = fixtures + '/severity-control';
 let vulns: any = {};
 
-beforeEach(function () {
+beforeEach(() => {
   // only contains medium + low - this file is read using fs to ensure refresh
   vulns = JSON.parse(fs.readFileSync(dir + '/vulns.json', 'utf8'));
 });
 
-test('severity-control: high (ok=true)', function (t) {
-  return policy.loadFromText('failThreshold: high').then(function (res) {
-    vulns = res.filter(vulns);
-    t.equal(vulns.ok, true, 'only failing on high severity');
-    t.not(vulns.vulnerabilities.length, 0, 'vulns still available to read');
-  });
+test('severity-control: high (ok=true)', async () => {
+  const res = await policy.loadFromText('failThreshold: high');
+  vulns = res.filter(vulns);
+
+  expect(vulns.ok).toBe(true);
+  expect(vulns.vulnerabilities).not.toHaveLength(0);
 });
 
-test('severity-control: medium (ok=false)', function (t) {
-  return policy.loadFromText('failThreshold: medium').then(function (res) {
-    vulns = res.filter(vulns);
-    t.equal(vulns.ok, false, 'only failing on medium severity');
-    t.not(vulns.vulnerabilities.length, 0, 'vulns still available to read');
-  });
+test('severity-control: medium (ok=false)', async () => {
+  const res = await policy.loadFromText('failThreshold: medium');
+  vulns = res.filter(vulns);
+
+  expect(vulns.ok).toBe(false);
+  expect(vulns.vulnerabilities).not.toHaveLength(0);
 });
 
-test('severity-control: low (ok=false)', function (t) {
-  return policy.loadFromText('failThreshold: low').then(function (res) {
-    vulns = res.filter(vulns);
-    t.equal(vulns.ok, false, 'only failing on low severity');
-    t.not(vulns.vulnerabilities.length, 0, 'vulns still available to read');
-  });
+test('severity-control: low (ok=false)', async () => {
+  const res = await policy.loadFromText('failThreshold: low');
+  vulns = res.filter(vulns);
+
+  expect(vulns.ok).toBe(false);
+  expect(vulns.vulnerabilities.length).not.toBe(0);
 });
 
-test('severity-control fails on bad value', function (t) {
-  return policy
-    .loadFromText('failThreshold: foo')
-    .then(function () {
-      t.fail('should have thrown');
+test('severity-control fails on bad value', () => {
+  expect(() =>
+    policy.loadFromText('failThreshold: foo').catch((error) => {
+      expect(error.code).toBe('POLICY_BAD_THRESHOLD');
+      throw error;
     })
-    .catch(function (error) {
-      t.equal(error.code, 'POLICY_BAD_THRESHOLD', 'failed correctly');
-    });
+  ).rejects.toThrow();
 });

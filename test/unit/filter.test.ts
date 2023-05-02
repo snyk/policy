@@ -1,16 +1,15 @@
-import test from 'tap-only';
+import { expect, test } from 'vitest';
 import * as policy from '../../lib';
 
 const fixtures = __dirname + '/../fixtures/ignore';
 let vulns = require(fixtures + '/vulns.json');
 
-test('ignored vulns do not turn up in tests', function (t) {
-  return policy.load(fixtures).then(function (config) {
-    t.ok(vulns.vulnerabilities.length > 0, 'we have vulns to start with');
+test('ignored vulns do not turn up in tests', async () => {
+  const config = await policy.load(fixtures);
+  expect(vulns.vulnerabilities).length.greaterThan(0);
 
-    // should strip all
-    vulns = config.filter(vulns);
-    t.equal(vulns.ok, true, 'post filter, we have no vulns');
-    t.same(vulns.vulnerabilities, [], 'vulns stripped');
-  });
+  // should strip all
+  vulns = config.filter(vulns);
+  expect(vulns.ok).toBe(true);
+  expect(vulns.vulnerabilities).toStrictEqual([]);
 });
