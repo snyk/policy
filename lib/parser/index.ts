@@ -15,9 +15,12 @@ const parsers = {
 };
 
 function imports(rawYaml = '') {
+  const isObject = (v: any) =>
+    Object.prototype.toString.call(v) === '[object Object]'; // typeof returns true for arrays and other types
+
   let data = yaml.safeLoad(rawYaml);
 
-  if (!data || typeof data !== 'object') {
+  if (!data || !isObject(data)) {
     data = {};
   }
 

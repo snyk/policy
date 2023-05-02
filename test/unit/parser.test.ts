@@ -26,6 +26,20 @@ test('parser fills out defaults for invalid inputs', () => {
   expect(res).toStrictEqual(expected);
 });
 
+test('parser fills out defaults for invalid array input', () => {
+  const res = parser.import(
+    `# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.+
+    - object Object`
+  );
+  const expected = {
+    version: 'v1.0.0',
+    ignore: {},
+    patch: {},
+  };
+
+  expect(res).toStrictEqual(expected);
+});
+
 test('parser does not modify default parsed format', () => {
   const expected = {
     version: 'v1.0.0',
