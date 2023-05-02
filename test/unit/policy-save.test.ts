@@ -10,7 +10,10 @@ afterEach(() => {
 });
 
 test('policy.save', async () => {
+  const mockLatestVersion = 'v1.2.3';
+
   const writeFileStub = vi.spyOn(fs, 'writeFile').mockResolvedValueOnce();
+  vi.spyOn(policy, 'latestVersion').mockReturnValue(mockLatestVersion);
 
   const filename = path.resolve(fixtures + '/ignore/.snyk');
   let asText = '';
@@ -24,6 +27,10 @@ test('policy.save', async () => {
 
   expect(writeFileStub).toHaveBeenCalledOnce();
   expect(writeFileStub).toHaveBeenCalledWith(filename, expect.anything());
+
+  // always save with the latest schema version
+  asText = asText.replace('version: v1.0.0', 'version: ' + mockLatestVersion);
+
   const parsed = (writeFileStub.mock.calls[0][1] as string).trim();
   expect(parsed).toBe(asText);
   expect(parsed).toMatch(

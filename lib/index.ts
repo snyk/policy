@@ -13,6 +13,9 @@ export { filter, load, save, loadFromText, add, addExclude, create };
 
 const debug = newDebug('snyk:policy');
 
+/** Returns the version of the latest policy schema */
+export const latestVersion = () => 'v1.25.1'; // only major _should_ matter, but deferring for now
+
 function create() {
   return loadFromText('');
 }
