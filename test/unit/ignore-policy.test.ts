@@ -1,24 +1,25 @@
-import test from 'tap-only';
+import { expect, test } from 'vitest';
 import * as policy from '../../lib';
 
 const fixtures = __dirname + '/../fixtures';
 
-test('single load', function (t) {
-  return policy
-    .load(fixtures + '/ignore', { 'ignore-policy': true })
-    .then(function (res) {
-      t.equal(Object.keys(res.ignore).length, 0, 'ignore policy is empty');
-      t.equal(Object.keys(res.patch).length, 0, 'patch policy is empty');
-      t.type(res.filter, 'function', 'helper methods attached');
-    });
+test('single load', async () => {
+  const res = await policy.load(fixtures + '/ignore', {
+    'ignore-policy': true,
+  });
+
+  expect(Object.keys(res.ignore)).toHaveLength(0);
+  expect(Object.keys(res.patch)).toHaveLength(0);
+  expect(res.filter).toBeTypeOf('function');
 });
 
-test('multiple load', function (t) {
-  return policy
-    .load([fixtures + '/patch', fixtures + '/patch-mean'])
-    .then(function (res) {
-      t.equal(Object.keys(res.ignore).length, 0, 'ignore policy is empty');
-      t.not(Object.keys(res.patch).length, 0, 'patch policy is not empty');
-      t.type(res.filter, 'function', 'helper methods attached');
-    });
+test('multiple load', async () => {
+  const res = await policy.load([
+    fixtures + '/patch',
+    fixtures + '/patch-mean',
+  ]);
+
+  expect(Object.keys(res.ignore)).toHaveLength(0);
+  expect(Object.keys(res.patch)).not.toHaveLength(0);
+  expect(res.filter).toBeTypeOf('function');
 });

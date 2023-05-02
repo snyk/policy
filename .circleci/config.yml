@@ -144,7 +144,7 @@ jobs:
           at: ~/policy
       - run:
           name: Run tests
-          command: npm run test -- --ci
+          command: npm run test
       - store_test_results:
           path: reports/jest/
       - store_artifacts:

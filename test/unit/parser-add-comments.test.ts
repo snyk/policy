@@ -1,38 +1,30 @@
 import * as yaml from 'js-yaml';
-import test from 'tap-only';
+import { expect, test } from 'vitest';
 import addComments from '../../lib/parser/add-comments';
 
-test('policy with no patches or ignores', function (t) {
+test('policy with no patches or ignores', () => {
   const res = addComments(
-    yaml.safeDump({
+    yaml.dump({
       version: 'v1.0.0',
       patch: {},
       ignore: {},
     })
   );
 
-  t.ok(
-    res.match(/^# Snyk \(https:\/\/snyk\.io\) policy file/),
-    'addComments adds initial comment'
-  );
-  t.notMatch(
-    res,
+  expect(res).toMatch(/^# Snyk \(https:\/\/snyk\.io\) policy file/);
+  expect(res).not.toMatch(
     '# patches apply the minimum changes required to fix ' +
-      'a vulnerability\npatch:',
-    'addComments does not add patch comment'
+      'a vulnerability\npatch:'
   );
-  t.notMatch(
-    res,
+  expect(res).not.toMatch(
     '# ignores vulnerabilities until expiry date; change ' +
-      'duration by modifying expiry date\nignore:',
-    'addComments does not add ignore comment'
+      'duration by modifying expiry date\nignore:'
   );
-  t.end();
 });
 
-test('policy with patches', function (t) {
+test('policy with patches', () => {
   const res = addComments(
-    yaml.safeDump({
+    yaml.dump({
       version: 'v1.0.0',
       patch: {
         'glue > hapi > joi > moment': [
@@ -45,24 +37,19 @@ test('policy with patches', function (t) {
     })
   );
 
-  t.match(
-    res,
+  expect(res).toMatch(
     '# patches apply the minimum changes required to fix ' +
-      'a vulnerability\npatch:',
-    'addComments adds patch comment'
+      'a vulnerability\npatch:'
   );
-  t.notMatch(
-    res,
+  expect(res).not.toMatch(
     '# ignores vulnerabilities until expiry date; change ' +
-      'duration by modifying expiry date\nignore:',
-    'addComments does not add ignore comment'
+      'duration by modifying expiry date\nignore:'
   );
-  t.end();
 });
 
-test('policy with ignores', function (t) {
+test('policy with ignores', () => {
   const res = addComments(
-    yaml.safeDump({
+    yaml.dump({
       version: 'v1.0.0',
       patch: {},
       ignore: {
@@ -75,24 +62,19 @@ test('policy with ignores', function (t) {
     })
   );
 
-  t.match(
-    res,
+  expect(res).toMatch(
     '# ignores vulnerabilities until expiry date; change ' +
-      'duration by modifying expiry date\nignore:',
-    'addComments adds ignore comment'
+      'duration by modifying expiry date\nignore:'
   );
-  t.notMatch(
-    res,
+  expect(res).not.toMatch(
     '# patches apply the minimum changes required to fix ' +
-      'a vulnerability\npatch:',
-    'addComments does not add patch comment'
+      'a vulnerability\npatch:'
   );
-  t.end();
 });
 
-test('policy with ignores and patches', function (t) {
+test('policy with ignores and patches', () => {
   const res = addComments(
-    yaml.safeDump({
+    yaml.dump({
       version: 'v1.0.0',
       patch: {
         'glue > hapi > joi > moment': [
@@ -111,17 +93,12 @@ test('policy with ignores and patches', function (t) {
     })
   );
 
-  t.match(
-    res,
+  expect(res).toMatch(
     '# ignores vulnerabilities until expiry date; change ' +
-      'duration by modifying expiry date\nignore:',
-    'addComments adds ignore comment'
+      'duration by modifying expiry date\nignore:'
   );
-  t.match(
-    res,
+  expect(res).toMatch(
     '# patches apply the minimum changes required to fix ' +
-      'a vulnerability\npatch:',
-    'addComments adds patch comment'
+      'a vulnerability\npatch:'
   );
-  t.end();
 });

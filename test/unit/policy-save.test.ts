@@ -1,44 +1,33 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { afterEach, test } from 'tap';
-import sinon from 'sinon';
+import { afterEach, expect, test, vi } from 'vitest';
 import * as policy from '../../lib';
 
 const fixtures = __dirname + '/../fixtures';
 
-var sandbox = sinon.createSandbox();
-
-afterEach(function () {
-  sandbox.restore();
+afterEach(() => {
+  vi.resetAllMocks();
 });
 
-test('policy.save', function (t) {
-  const writeFileStub = sandbox
-    .stub(fs, 'writeFile')
-    .returns(Promise.resolve());
+test('policy.save', async () => {
+  const writeFileStub = vi.spyOn(fs, 'writeFile').mockResolvedValueOnce();
 
   const filename = path.resolve(fixtures + '/ignore/.snyk');
   let asText = '';
-  return fs
-    .readFile(filename, 'utf8')
-    .then(function (res) {
-      asText = res.trim();
-      return asText;
-    })
-    .then(policy.loadFromText)
-    .then(function (res) {
-      return policy.save(res, path.dirname(filename));
-    })
-    .then(function () {
-      t.equal(writeFileStub.callCount, 1, 'write only once');
-      t.equal(writeFileStub.args[0][0], filename, 'filename correct');
-      const parsed = writeFileStub.args[0][1].trim();
-      t.equal(parsed, asText, 'body contains original');
-      t.match(
-        parsed,
-        '# Snyk (https://snyk.io) policy file, patches or ' +
-          'ignores known vulnerabilities.',
-        'body contains comments'
-      );
-    });
+
+  const file = await fs.readFile(filename, 'utf8');
+  asText = file.trim();
+
+  const res = await policy.loadFromText(asText);
+
+  await policy.save(res, path.dirname(filename));
+
+  expect(writeFileStub).toHaveBeenCalledOnce();
+  expect(writeFileStub).toHaveBeenCalledWith(filename, expect.anything());
+  const parsed = (writeFileStub.mock.calls[0][1] as string).trim();
+  expect(parsed).toBe(asText);
+  expect(parsed).toMatch(
+    '# Snyk (https://snyk.io) policy file, patches or ' +
+      'ignores known vulnerabilities.'
+  );
 });

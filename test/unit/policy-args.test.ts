@@ -1,51 +1,54 @@
-import * as path from 'path';
-import test from 'tap-only';
+import { afterEach, expect, test, vi } from 'vitest';
 import * as policy from '../../lib';
 
 const fixtures = __dirname + '/../fixtures';
 
-process.chdir(fixtures + '/simple');
-
-test('policy.load (no args)', function (t) {
-  return policy.load().then(function (res) {
-    const expect = {
-      version: 'v1.0.0',
-      ignore: {},
-      patch: {},
-      __filename: path.relative(process.cwd(), fixtures + '/simple/.snyk'),
-      __modified: res.__modified ? new Date(res.__modified) : false,
-      __created: res.__created ? new Date(res.__created) : false,
-    };
-
-    t.same(stripFunctions(res), expect, 'policy is as expected');
-  });
+afterEach(() => {
+  vi.resetAllMocks();
 });
 
-test('policy.load (options first)', function (t) {
-  return policy.load({}).then(function (res) {
-    const expect = {
-      version: 'v1.0.0',
-      ignore: {},
-      patch: {},
-      __filename: path.relative(process.cwd(), fixtures + '/simple/.snyk'),
-      __modified: res.__modified ? new Date(res.__modified) : false,
-      __created: res.__created ? new Date(res.__created) : false,
-    };
+test('policy.load (no args)', async () => {
+  vi.spyOn(process, 'cwd').mockReturnValue(fixtures + '/simple');
 
-    t.same(stripFunctions(res), expect, 'policy is as expected');
-  });
+  const res = await policy.load();
+  const expected = {
+    version: 'v1.0.0',
+    ignore: {},
+    patch: {},
+    __filename: '.snyk',
+    __modified: res.__modified ? new Date(res.__modified) : false,
+    __created: res.__created ? new Date(res.__created) : false,
+  };
+
+  expect(stripFunctions(res)).toStrictEqual(expected);
 });
 
-test('policy loads without args - non simple', function (t) {
-  process.chdir(fixtures + '/ignore');
-  return policy.load().then(function (policy) {
-    t.not(Object.keys(policy.ignore), 0, 'has ignore rules');
-  });
+test('policy.load (options first)', async () => {
+  vi.spyOn(process, 'cwd').mockReturnValue(fixtures + '/simple');
+
+  const res = await policy.load({});
+  const expected = {
+    version: 'v1.0.0',
+    ignore: {},
+    patch: {},
+    __filename: '.snyk',
+    __modified: res.__modified ? new Date(res.__modified) : false,
+    __created: res.__created ? new Date(res.__created) : false,
+  };
+
+  expect(stripFunctions(res)).toStrictEqual(expected);
 });
 
-function stripFunctions(res) {
+test('policy loads without args - non simple', async () => {
+  vi.spyOn(process, 'cwd').mockReturnValue(fixtures + '/ignore');
+
+  const res = await policy.load();
+  expect(Object.keys(res.ignore)).not.toBe(0);
+});
+
+function stripFunctions(res: object) {
   // strip functions (as they don't land in the final config)
-  Object.keys(res).map(function (key) {
+  Object.keys(res).forEach((key) => {
     if (typeof res[key] === 'function') {
       delete res[key];
     }

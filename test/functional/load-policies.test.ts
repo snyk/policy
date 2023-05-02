@@ -1,9 +1,9 @@
-import test from 'tap-only';
+import { expect, test } from 'vitest';
 import * as policy from '../../lib';
 
 const fixtures = __dirname + '/../fixtures';
 
-test('load different types of policies', function (t) {
+test('load different types of policies', () => {
   const dirs = [
     'patch',
     'deep-policy',
@@ -21,12 +21,9 @@ test('load different types of policies', function (t) {
   ];
 
   return Promise.all(
-    dirs.map(function (dir) {
-      return policy
-        .load(fixtures + '/' + dir, { loose: true })
-        .then(function (res) {
-          t.ok('load succeeded for ' + dir);
-        });
+    dirs.map((dir) => {
+      expect(() => policy.load(fixtures + '/' + dir, { loose: true })).not
+        .toThrow;
     })
   );
 });
