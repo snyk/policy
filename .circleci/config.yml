@@ -167,10 +167,8 @@ workflows:
     jobs:
       - install:
           name: Install
-          context: nodejs-lib-release
       - lint:
           name: Lint
-          context: nodejs-lib-release
           requires:
             - Install
           filters:
@@ -179,7 +177,6 @@ workflows:
                 - master
       - test:
           name: Test
-          context: nodejs-lib-release
           requires:
             - Lint
           matrix:
@@ -196,14 +193,13 @@ workflows:
 
       - scan:
           name: Snyk Vuln Scan
-          context: 
-            - nodejs-lib-release
+          context: narwhal-policy
           requires:
             - Install
 
       - release:
           name: Release
-          context: nodejs-lib-release
+          context: narwhal-policy
           filters:
             branches:
               only:
@@ -213,11 +209,9 @@ workflows:
     jobs:
       - install:
           name: Install
-          context: nodejs-lib-release
       - scan:
           name: Snyk Vuln Scan
-          context: 
-            - nodejs-lib-release
+          context: narwhal-policy
           requires:
             - Install
     triggers:
