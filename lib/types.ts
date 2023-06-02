@@ -28,9 +28,9 @@ export type PathObj = Record<string, Rule>;
 export type PatternGroup = 'global' | 'code' | 'iac-drift';
 
 export interface Policy {
-  __filename: string;
-  __created: number;
-  __modified: number;
+  __filename: string | null;
+  __created: Date | number;
+  __modified: Date | number;
 
   ignore: RuleSet;
   patch: RuleSet;
@@ -42,6 +42,16 @@ export interface Policy {
   version: string;
 }
 
+export class PolicyError extends Error {
+  code?: string;
+
+  constructor(message: string, code?: string) {
+    super(message);
+    Object.setPrototypeOf(this, PolicyError.prototype);
+    this.code = code;
+  }
+}
+
 /**
  * @example
  * {
@@ -50,9 +60,9 @@ export interface Policy {
  * }
  */
 export interface Rule {
-  created: Date | string;
+  created: Date;
   disregardIfFixable: boolean;
-  expires?: Date | string;
+  expires?: string | Date;
   ignoredBy: {
     email: string;
   };
