@@ -1,4 +1,10 @@
+export type ExcludeRuleSet = Record<PatternGroup, (string | PathObj)[]>;
+
 export type MatchStrategy = 'packageManager' | 'exact';
+
+export interface MetaRule extends Rule {
+  path: string;
+}
 
 /**
  * A dependency package.
@@ -19,6 +25,8 @@ export interface Package {
  */
 export type PathObj = Record<string, Rule>;
 
+export type PatternGroup = 'global' | 'code' | 'iac-drift';
+
 export interface Policy {
   __filename: string;
   __created: number;
@@ -27,7 +35,7 @@ export interface Policy {
   ignore: RuleSet;
   patch: RuleSet;
   suggest: RuleSet;
-  exclude?: RuleSet;
+  exclude?: ExcludeRuleSet;
 
   failThreshold: Severity;
   skipVerifyPatch: boolean;
@@ -48,7 +56,6 @@ export interface Rule {
   ignoredBy: {
     email: string;
   };
-  path: string[];
   reason: string;
   reasonType: string;
   source: string;
@@ -79,7 +86,7 @@ export interface Rule {
 export type RuleSet = Record<string, PathObj[]>;
 
 export interface SecurityPolicyMetaData {
-  ignore: Rule;
+  ignore: MetaRule;
 }
 
 /**
