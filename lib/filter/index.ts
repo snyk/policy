@@ -1,55 +1,104 @@
 export default filter;
 
 import newDebug from 'debug';
+
+import {
+  MatchStrategy,
+  Policy,
+  Rule,
+  Vulnerability,
+  VulnsObject,
+} from '../types';
 import ignore from './ignore';
 import notes from './notes';
 import patch from './patch';
 
 const debug = newDebug('snyk:policy');
 
-// warning: mutates vulns
-function filter(vulns, policy, root, matchStrategy = 'packageManager') {
+export interface FilteredRule extends Rule {
+  path: string[];
+}
+
+export interface FilteredVulnerability extends Vulnerability {
+  filtered?: {
+    ignored?: FilteredRule[];
+    patches?: FilteredRule[];
+  };
+  note?: string;
+}
+
+export interface FilteredVulns {
+  ok: boolean;
+
+  vulnerabilities: FilteredVulnerability[];
+
+  filtered?: {
+    ignore: Vulnerability[];
+    patch: Vulnerability[];
+  };
+}
+
+/**
+ * Applies the specified policy to the vulnerabilities object.
+ * @param vulns (*mutates!*) the vulnerabilities object to filter
+ * @param policy the policy object to apply to the vulnerabilities
+ * @param root the root directory to use for patching (defaults to process.cwd())
+ * @param matchStrategy the strategy used to match vulnerabilities (defaults to 'packageManager')
+ * @returns the filtered vulnerabilities object
+ */
+function filter(
+  vulns: VulnsObject,
+  policy: Policy,
+  root: string,
+  matchStrategy: MatchStrategy = 'packageManager'
+) {
   if (!root) {
     root = process.cwd();
   }
 
   if (vulns.ok) {
-    return vulns;
+    return vulns as FilteredVulns;
   }
 
   const filtered = {
-    ignore: [],
-    patch: [],
+    ignore: [] as FilteredVulnerability[],
+    patch: [] as FilteredVulnerability[],
   };
 
+  // converts vulns to filtered vulns
+  const filteredVulns = vulns as FilteredVulns;
+
   // strip the ignored modules from the results
-  vulns.vulnerabilities = ignore(
+  filteredVulns.vulnerabilities = ignore(
     policy.ignore,
-    vulns.vulnerabilities,
+    filteredVulns.vulnerabilities,
     filtered.ignore,
     matchStrategy
   );
 
-  vulns.vulnerabilities = patch(
+  filteredVulns.vulnerabilities = patch(
     policy.patch,
-    vulns.vulnerabilities,
+    filteredVulns.vulnerabilities,
     root,
     policy.skipVerifyPatch ? true : false,
     filtered.patch
   );
 
   if (policy.suggest) {
-    vulns.vulnerabilities = notes(policy.suggest, vulns.vulnerabilities);
+    filteredVulns.vulnerabilities = notes(
+      policy.suggest,
+      filteredVulns.vulnerabilities
+    );
   }
 
   // if there's no vulns after the ignore process, let's reset the `ok`
   // state and remove the vulns entirely.
-  if (vulns.vulnerabilities.length === 0) {
-    vulns.ok = true;
-    vulns.vulnerabilities = [];
+  if (filteredVulns.vulnerabilities.length === 0) {
+    filteredVulns.ok = true;
+    filteredVulns.vulnerabilities = [];
   }
 
-  vulns.filtered = filtered;
+  filteredVulns.filtered = filtered;
 
   debug('> has threshold? %s', policy.failThreshold);
 
@@ -62,14 +111,16 @@ function filter(vulns, policy, root, matchStrategy = 'packageManager') {
       low: 1,
     };
     const level = levels[policy.failThreshold];
-    vulns.ok = true;
-    vulns.vulnerabilities.some(function (vuln) {
+    filteredVulns.ok = true;
+    filteredVulns.vulnerabilities.some((vuln) => {
       if (levels[vuln.severity] >= level) {
-        vulns.ok = false;
+        filteredVulns.ok = false;
         return true; // breaks
       }
+
+      return false;
     });
   }
 
-  return vulns;
+  return filteredVulns;
 }

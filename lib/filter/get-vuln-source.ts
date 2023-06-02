@@ -5,15 +5,23 @@ export default getVulnSource;
 import newDebug from 'debug';
 import { statSync } from 'fs';
 import * as path from 'path';
+
 import { parsePackageString as moduleToObject } from 'snyk-module';
 import resolve from 'snyk-resolve';
 
+import { Vulnerability } from '../types';
+
 const debug = newDebug('snyk:policy');
 
-function getVulnSource(vuln, cwd, live) {
-  const from = vuln.from.slice(1).map(function (pkg) {
-    return moduleToObject(pkg).name;
-  });
+/**
+ * Get the path to the vulnerable dependency's source
+ * @param vuln the vulnerability
+ * @param cwd the current working directory
+ * @param live set to true to throw if source is not found
+ * @returns the local path to the dependency
+ */
+function getVulnSource(vuln: Vulnerability, cwd: string, live: boolean) {
+  const from = vuln.from.slice(1).map((pkg) => moduleToObject(pkg).name);
 
   const viaPath = path.resolve(
     cwd || process.cwd(),
