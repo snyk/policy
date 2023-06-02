@@ -1,39 +1,47 @@
-export { matchToRule, getByVuln };
-
-/**
- * @typedef Vulnerability
- * @type {Object}
- * @property {string[]} from - the dependency path in which it was introduced. This should include the project itself.
- */
-
-/**
- * @typedef IgnoreRule
- * @type {Object.<string, Object>}
- */
-
 import newDebug from 'debug';
 import * as semver from 'semver';
+
 import { parsePackageString as moduleToObject } from 'snyk-module';
+
+import {
+  MatchStrategy,
+  Package,
+  PathObj,
+  Policy,
+  VulnRule,
+  Vulnerability,
+} from './types';
+
+export { matchToRule, getByVuln };
 
 const debug = newDebug('snyk:policy');
 const debugPolicy = newDebug('snyk:protect');
 
-// matchPath will take the array of dependencies that a vulnerability came from
-// and try to match it to a string `path`. The path will look like this:
-// express-hbs@0.8.4 > handlebars@3.0.3 > uglify-js@2.3.6
-// note that the root package is never part of the path (i.e. jsbin@3.11.31)
-// the path can also use `*` as a wildcard _and_ use semver:
-// * > uglify-js@2.x
-// The matchPath will break the `path` down into it's component parts, and loop
-// through trying to get a positive match or not. For full examples of options
-// see http://git.io/vCH3N
-function matchPath(from, path) {
+/**
+ * matchPath will take the array of dependencies that a vulnerability came from and try to match it
+ * to a rule `path`.
+ *
+ * The path will look like this: `express-hbs@0.8.4 > handlebars@3.0.3 > uglify-js@2.3.6`.
+ * Note that the root package is never part of the path (i.e. `jsbin@3.11.31`).
+ * The path can also use `*` as a wildcard _and_ use semver: `* > uglify-js@2.x`.
+ *
+ * The matchPath will break the `path` down into it's component parts, and loop through trying to
+ * get a positive match or not. For full examples of options (see http://git.io/vCH3N)
+ *
+ * @param from the array of dependency paths from which a given vulnerability was introduced
+ * @param path the rule path to match against
+ * @returns whether the rule `path` matches a dependency path in the vulnerability's `from` array
+ */
+function matchPath(from: string[], path: string) {
   const parts = path.split(' > ');
   debugPolicy('checking path: %s vs. %s', path, from);
   let offset = 0;
-  const res = parts.every(function (pkg, i) {
+
+  const res = parts.every((pkg, i) => {
     debugPolicy('for %s...(against %s)', pkg, from[i + offset]);
-    let fromPkg: any = from[i + offset] ? moduleToObject(from[i + offset]) : {};
+    let fromPkg = from[i + offset]
+      ? moduleToObject(from[i + offset])
+      : ({} as Package);
 
     if (pkg === '*') {
       debugPolicy('star rule');
@@ -116,19 +124,34 @@ function matchPath(from, path) {
 }
 
 /**
- * Returns whether any of the ignore rule paths match the path in which the vulnerability was introduced
- * @param {Vulnerability} vuln a single vulnerability, where `from` contains the dependency path in which it was introduced
- * @param {IgnoreRule} rule an ignore rule for the given vulnerability with one or more paths to ignore
- * @param {('packageManager'|'exact')} matchStrategy
+ * Returns whether any of the rule paths match the path in which the vulnerability was introduced.
+ * @param vuln a single vulnerability, where `from` contains the dependency path in which it was introduced
+ * @param rule an ignore rule for the given vulnerability with one or more paths to ignore
+ * @param matchStrategy the strategy used to match vulnerabilities (defaults to 'packageManager')
  * @returns whether any ignore rules match the vulnerabilities import path
  */
-function matchToRule(vuln, rule, matchStrategy = 'packageManager') {
-  return Object.keys(rule).some(function (path) {
-    return matchToSingleRule(vuln, path, matchStrategy);
-  });
+function matchToRule(
+  vuln: Vulnerability,
+  pathObj: PathObj,
+  matchStrategy: MatchStrategy = 'packageManager'
+) {
+  return Object.keys(pathObj).some((path) =>
+    matchToSingleRule(vuln, path, matchStrategy)
+  );
 }
 
-function matchToSingleRule(vuln, path, matchStrategy) {
+/**
+ * Returns whether a single rule path matches the path in which the vulnerability was introduced.
+ * @param vuln a single vulnerability, where `from` contains the dependency path in which it was introduced
+ * @param path the rule path to match against
+ * @param matchStrategy the strategy used to match vulnerabilities (defaults to 'packageManager')
+ * @returns whether the rule `path` matches a dependency path in the `from` array
+ */
+function matchToSingleRule(
+  vuln: Vulnerability,
+  path: string,
+  matchStrategy: MatchStrategy
+) {
   if (matchStrategy === 'exact') {
     return matchExactWithStars(vuln, path);
   }
@@ -146,7 +169,7 @@ function matchToSingleRule(vuln, path, matchStrategy) {
   return pathMatch;
 }
 
-function matchExactWithStars(vuln, path) {
+function matchExactWithStars(vuln: Vulnerability, path: string) {
   const parts = path.split(' > ');
   if (parts[parts.length - 1] === '*') {
     const paddingLength = vuln.from.length - parts.length;
@@ -165,27 +188,32 @@ function matchExactWithStars(vuln, path) {
   return true;
 }
 
-function getByVuln(policy?, vuln?) {
-  let found = null;
+/**
+ * Returns any matching rule given a specific vulnerability object. The `vuln` object must contain
+ * `id` and `from` to match correctly.
+ * @param policy the policy object to apply to the vulnerabilities
+ * @param vuln a single vulnerability, where `from` contains the dependency path in which it was introduced
+ * @returns the matching rule, or null if no match was found
+ */
+function getByVuln(policy?: Policy, vuln?: Vulnerability): VulnRule | null {
+  let found: VulnRule | null = null;
 
   if (!policy || !vuln) {
     return found;
   }
 
-  ['ignore', 'patch'].forEach(function (key) {
-    Object.keys(policy[key] || []).forEach(function (p) {
+  (['ignore', 'patch'] as ('ignore' | 'patch')[]).forEach((key) => {
+    Object.keys(policy[key] || []).forEach((p) => {
       if (p === vuln.id) {
-        policy[key][p].forEach(function (rule) {
+        policy[key][p].forEach((rule) => {
           if (matchToRule(vuln, rule)) {
+            const rootRule = Object.keys(rule).pop()!;
             found = {
               type: key,
               id: vuln.id,
               rule: vuln.from,
-            };
-            const rootRule = Object.keys(rule).pop();
-            Object.keys(rule[rootRule]).forEach(function (key) {
-              found[key] = rule[rootRule][key];
-            });
+              ...rule[rootRule],
+            } as VulnRule;
           }
         });
       }
