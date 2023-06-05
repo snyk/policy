@@ -60,6 +60,7 @@ export interface Rule {
   reasonType: string;
   source: string;
   from?: string;
+  patched?: string;
 }
 
 /**
@@ -141,4 +142,15 @@ export interface VulnsObject {
    * The vulnerabilities found in the project.
    */
   vulnerabilities: Vulnerability[];
+}
+
+/**
+ * Returns true if the value is an object. This is a more reliable check than `typeof` or
+ * `instanceof`, because `typeof null` is `object` and `typeof []` is `object` which is not what
+ * we want.
+ * @param v The value to check.
+ * @returns True if the value is an object.
+ */
+export function isObject(v: unknown): v is Record<string, unknown> {
+  return Object.prototype.toString.call(v) === '[object Object]';
 }

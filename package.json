@@ -17,6 +17,7 @@
     "lint": "run-p --max-parallel=${JOBS:-6} --aggregate-output lint:*",
     "lint:eslint": "eslint -c .eslintrc lib",
     "lint:commits": "commitlint --from=HEAD~20",
+    "lint:types": "tsc --noEmit",
     "format": "prettier --write '{lib,test}/**/*.?s'",
     "prepack": "npm run build",
     "check-tests": "! grep 'test.only' test/**/*.test.ts -n",

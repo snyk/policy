@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { describe, expect, test } from 'vitest';
 import * as policy from '../../lib';
+import { PathObj, Rule, RuleSet, Vulnerability } from '../../lib/types';
 
 const fixtures = __dirname + '/../fixtures';
 
@@ -9,7 +10,7 @@ const vulnWithGitUrl = JSON.parse(
 );
 const exactMatchVuln = {
   from: ['a-dir/a-file.json', 'foo', 'bar'],
-};
+} as Vulnerability;
 
 describe('matchToRule', () => {
   const vuln = {
@@ -19,14 +20,14 @@ describe('matchToRule', () => {
       'handlebars@2.0.0',
       'uglify-js@2.3.6',
     ],
-  };
+  } as Vulnerability;
 
   test('match exact path', () => {
     const rule = {
       'jsbin@3.35.9 > handlebars@2.0.0 > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -38,7 +39,7 @@ describe('matchToRule', () => {
       'jsbin > handlebars > uglify-js': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -50,7 +51,7 @@ describe('matchToRule', () => {
       'jsbin > handlebars@2.0.0 > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -62,7 +63,7 @@ describe('matchToRule', () => {
       'jsbin@3.35.9': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -74,7 +75,7 @@ describe('matchToRule', () => {
       'jsbin@3.35.9 > handlebars@2.0.0': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -86,11 +87,11 @@ describe('matchToRule', () => {
       'express-hbs > handlebars > uglify-js': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
       'jsbin > handlebars > uglify-js': {
         reason: 'done this already',
         expires: '2016-03-01T19:53:46.310Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -102,7 +103,7 @@ describe('matchToRule', () => {
       '*': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -114,7 +115,7 @@ describe('matchToRule', () => {
       '* > handlebars@2.0.0 > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -126,7 +127,7 @@ describe('matchToRule', () => {
       'jsbin@3.35.9 > * > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -138,7 +139,7 @@ describe('matchToRule', () => {
       'jsbin > handlebars@2.0.0 > *': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -150,7 +151,7 @@ describe('matchToRule', () => {
       '* > handlebars@2.0.0 > *': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -162,7 +163,7 @@ describe('matchToRule', () => {
       '* > uglify-js': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -174,7 +175,7 @@ describe('matchToRule', () => {
       'jsbin@3.35.9 > handlebars@* > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -186,7 +187,7 @@ describe('matchToRule', () => {
       '* > handlebars@* > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -198,7 +199,7 @@ describe('matchToRule', () => {
       '* > handlebars@* > uglify-js@*': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -210,7 +211,7 @@ describe('matchToRule', () => {
       'jsbin@3.35.9 > handlebars@>1.1.0 <2.1.0 > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -222,7 +223,7 @@ describe('matchToRule', () => {
       'jsbin@3.35.9 > handlebars@2.x > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -234,7 +235,7 @@ describe('matchToRule', () => {
       'jsbin@3.35.9 > handlebars@^2.0.0 > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -246,7 +247,7 @@ describe('matchToRule', () => {
       'nyc@11.9.0 > istanbul-lib-report@1.1.3 > path-parse@1.0.5': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -258,7 +259,7 @@ describe('matchToRule', () => {
       'express-hbs > handlebars > uglify-js': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -270,7 +271,7 @@ describe('matchToRule', () => {
       'handlebars@2.0.0 > uglify-js@2.3.6': {
         reason: 'done this already',
         expires: '2016-03-01T19:53:46.310Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -282,7 +283,7 @@ describe('matchToRule', () => {
       'handlebars@2.0.0': {
         reason: 'done this already',
         expires: '2016-03-01T19:53:46.310Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -294,7 +295,7 @@ describe('matchToRule', () => {
       'jsbin@1.0.0 > handlebars@2.0.0 > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -306,7 +307,7 @@ describe('matchToRule', () => {
       'jsbin@3.35.9 > handlebars@1.0.0 > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -318,7 +319,7 @@ describe('matchToRule', () => {
       '* > moment': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -330,7 +331,7 @@ describe('matchToRule', () => {
       '* > * > uglify-js@2.3.6': {
         reason: 'None given',
         expires: '2016-03-01T19:49:50.633Z',
-      },
+      } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -347,7 +348,7 @@ describe('matchToRule long', () => {
       'io.netty:netty-handler@4.1.50.Final',
       'io.netty:netty-codec@4.1.50.Final',
     ],
-  };
+  } as Vulnerability;
 
   test('one', () => {
     const rule = {
@@ -355,7 +356,7 @@ describe('matchToRule long', () => {
         {
           reason: 'None given',
           expires: '2016-03-01T19:49:50.633Z',
-        },
+        } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -368,7 +369,7 @@ describe('matchToRule long', () => {
         {
           reason: 'done this already',
           expires: '2016-03-01T19:53:46.310Z',
-        },
+        } as Rule,
     };
 
     const pathMatch = policy.matchToRule(vuln, rule);
@@ -381,7 +382,7 @@ test('match (triggering not found)', () => {
   const rule = {
     'glue > hapi > joi > moment': {
       patched: '2016-02-26T16:19:06.050Z',
-    },
+    } as Rule,
   };
 
   const pathMatch = policy.matchToRule(vuln, rule);
@@ -392,7 +393,7 @@ test('rule with git url as dependency', () => {
   const rule = {
     'patchable-vuln > qs': {
       patched: '2018-11-04T12:47:13.696Z',
-    },
+    } as Rule,
   };
 
   const pathMatch = policy.matchToRule(vulnWithGitUrl, rule);
@@ -401,7 +402,7 @@ test('rule with git url as dependency', () => {
 
 test('exact match  does not match when path arrays are not equal', () => {
   const rule = {
-    'a-dir/a-file.json': {},
+    'a-dir/a-file.json': {} as Rule,
   };
 
   const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');
@@ -410,7 +411,7 @@ test('exact match  does not match when path arrays are not equal', () => {
 
 test('exact match  matches when path arrays are equal', () => {
   const rule = {
-    'a-dir/a-file.json > foo > bar': {},
+    'a-dir/a-file.json > foo > bar': {} as Rule,
   };
 
   const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');
@@ -419,7 +420,7 @@ test('exact match  matches when path arrays are equal', () => {
 
 test('exact match  matches when rule is *', () => {
   const rule = {
-    '*': {},
+    '*': {} as Rule,
   };
 
   const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');
@@ -428,7 +429,7 @@ test('exact match  matches when rule is *', () => {
 
 test('exact match  matches when path matches before *', () => {
   const rule = {
-    'a-dir/a-file.json > *': {},
+    'a-dir/a-file.json > *': {} as Rule,
   };
 
   const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');
@@ -437,7 +438,7 @@ test('exact match  matches when path matches before *', () => {
 
 test('exact match  does not match when path does not match before *', () => {
   const rule = {
-    'a-dir/a-file.json > wrong > *': {},
+    'a-dir/a-file.json > wrong > *': {} as Rule,
   };
 
   const pathMatch = policy.matchToRule(exactMatchVuln, rule, 'exact');

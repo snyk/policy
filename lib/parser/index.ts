@@ -3,6 +3,7 @@ import cloneDeep from 'lodash.clonedeep';
 import * as semver from 'semver';
 import { latestVersion } from '../';
 import { version as versionFromPackageJson } from '../../package.json';
+import { isObject } from '../types';
 import addComments from './add-comments';
 import v1 from './v1';
 
@@ -12,29 +13,30 @@ export { imports as import, exportsFn as export, packageVersion as version };
 const defaultPolicyVersion = 'v1';
 const packageVersion = version();
 
+interface versioned extends Record<string, unknown> {
+  version: string;
+}
+
 const parsers = {
   v1,
 };
 
 function imports(rawYaml = '') {
-  const isObject = (v: any) =>
-    Object.prototype.toString.call(v) === '[object Object]'; // typeof returns true for arrays and other types
+  const yamlData = yaml.load(rawYaml);
+  const data = isObject(yamlData) ? yamlData : {};
 
-  let data = yaml.safeLoad(rawYaml);
+  const isVersioned = (
+    yamlObj: Record<string, unknown>
+  ): yamlObj is versioned => typeof yamlObj.version === 'string';
 
-  if (!data || !isObject(data)) {
-    data = {};
+  let version = isVersioned(data) ? data.version : defaultPolicyVersion;
+
+  if (version === 'v1') {
+    version = 'v1.0.0';
   }
 
-  if (!data.version) {
-    data.version = defaultPolicyVersion;
-  }
-
-  if (data.version === 'v1') {
-    data.version = 'v1.0.0';
-  }
-
-  const parser = parsers['v' + semver.major(data.version.substr(1))];
+  data.version = version;
+  const parser = parsers['v' + semver.major(version.substr(1))];
 
   if (!parser) {
     throw new Error('unsupported version: ' + data.version);
@@ -67,7 +69,7 @@ function exportsFn(policy) {
   // ensure we always update the version of the policy format
   data.version = latestVersion();
   // put inline comments into the exported yaml file
-  return addComments(yaml.safeDump(data));
+  return addComments(yaml.dump(data));
 }
 
 /**
