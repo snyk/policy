@@ -1,6 +1,8 @@
 import { promises as fs } from 'fs';
 import { expect, test } from 'vitest';
 import { getByVuln, loadFromText } from '../../lib';
+import { expectTypeOf } from 'vitest';
+import { VulnRule } from 'lib/types';
 
 const fixtures = __dirname + '/../fixtures';
 const policy = require(fixtures + '/ignore/parsed.json');
@@ -36,8 +38,12 @@ test('getByVuln with star rules', async () => {
   const policy = await loadFromText(file);
   const res = getByVuln(policy, vuln);
 
-  expect(res.id).toBe(id);
-  expect(res.rule).not.empty;
+  expect(res).not.toBeNull();
+
+  if (res !== null) {
+    expect(res.id).toBe(id);
+    expect(res.rule).not.empty;
+  }
 });
 
 test('getByVuln with exact match rules', async () => {
@@ -48,6 +54,10 @@ test('getByVuln with exact match rules', async () => {
   const policy = await loadFromText(file);
   const res = getByVuln(policy, vuln);
 
-  expect(res.id).toBe(id);
-  expect(res.rule).not.empty;
+  expect(res).not.toBeNull();
+
+  if (res !== null) {
+    expect(res.id).toBe(id);
+    expect(res.rule).not.empty;
+  }
 });

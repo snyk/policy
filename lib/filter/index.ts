@@ -3,10 +3,10 @@ export default filter;
 import newDebug from 'debug';
 
 import {
+  FilteredVulnerability,
+  FilteredVulns,
   MatchStrategy,
   Policy,
-  Rule,
-  Vulnerability,
   VulnsObject,
 } from '../types';
 import ignore from './ignore';
@@ -14,29 +14,6 @@ import notes from './notes';
 import patch from './patch';
 
 const debug = newDebug('snyk:policy');
-
-export interface FilteredRule extends Rule {
-  path: string[];
-}
-
-export interface FilteredVulnerability extends Vulnerability {
-  filtered?: {
-    ignored?: FilteredRule[];
-    patches?: FilteredRule[];
-  };
-  note?: string;
-}
-
-export interface FilteredVulns {
-  ok: boolean;
-
-  vulnerabilities: FilteredVulnerability[];
-
-  filtered?: {
-    ignore: Vulnerability[];
-    patch: Vulnerability[];
-  };
-}
 
 /**
  * Applies the specified policy to the vulnerabilities object.
@@ -49,7 +26,7 @@ export interface FilteredVulns {
 function filter(
   vulns: VulnsObject,
   policy: Policy,
-  root: string,
+  root?: string,
   matchStrategy: MatchStrategy = 'packageManager'
 ) {
   if (!root) {

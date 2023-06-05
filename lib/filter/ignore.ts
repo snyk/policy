@@ -4,8 +4,14 @@ import newDebug from 'debug';
 import cloneDeep from 'lodash.clonedeep';
 
 import { matchToRule } from '../match';
-import { MatchStrategy, PathObj, RuleSet, Vulnerability } from '../types';
-import { FilteredRule, FilteredVulnerability } from '.';
+import {
+  FilteredRule,
+  FilteredVulnerability,
+  MatchStrategy,
+  PathObj,
+  RuleSet,
+  Vulnerability,
+} from '../types';
 
 const debug = newDebug('snyk:policy');
 

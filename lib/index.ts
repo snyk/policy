@@ -1,12 +1,14 @@
 import newDebug from 'debug';
 import { lstatSync, promises as fs, Stats } from 'fs';
 import * as path from 'path';
+
 import tryRequire from 'snyk-try-require';
+
 import add from './add';
 import addExclude from './add-exclude';
 import filter from './filter';
 import * as parse from './parser';
-import { MatchStrategy, Policy } from './types';
+import { MatchStrategy, Policy, isNodeError, VulnsObject } from './types';
 
 export { demunge } from './parser';
 export { getByVuln, matchToRule } from './match';
@@ -17,19 +19,18 @@ const debug = newDebug('snyk:policy');
 /** Returns the version of the latest policy schema */
 export const latestVersion = () => 'v1.25.1'; // only major _should_ matter, but deferring for now
 
-function create() {
-  return loadFromText('');
-}
+/** Returns an empty policy */
+const create = () => loadFromText('');
 
-// this is a function to allow our tests and fixtures to change cwd
+// this function allows our tests and fixtures to change cwd
 function defaultFilename() {
   return path.resolve(process.cwd(), '.snyk');
 }
 
 function attachMethods(policy) {
   policy.filter = (
-    vulns,
-    root,
+    vulns: VulnsObject,
+    root: string,
     matchStrategy: MatchStrategy = 'packageManager'
   ) =>
     filter(
@@ -38,35 +39,53 @@ function attachMethods(policy) {
       root || path.dirname(policy.__filename),
       matchStrategy
     );
-
-  policy.save = (root, spinner) => save(policy, root, spinner);
+  policy.save = (root: string, spinner) => save(policy, root, spinner);
   policy.toString = () => parse.export(policy);
   policy.demunge = (apiRoot) => parse.demunge(policy, apiRoot);
-  policy.add = (type, options) => add(policy, type, options);
+  policy.add = (type: 'ignore' | 'patch', options) =>
+    add(policy, type, options);
   policy.addIgnore = (options) => add(policy, 'ignore', options);
   policy.addPatch = (options) => add(policy, 'patch', options);
   policy.addExclude = (pattern, group, options) =>
     addExclude(policy, pattern, group, options);
-  return policy;
+  return policy as Policy;
 }
 
-function loadFromText(text) {
-  return new Promise(function (resolve) {
-    const policy = parse.import(text);
-    const now = Date.now();
+/**
+ * Loads a policy from text
+ * @param text the policy text
+ * @returns the policy
+ */
+async function loadFromText(text: string) {
+  const policy = await parse.import(text);
+  const now = Date.now();
 
-    policy.__filename = '';
-    policy.__modified = now;
-    policy.__created = now;
+  policy.__filename = '';
+  policy.__modified = now;
+  policy.__created = now;
 
-    resolve(policy);
-  }).then(attachMethods);
+  return attachMethods(policy);
 }
 
-function load(root?, options?) {
+interface loadOptions {
+  loose?: boolean;
+  'ignore-policy'?: boolean;
+  'trust-policies'?: boolean;
+}
+
+/**
+ * Loads a policy from disk. If `root` is an array of strings, the policies will be merged together.
+ * @param root the root directory to load the policy from (default is `process.cwd())`
+ * @param options options for loading the policy or policies
+ * @returns a single policy if `root` is a string, or a merged policy if `root` is an array of strings
+ */
+function load(
+  root?: string | string[] | loadOptions,
+  options?: loadOptions
+): Promise<Policy> {
   if (!Array.isArray(root) && typeof root !== 'string') {
     options = root;
-    root = null;
+    root = undefined;
   }
 
   if (!root) {
@@ -100,7 +119,7 @@ function load(root?, options?) {
       filename = path.join(filename, '/.snyk');
     }
   } catch (error) {
-    if (error.code === 'ENOENT') {
+    if (isNodeError(error) && error.code === 'ENOENT') {
       // Ignore if EOENT
       debug('ENOENT on file, while checking if directory');
     } else {
@@ -135,7 +154,7 @@ function load(root?, options?) {
 
   return Promise.all(promises)
     .catch((error) => {
-      if (options.loose && error.code === 'ENOENT') {
+      if (options?.loose && error.code === 'ENOENT') {
         debug('ENOENT on file, but running loose');
         return [parse.import(), {} as Stats] as [Policy, Stats];
       }
@@ -148,7 +167,7 @@ function load(root?, options?) {
       policy.__modified = res[1].mtime;
       policy.__created = res[1].birthtime || res[1].ctime;
 
-      if (options.loose && !policy.__modified) {
+      if (options?.loose && !policy.__modified) {
         policy.__filename = null;
       } else {
         policy.__filename = path.relative(process.cwd(), filename);
@@ -159,41 +178,53 @@ function load(root?, options?) {
     .then(attachMethods);
 }
 
-function mergePolicies(policyDirs, options) {
-  const ignoreTarget = options['trust-policies'] ? 'ignore' : 'suggest';
+/**
+ * Merge multiple policies together, with the first policy in the array being the root policy.
+ *
+ * Note: only Javascript projects are supported
+ * @param policyDirs the directories containing the policies to merge
+ * @param options options for loading the policies
+ * @returns the root policy with all the other policies merged into it
+ */
+async function mergePolicies(policyDirs: string[], options?: loadOptions) {
+  const ignoreTarget =
+    options && options['trust-policies'] ? 'ignore' : 'suggest';
 
-  return Promise.all(
-    policyDirs.map(function (dir) {
-      return load(dir, options);
-    })
-  ).then(function (policies) {
-    // firstly extend the paths in the ignore and patch
-    const rootPolicy = policies[0];
-    const others = policies.slice(1);
+  const [rootPolicy, ...others] = await Promise.all(
+    policyDirs.map((dir) => load(dir, options))
+  );
 
-    return Promise.all(
-      others
-        .filter(function (policy) {
-          return policy.__filename; // filter out non loaded policies
-        })
-        .map(function (policy) {
-          const filename = path.dirname(policy.__filename) + '/package.json';
+  await Promise.all(
+    others
+      .filter((policy) => policy.__filename) // filter out non loaded policies
+      .map(async (policy) => {
+        const filename = path.dirname(policy.__filename!) + '/package.json'; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        const pkg = await tryRequire(filename);
+        const full = pkg.name + '@' + pkg.version;
 
-          return tryRequire(filename).then(function (pkg) {
-            const full = pkg.name + '@' + pkg.version;
+        mergePath('ignore', ignoreTarget, full, rootPolicy, policy);
+        mergePath('patch', 'patch', full, rootPolicy, policy);
+      })
+  );
 
-            mergePath('ignore', ignoreTarget, full, rootPolicy, policy);
-            mergePath('patch', 'patch', full, rootPolicy, policy);
-          });
-        })
-    ).then(function () {
-      return rootPolicy;
-    });
-  });
+  return rootPolicy;
 }
 
-// note: mutates both objects, be warned!
-function mergePath(type, into, pathRoot, rootPolicy, policy) {
+/**
+ * Merges a ruleset into the root policy.
+ * @param type the ruleset type to merge
+ * @param into the destination into the policy to merge the ruleset into
+ * @param pathRoot the dependency path of the project to be merged into the root policy
+ * @param rootPolicy (*mutates!*) the root policy
+ * @param policy (*mutates!*) the policy to be merged into the root policy
+ */
+function mergePath(
+  type: 'ignore' | 'patch',
+  into: 'patch' | 'ignore' | 'suggest',
+  pathRoot: string,
+  rootPolicy: Policy,
+  policy: Policy
+) {
   if (!rootPolicy[into]) {
     rootPolicy[into] = {};
   }
@@ -203,7 +234,7 @@ function mergePath(type, into, pathRoot, rootPolicy, policy) {
     policy[type][id] = policy[type][id].map((path) => {
       // this is because our policy file format favours "readable" yaml,
       // instead of easy to use object structures.
-      const key = Object.keys(path).pop()!;
+      const key = Object.keys(path).pop()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
       const newPath = {};
       newPath[pathRoot + ' > ' + key] = path[key];
       path[key] = path[key] || {};
@@ -222,24 +253,25 @@ function mergePath(type, into, pathRoot, rootPolicy, policy) {
   });
 }
 
-function save(object, root, spinner?) {
+/**
+ * Saves a policy to disk.
+ * @param object the policy to save
+ * @param root the root directory to save the policy to (default is `process.cwd())`
+ * @param spinner a progress indicator, as used in the [Snyk CLI](https://github.com/Snyk/snyk-internal/blob/0459a7b21709c6a1d3c5edeb61b4abf2103ffaf0/cli/commands/protect/wizard.js#L268)
+ * @returns the result of `spinner.clear()`
+ */
+function save(object: Policy, root?: string, spinner?) {
   const filename = root ? path.resolve(root, '.snyk') : defaultFilename();
 
   const lbl = 'Saving .snyk policy file...';
 
   if (!spinner) {
-    spinner = function (res) {
-      return Promise.resolve(res);
-    };
+    spinner = (res) => Promise.resolve(res);
     spinner.clear = spinner;
   }
 
   return spinner(lbl)
-    .then(function () {
-      return parse.export(object);
-    })
-    .then(function (yaml) {
-      return fs.writeFile(filename, yaml);
-    })
+    .then(() => parse.export(object))
+    .then((yaml: string) => fs.writeFile(filename, yaml))
     .then(spinner.clear(lbl));
 }

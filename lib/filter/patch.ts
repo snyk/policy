@@ -6,9 +6,13 @@ import cloneDeep from 'lodash.clonedeep';
 import * as path from 'path';
 
 import { matchToRule } from '../match';
-import { RuleSet, Vulnerability } from '../types';
+import {
+  FilteredRule,
+  FilteredVulnerability,
+  RuleSet,
+  Vulnerability,
+} from '../types';
 import getVulnSource from './get-vuln-source';
-import { FilteredRule, FilteredVulnerability } from '.';
 
 const debug = newDebug('snyk:policy');
 

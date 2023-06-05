@@ -202,12 +202,12 @@ function getByVuln(policy?: Policy, vuln?: Vulnerability): VulnRule | null {
     return found;
   }
 
-  (['ignore', 'patch'] as ('ignore' | 'patch')[]).forEach((key) => {
+  for (const key of ['ignore', 'patch'] as ('ignore' | 'patch')[]) {
     Object.keys(policy[key] || []).forEach((p) => {
       if (p === vuln.id) {
-        policy[key][p].forEach((rule) => {
+        for (const rule of policy[key][p]) {
           if (matchToRule(vuln, rule)) {
-            const rootRule = Object.keys(rule).pop()!;
+            const rootRule = Object.keys(rule).pop()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
             found = {
               type: key,
               id: vuln.id,
@@ -215,10 +215,10 @@ function getByVuln(policy?: Policy, vuln?: Vulnerability): VulnRule | null {
               ...rule[rootRule],
             } as VulnRule;
           }
-        });
+        }
       }
     });
-  });
+  }
 
   return found;
 }

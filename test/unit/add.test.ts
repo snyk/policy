@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest';
 import { create } from '../../lib';
+import { ReasonType } from 'lib/types';
 
 test('add errors without options', async () => {
   let policy = await create();
@@ -53,17 +54,12 @@ test('add ignore with invalid reasonType', async () => {
   let policy = await create();
 
   expect(() =>
-    policy
-      .addIgnore({
-        id: 'a',
-        path: 'a > b',
-        reasonType: 'test',
-      })
-      .catch((err) => {
-        expect(err.message).toBe('invalid reasonType test');
-        throw err;
-      })
-  ).toThrow();
+    policy.addIgnore({
+      id: 'a',
+      path: 'a > b',
+      reasonType: 'test' as ReasonType,
+    })
+  ).toThrow('invalid reasonType test');
 });
 
 test('add ignore with valid ignoredBy', async () => {

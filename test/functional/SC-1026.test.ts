@@ -12,6 +12,13 @@ test('filtered vulns can still be reviewed', async () => {
   const res = p.filter(vulns);
 
   expect(res.ok).toBe(false);
+
+  expect(res.filtered).toBeDefined();
+  expect(res.filtered).toBeInstanceOf(Object);
+  if (res.filtered === undefined) {
+    return;
+  }
+
   expect(res.filtered.ignore).toBeInstanceOf(Array);
   expect(res.filtered.ignore).length.greaterThan(0);
   expect(res.filtered.patch).toBeInstanceOf(Array);

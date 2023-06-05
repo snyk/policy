@@ -92,7 +92,12 @@ test('policy.load (multiple - ignore first)', async () => {
   const patchIds = Object.keys(res.patch);
   const id = patchIds.shift();
 
-  const deepPatchPath = Object.keys(res.patch[id][0]).shift().split(' > ');
+  expect(id).toBeDefined();
+  if (id === undefined) {
+    return;
+  }
+
+  const deepPatchPath = Object.keys(res.patch[id][0]).shift()!.split(' > ');
 
   // FIXME is this right, should it include the version?
   expect(deepPatchPath[0]).toBe(patchPkg.name + '@' + patchPkg.version);
@@ -143,15 +148,19 @@ test('policy.load (merge)', async () => {
 
   const formatted = policy.demunge(res);
 
-  const single = formatted.patch.filter((p) => p.id === id).shift();
+  const single = formatted.patch.filter((p) => p.id === id).shift()!;
 
-  expect(single.paths).toHaveLength(3);
+  expect(single).toBeDefined();
 
-  const filtered = single.paths.filter(
-    (item) => item.path.indexOf('mean') === 0
-  );
+  if (single !== undefined) {
+    expect(single.paths).toHaveLength(3);
 
-  expect(filtered).toHaveLength(2);
+    const filtered = single.paths.filter(
+      (item) => item.path.indexOf('mean') === 0
+    );
+
+    expect(filtered).toHaveLength(2);
+  }
 });
 
 test('policy.loadFromText', async () => {
