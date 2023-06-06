@@ -6,6 +6,7 @@ import add from './add';
 import addExclude from './add-exclude';
 import filter from './filter';
 import * as parse from './parser';
+import { MatchStrategy } from './types';
 
 export { demunge } from './parser';
 export { getByVuln, matchToRule } from './match';
@@ -26,14 +27,18 @@ function defaultFilename() {
 }
 
 function attachMethods(policy) {
-  policy.filter = function (vulns, root, matchStrategy = 'packageManager') {
-    return filter(
+  policy.filter = (
+    vulns,
+    root,
+    matchStrategy: MatchStrategy = 'packageManager'
+  ) =>
+    filter(
       vulns,
       policy,
       root || path.dirname(policy.__filename),
       matchStrategy
     );
-  };
+
   policy.save = (root, spinner) => save(policy, root, spinner);
   policy.toString = () => parse.export(policy);
   policy.demunge = (apiRoot) => parse.demunge(policy, apiRoot);
