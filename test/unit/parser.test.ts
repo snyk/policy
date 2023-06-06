@@ -1,5 +1,6 @@
 import * as yaml from 'js-yaml';
 import { expect, test } from 'vitest';
+import { readFile } from 'fs/promises';
 import * as parser from '../../lib/parser';
 
 const fixtures = __dirname + '/../fixtures';
@@ -26,11 +27,15 @@ test('parser fills out defaults for invalid inputs', () => {
   expect(res).toStrictEqual(expected);
 });
 
-test('parser fills out defaults for invalid array input', () => {
-  const res = parser.import(
-    `# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.+
-    - object Object`
-  );
+const loadSnykFile = async (filename: string): Promise<string> => {
+  const snykFile = await readFile(`${__dirname}/fixtures/${filename}`, 'utf8');
+  return yaml.load(snykFile) as string;
+};
+
+test('parser fills out defaults for invalid array input', async () => {
+  const yamlData = await loadSnykFile('snyk-corrupted-format.yml');
+
+  const res = parser.import(yamlData);
   const expected = {
     version: 'v1.0.0',
     ignore: {},
