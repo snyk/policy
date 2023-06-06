@@ -10,16 +10,21 @@ const inlineComments = {
   patch: '# patches apply the minimum changes required to fix a vulnerability',
 };
 
-function addComments(policyExport) {
+/**
+ * Adds comments to the exported policy file.
+ * @param policyExport policy file as a string
+ * @returns the policy file with comments
+ */
+function addComments(policyExport: string) {
   const lines = policyExport.split('\n');
   lines.unshift(initialComment);
 
-  Object.keys(inlineComments).forEach(function (key) {
+  for (const key in inlineComments) {
     const position = lines.indexOf(key + ':');
     if (position !== -1) {
       lines.splice(position, 0, inlineComments[key]);
     }
-  });
+  }
 
   return lines.join('\n');
 }

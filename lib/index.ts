@@ -1,12 +1,12 @@
 import newDebug from 'debug';
-import { lstatSync, promises as fs } from 'fs';
+import { lstatSync, promises as fs, Stats } from 'fs';
 import * as path from 'path';
 import tryRequire from 'snyk-try-require';
 import add from './add';
 import addExclude from './add-exclude';
 import filter from './filter';
 import * as parse from './parser';
-import { MatchStrategy } from './types';
+import { MatchStrategy, Policy } from './types';
 
 export { demunge } from './parser';
 export { getByVuln, matchToRule } from './match';
@@ -108,14 +108,14 @@ function load(root?, options?) {
     }
   }
 
-  const promise = new Promise(function (resolve) {
+  const promise = new Promise<Policy>((resolve) => {
     if (ignorePolicy) {
       return resolve(parse.import());
     }
 
     if (!ignorePolicy && Array.isArray(root)) {
       return resolve(
-        mergePolicies(root, options).then(function (res) {
+        mergePolicies(root, options).then((res) => {
           if (debug.enabled) {
             debug('final policy:');
             debug(JSON.stringify(res, null, 2));
@@ -128,24 +128,22 @@ function load(root?, options?) {
     resolve(fs.readFile(filename, 'utf8').then(parse.import));
   });
 
-  const promises = [
+  const promises: [Promise<Policy>, Promise<Stats>] = [
     promise,
-    fs.stat(filename).catch(function () {
-      return {};
-    }),
+    fs.stat(filename).catch(() => ({} as Stats)),
   ];
 
   return Promise.all(promises)
-    .catch(function (error) {
+    .catch((error) => {
       if (options.loose && error.code === 'ENOENT') {
         debug('ENOENT on file, but running loose');
-        return [parse.import(), {}];
+        return [parse.import(), {} as Stats] as [Policy, Stats];
       }
 
       throw error;
     })
-    .then(function (res) {
-      const policy = res[0];
+    .then((res) => {
+      const policy = res[0] as Policy;
 
       policy.__modified = res[1].mtime;
       policy.__created = res[1].birthtime || res[1].ctime;
@@ -200,12 +198,12 @@ function mergePath(type, into, pathRoot, rootPolicy, policy) {
     rootPolicy[into] = {};
   }
 
-  Object.keys(policy[type]).forEach(function (id) {
+  Object.keys(policy[type]).forEach((id) => {
     // convert the path from `module@version` to `parent > module@version`
-    policy[type][id] = policy[type][id].map(function (path) {
+    policy[type][id] = policy[type][id].map((path) => {
       // this is because our policy file format favours "readable" yaml,
       // instead of easy to use object structures.
-      const key = Object.keys(path).pop();
+      const key = Object.keys(path).pop()!;
       const newPath = {};
       newPath[pathRoot + ' > ' + key] = path[key];
       path[key] = path[key] || {};

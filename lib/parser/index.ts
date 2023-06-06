@@ -1,9 +1,10 @@
 import * as yaml from 'js-yaml';
 import cloneDeep from 'lodash.clonedeep';
 import * as semver from 'semver';
-import { latestVersion } from '../';
+
 import { version as versionFromPackageJson } from '../../package.json';
-import { isObject } from '../types';
+import { latestVersion } from '../';
+import { Policy, isObject } from '../types';
 import addComments from './add-comments';
 import v1 from './v1';
 
@@ -13,14 +14,21 @@ export { imports as import, exportsFn as export, packageVersion as version };
 const defaultPolicyVersion = 'v1';
 const packageVersion = version();
 
+type parser = (policy: Record<string, unknown>) => Policy;
+
 interface versioned extends Record<string, unknown> {
   version: string;
 }
 
-const parsers = {
+const parsers: Record<string, parser> = {
   v1,
 };
 
+/**
+ * Imports the given policy from a YAML string.
+ * @param rawYaml the YAML policy string to import
+ * @returns the imported policy
+ */
 function imports(rawYaml = '') {
   const yamlData = yaml.load(rawYaml);
   const data = isObject(yamlData) ? yamlData : {};
@@ -36,6 +44,7 @@ function imports(rawYaml = '') {
   }
 
   data.version = version;
+
   const parser = parsers['v' + semver.major(version.substr(1))];
 
   if (!parser) {
@@ -45,12 +54,17 @@ function imports(rawYaml = '') {
   return parser(data);
 }
 
-// Compiler reserves name 'exports' in top level scope of a module
-function exportsFn(policy) {
-  const data = cloneDeep(policy);
+/**
+ * Exports the given policy to a YAML string.
+ * @param policy the policy to export
+ * @returns the exported policy as a YAML string
+ */
+function exportsFn(policy: Policy) {
+  // Compiler reserves name 'exports' in top level scope of a module
+  const data = cloneDeep(policy) as Policy;
 
   // remove any private information on the policy
-  Object.keys(data).map(function (key) {
+  for (const key in data) {
     if (key.indexOf('__') === 0) {
       delete data[key];
     }
@@ -64,7 +78,7 @@ function exportsFn(policy) {
     if (typeof data[key] === 'function') {
       delete data[key];
     }
-  });
+  }
 
   // ensure we always update the version of the policy format
   data.version = latestVersion();
@@ -73,7 +87,8 @@ function exportsFn(policy) {
 }
 
 /**
- * @deprecated
+ * @deprecated default version of the imported policy file is now always v1 and not coupled to the
+ * current library version.
  */
 function version() {
   if (versionFromPackageJson && versionFromPackageJson !== '0.0.0') {
