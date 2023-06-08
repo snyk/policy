@@ -40,7 +40,7 @@ function getVulnSource(vuln: Vulnerability, cwd: string, live: boolean) {
     // and use the `resolve` package to navigate the node_modules up
     // through parent directories.
     try {
-      source = resolve.sync(from.slice(-1).pop(), viaPath);
+      source = resolve.sync(from.slice(-1)?.pop(), viaPath);
     } catch (e) {
       if (live) {
         throw e;
