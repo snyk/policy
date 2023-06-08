@@ -1,10 +1,12 @@
 import fs from 'fs';
 import { beforeEach, expect, test } from 'vitest';
+
 import * as policy from '../../lib';
+import { VulnerabilityReport } from '../types';
 
 const fixtures = __dirname + '/../fixtures';
 const dir = fixtures + '/severity-control';
-let vulns: any = {};
+let vulns = {} as VulnerabilityReport;
 
 beforeEach(() => {
   // only contains medium + low - this file is read using fs to ensure refresh

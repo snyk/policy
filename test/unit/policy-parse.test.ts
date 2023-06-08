@@ -1,5 +1,7 @@
 import { expect, test } from 'vitest';
+
 import * as policy from '../../lib';
+import { Rule } from '../types';
 
 const fixtures = __dirname + '/../fixtures/issues/SC-1106/';
 const withoutDash = fixtures + '/missing-dash.snyk';
@@ -21,7 +23,7 @@ test('missing dash on policy is fixed up', () => {
   });
 });
 
-function getPaths(rules) {
+function getPaths(rules: Rule[]) {
   return rules
     .map((rule) => {
       const keys = Object.keys(rule);

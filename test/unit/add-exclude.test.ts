@@ -23,7 +23,7 @@ test('add a new file pattern to default group', async (t) => {
   }).does.not.toThrow();
 });
 
-test('add a new file pattern to global-group', async (t) => {
+test('add a new file pattern to global-group', async (_t) => {
   let policy = await create();
 
   expect(() => {
@@ -35,7 +35,7 @@ test('add a new file pattern to global-group', async (t) => {
   }).does.not.toThrow();
 });
 
-test('add a new file pattern to code-group', async (t) => {
+test('add a new file pattern to code-group', async (_t) => {
   let policy = await create();
   expect(() => {
     const validGroup = 'code';
@@ -46,7 +46,7 @@ test('add a new file pattern to code-group', async (t) => {
   }).does.not.toThrow();
 });
 
-test('add a new file pattern to iac drift-group', async (t) => {
+test('add a new file pattern to iac drift-group', async (_t) => {
   let policy = await create();
   expect(() => {
     const validGroup = 'iac-drift';
@@ -62,7 +62,7 @@ test('add a new file pattern to iac drift-group', async (t) => {
   }).does.not.toThrow();
 });
 
-test('add two new unique file pattern to a group', async (t) => {
+test('add two new unique file pattern to a group', async (_t) => {
   let policy = await create();
   expect(() => {
     policy.addExclude('./deps/*.ts');
@@ -73,7 +73,7 @@ test('add two new unique file pattern to a group', async (t) => {
   }).does.not.toThrow();
 });
 
-test('replace duplicates patterns', async (t) => {
+test('replace duplicates patterns', async (_t) => {
   let policy = await create();
 
   expect(() => {
@@ -96,17 +96,20 @@ test('add dates and reasons', async (t) => {
       reason: 'incidents already fixed by user',
     });
 
-    expect(policy.exclude['global'][0]['./deps/*.ts'].expires).toBe(
-      '2092-12-24'
-    );
+    const exclude1 = policy.exclude?.['global'][0];
+    expect(exclude1).toBeDefined();
+    expect(exclude1).not.toBeTypeOf('string');
 
-    expect(policy.exclude['global'][0]['./deps/*.ts'].reason).toBe(
-      'incidents already fixed by user'
-    );
+    if (exclude1 && typeof exclude1 !== 'string') {
+      expect(exclude1['./deps/*.ts'].expires).toBe('2092-12-24');
+      expect(exclude1['./deps/*.ts'].reason).toBe(
+        'incidents already fixed by user'
+      );
+    }
   }).does.not.toThrow();
 });
 
-test('replace existing objects', async (t) => {
+test('replace existing objects', async (_t) => {
   let policy = await create();
   expect(() => {
     policy.addExclude('./deps/*.ts', 'global', {
@@ -119,17 +122,18 @@ test('replace existing objects', async (t) => {
       reason: 'it will never happen',
     });
 
-    expect(policy.exclude['global'][0]['./deps/*.ts'].expires).toBe(
-      '2192-12-24'
-    );
+    const exclude1 = policy.exclude?.['global'][0];
+    expect(exclude1).toBeDefined();
+    expect(exclude1).not.toBeTypeOf('string');
 
-    expect(policy.exclude['global'][0]['./deps/*.ts'].reason).toBe(
-      'it will never happen'
-    );
+    if (exclude1 && typeof exclude1 !== 'string') {
+      expect(exclude1['./deps/*.ts'].expires).toBe('2192-12-24');
+      expect(exclude1['./deps/*.ts'].reason).toBe('it will never happen');
+    }
   }).does.not.toThrow();
 });
 
-test('only replace duplicates', async (t) => {
+test('only replace duplicates', async (_t) => {
   let policy = await create();
   expect(() => {
     policy.addExclude('./deps/*.ts', 'global', {
@@ -144,14 +148,15 @@ test('only replace duplicates', async (t) => {
       reason: 'it will never happen',
     });
 
-    expect(policy.exclude['global'][0]).toBe('./vendor/*.go');
+    expect(policy.exclude?.['global'][0]).toBe('./vendor/*.go');
 
-    expect(policy.exclude['global'][1]['./deps/*.ts'].expires).toBe(
-      '2192-12-24'
-    );
+    const exclude2 = policy.exclude?.['global'][1];
+    expect(exclude2).toBeDefined();
+    expect(exclude2).not.toBeTypeOf('string');
 
-    expect(policy.exclude['global'][1]['./deps/*.ts'].reason).toBe(
-      'it will never happen'
-    );
+    if (exclude2 && typeof exclude2 !== 'string') {
+      expect(exclude2['./deps/*.ts'].expires).toBe('2192-12-24');
+      expect(exclude2['./deps/*.ts'].reason).toBe('it will never happen');
+    }
   }).does.not.toThrow();
 });

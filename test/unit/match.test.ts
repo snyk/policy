@@ -1,7 +1,8 @@
 import fs from 'fs';
 import { describe, expect, test } from 'vitest';
+
 import * as policy from '../../lib';
-import { PathObj, Rule, RuleSet, Vulnerability } from '../../lib/types';
+import { Rule, Vulnerability } from '../types';
 
 const fixtures = __dirname + '/../fixtures';
 
