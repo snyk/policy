@@ -1,52 +1,12 @@
-import { PathObj, Policy } from '../types';
+import {
+  DemungedResults,
+  PathObj,
+  PathRule,
+  Policy,
+  VulnRules,
+} from '../types';
 
 export default demunge;
-
-type PathRule = {
-  /**
-   * The path to which the rule is applied.
-   */
-  path: string;
-
-  /**
-   * If true, the rule is disregarded if the vulnerability is fixable.
-   */
-  disregardIfFixable?: boolean;
-
-  /**
-   * The date the rule expires.
-   */
-  expires?: Date;
-
-  /**
-   * The reason for the rule.
-   */
-  reason?: string;
-};
-
-interface VulnRules {
-  /**
-   * The vulnerability ID.
-   */
-  id: string; // vulnID
-
-  /**
-   * The URL to the vulnerability on the Snyk website.
-   */
-  url: string;
-
-  /**
-   * The vulnerability's rules with paths to ignore.
-   */
-  paths: PathRule[];
-}
-
-interface DemungedResults {
-  exclude: VulnRules[];
-  ignore: VulnRules[];
-  patch: VulnRules[];
-  version: string;
-}
 
 /**
  * Demunges the given policy object.
@@ -55,25 +15,31 @@ interface DemungedResults {
  * @returns The demunged policy object
  */
 function demunge(policy: Policy, apiRoot = '') {
-  const res = ['ignore', 'patch', 'exclude'].reduce((acc, type) => {
-    acc[type] = policy[type]
-      ? Object.keys(policy[type]).map((id) => {
-          const paths = policy[type][id].map(
-            (pathObj: PathObj | string): PathRule => {
-              if (type === 'exclude' && typeof pathObj === 'string') {
+  const res = (
+    ['ignore', 'patch', 'exclude'] as ('ignore' | 'patch' | 'exclude')[]
+  ).reduce((acc, type) => {
+    const ruleSet = policy[type];
+    acc[type] = ruleSet
+      ? Object.keys(ruleSet).map((id) => {
+          //eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const paths = (ruleSet as Record<string, any>)[id].map(
+            (pathOrPathObj: PathObj | string): PathRule => {
+              if (type === 'exclude' && typeof pathOrPathObj === 'string') {
                 return {
-                  path: pathObj,
+                  path: pathOrPathObj,
                 } as PathRule;
               }
+
+              const pathObj = pathOrPathObj as PathObj; // we should error if it's not an object
 
               const path = Object.keys(pathObj).pop()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
               const res = {
                 path: path,
               } as PathRule;
               if (type === 'ignore' || type === 'exclude') {
+                const expires = pathObj[path].expires;
                 res.reason = pathObj[path].reason;
-                res.expires =
-                  pathObj[path].expires && new Date(pathObj[path].expires);
+                res.expires = expires ? new Date(expires) : undefined;
                 res.disregardIfFixable = pathObj[path].disregardIfFixable;
               }
 

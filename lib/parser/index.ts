@@ -61,22 +61,24 @@ function imports(rawYaml = '') {
  */
 function exportsFn(policy: Policy) {
   // Compiler reserves name 'exports' in top level scope of a module
-  const data = cloneDeep(policy) as Policy;
+  const data = cloneDeep(policy);
 
   // remove any private information on the policy
   for (const key in data) {
-    if (key.indexOf('__') === 0) {
-      delete data[key];
+    const k = key as keyof Policy;
+
+    if (k.indexOf('__') === 0) {
+      delete data[k];
     }
 
-    if (data[key] == null) {
+    if (data[k] == null) {
       // jshint ignore:line
-      delete data[key];
+      delete data[k];
     }
 
     // strip helper functions
-    if (typeof data[key] === 'function') {
-      delete data[key];
+    if (typeof data[k] === 'function') {
+      delete data[k];
     }
   }
 

@@ -1,7 +1,9 @@
 import cloneDeep from 'lodash.clonedeep';
 import { expect, test } from 'vitest';
+
 import * as policy from '../../lib';
 import ignore from '../../lib/filter/ignore';
+import { VulnerabilityReport } from '../../lib/types';
 
 const fixtures = __dirname + '/../fixtures/ignore';
 const vulns = require(fixtures + '/vulns.json');
@@ -226,7 +228,7 @@ test('filters vulnerabilities by exact match', async () => {
         from: ['file.json', 'foo', 'bar'],
       },
     ],
-  };
+  } as VulnerabilityReport;
 
   const expected = cloneDeep(vulns);
   expected.vulnerabilities.splice(1, 1);
