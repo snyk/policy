@@ -13,9 +13,9 @@ const debug = newDebug('snyk:policy');
  * @param vuln the currently present vulnerabilities
  * @returns the vulnerability array with notes attached
  */
-function attachNotes(notes: RuleSet, vuln: Vulnerability[]) {
+function attachNotes<T extends Vulnerability>(notes: RuleSet, vuln: T[]) {
   if (!notes) {
-    return vuln as FilteredVulnerability[];
+    return vuln as FilteredVulnerability<T>[];
   }
 
   debug('attaching notes');
@@ -25,7 +25,7 @@ function attachNotes(notes: RuleSet, vuln: Vulnerability[]) {
     vuln
       // forcing vuln to be a filteredVulnerability to get around the fact that we're mutating the
       // vuln object in place - we should refactor this to be more functional
-      .map((vuln: FilteredVulnerability) => {
+      .map((vuln: FilteredVulnerability<T>) => {
         if (!notes[vuln.id]) {
           return vuln;
         }

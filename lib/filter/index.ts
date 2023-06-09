@@ -7,6 +7,7 @@ import {
   FilteredVulnerabilityReport,
   MatchStrategy,
   Policy,
+  Vulnerability,
   VulnerabilityReport,
 } from '../types';
 import ignore from './ignore';
@@ -23,8 +24,8 @@ const debug = newDebug('snyk:policy');
  * @param matchStrategy the strategy used to match vulnerabilities (defaults to 'packageManager')
  * @returns the filtered vulnerabilities object
  */
-function filter(
-  vulns: VulnerabilityReport,
+function filter<T extends Vulnerability>(
+  vulns: VulnerabilityReport<T>,
   policy: Policy,
   root?: string,
   matchStrategy: MatchStrategy = 'packageManager'
@@ -34,16 +35,16 @@ function filter(
   }
 
   if (vulns.ok) {
-    return vulns as FilteredVulnerabilityReport;
+    return vulns as FilteredVulnerabilityReport<T>;
   }
 
   const filtered = {
-    ignore: [] as FilteredVulnerability[],
-    patch: [] as FilteredVulnerability[],
+    ignore: [] as FilteredVulnerability<T>[],
+    patch: [] as FilteredVulnerability<T>[],
   };
 
   // converts vulns to filtered vulns
-  const filteredVulns = vulns as FilteredVulnerabilityReport;
+  const filteredVulns = vulns as FilteredVulnerabilityReport<T>;
 
   // strip the ignored modules from the results
   filteredVulns.vulnerabilities = ignore(
