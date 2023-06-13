@@ -131,7 +131,7 @@ function matchPath(from: string[], path: string) {
  * @returns whether any ignore rules match the vulnerabilities import path
  */
 function matchToRule(
-  vuln: Vulnerability,
+  vuln: {id?: string, from: string[]},
   pathObj: PathObj,
   matchStrategy: MatchStrategy = 'packageManager'
 ) {
@@ -148,7 +148,7 @@ function matchToRule(
  * @returns whether the rule `path` matches a dependency path in the `from` array
  */
 function matchToSingleRule(
-  vuln: Vulnerability,
+  vuln: {id?: string, from: string[]},
   path: string,
   matchStrategy: MatchStrategy
 ) {
@@ -169,7 +169,7 @@ function matchToSingleRule(
   return pathMatch;
 }
 
-function matchExactWithStars(vuln: Vulnerability, path: string) {
+function matchExactWithStars(vuln: {id?: string, from: string[]}, path: string) {
   const parts = path.split(' > ');
   if (parts[parts.length - 1] === '*') {
     const paddingLength = vuln.from.length - parts.length;
@@ -202,12 +202,12 @@ function getByVuln(policy?: Policy, vuln?: Vulnerability): VulnRule | null {
     return found;
   }
 
-  (['ignore', 'patch'] as ('ignore' | 'patch')[]).forEach((key) => {
+  for (const key of ['ignore', 'patch'] as ('ignore' | 'patch')[]) {
     Object.keys(policy[key] || []).forEach((p) => {
       if (p === vuln.id) {
-        policy[key][p].forEach((rule) => {
+        for (const rule of policy[key][p]) {
           if (matchToRule(vuln, rule)) {
-            const rootRule = Object.keys(rule).pop()!;
+            const rootRule = Object.keys(rule).pop()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
             found = {
               type: key,
               id: vuln.id,
@@ -215,10 +215,10 @@ function getByVuln(policy?: Policy, vuln?: Vulnerability): VulnRule | null {
               ...rule[rootRule],
             } as VulnRule;
           }
-        });
+        }
       }
     });
-  });
+  }
 
   return found;
 }

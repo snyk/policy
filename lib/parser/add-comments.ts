@@ -20,9 +20,11 @@ function addComments(policyExport: string) {
   lines.unshift(initialComment);
 
   for (const key in inlineComments) {
-    const position = lines.indexOf(key + ':');
+    const k = key as keyof typeof inlineComments;
+
+    const position = lines.indexOf(k + ':');
     if (position !== -1) {
-      lines.splice(position, 0, inlineComments[key]);
+      lines.splice(position, 0, inlineComments[k]);
     }
   }
 

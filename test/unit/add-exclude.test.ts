@@ -1,11 +1,13 @@
 import { expect, test } from 'vitest';
+
 import { create } from '../../lib';
+import { PatternGroup } from '../../lib/types';
 
 test('use of invalid file pattern-group throws errors', async () => {
   let policy = await create();
 
   expect(() => {
-    const invalidGroup = 'unmanaged';
+    const invalidGroup = 'unmanaged' as PatternGroup;
     policy.addExclude('./deps/*.ts', invalidGroup);
   }).toThrow('invalid file pattern-group');
 });
