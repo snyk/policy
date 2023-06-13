@@ -3,10 +3,15 @@ import { expect, test } from 'vitest';
 
 import * as policy from '../../lib';
 import ignore from '../../lib/filter/ignore';
-import { VulnerabilityReport } from '../../lib/types';
+import {
+  FilteredRule,
+  FilteredVulnerability,
+  FilteredVulnerabilityReport,
+  VulnerabilityReport,
+} from '../../lib/types';
 
 const fixtures = __dirname + '/../fixtures/ignore';
-const vulns = require(fixtures + '/vulns.json');
+const vulns = require(fixtures + '/vulns.json') as FilteredVulnerabilityReport;
 
 test('ignored vulns do not turn up in tests', async () => {
   const config = await policy.load(fixtures);
@@ -14,7 +19,7 @@ test('ignored vulns do not turn up in tests', async () => {
   const start = vulns.vulnerabilities.length;
   expect(vulns.vulnerabilities).length.greaterThan(0);
 
-  const filtered = [];
+  const filtered = [] as FilteredVulnerability[];
 
   vulns.vulnerabilities = ignore(
     config.ignore,
@@ -62,28 +67,32 @@ test('ignored vulns do not turn up in tests', async () => {
       },
     ],
   };
-  const actual = filtered.reduce((actual, vuln: any) => {
-    actual[vuln.id] = vuln.filtered.ignored;
-    return actual;
-  }, {});
+  const actual = filtered.reduce(
+    (actual, vuln) => {
+      actual[vuln.id] = vuln.filtered?.ignored ?? [];
+      return actual;
+    },
+    {} as {
+      [x: string]: FilteredRule[];
+    }
+  );
   expect(actual).toStrictEqual(expected);
 
-  expect(
-    vulns.vulnerabilities.every((vuln) => {
-      return !!vuln.ignored;
-    })
-  ).toBe(true);
+  expect(vulns.vulnerabilities.every((vuln) => !!vuln.filtered?.ignored)).toBe(
+    true
+  );
 });
 
 test('vulns filtered by security policy ignores', () => {
   const fixturesSecPolicy = __dirname + '/../fixtures/ignore-security-policy';
-  const vulns = require(fixturesSecPolicy + '/vulns.json');
+  const vulns = require(fixturesSecPolicy +
+    '/vulns.json') as VulnerabilityReport;
 
   policy.load(fixtures).then(() => {
     const start = vulns.vulnerabilities.length;
     expect(start).toBeGreaterThan(0);
 
-    const filtered = [];
+    const filtered = [] as FilteredVulnerability[];
 
     vulns.vulnerabilities = ignore({}, vulns.vulnerabilities, filtered);
 
@@ -107,10 +116,10 @@ test('vulns filtered by security policy ignores', () => {
       ],
     };
 
-    const actual = filtered.reduce((actual, vuln: any) => {
-      actual[vuln.id] = vuln.filtered.ignored;
+    const actual = filtered.reduce((actual, vuln) => {
+      actual[vuln.id] = vuln.filtered?.ignored;
       return actual;
-    }, {});
+    }, {} as Record<string, FilteredRule[] | undefined>);
 
     expect(actual).toStrictEqual(expected);
   });
@@ -118,14 +127,15 @@ test('vulns filtered by security policy ignores', () => {
 
 test('vulns filtered by security policy and config ignores', async () => {
   const fixturesSecPolicy = __dirname + '/../fixtures/ignore-security-policy';
-  const vulns = require(fixturesSecPolicy + '/vulns-security-metadata.json');
+  const vulns = require(fixturesSecPolicy +
+    '/vulns-security-metadata.json') as VulnerabilityReport;
 
   const config = await policy.load(fixtures);
 
   const start = vulns.vulnerabilities.length;
   expect(start).toBeGreaterThan(0);
 
-  const filtered = [];
+  const filtered = [] as FilteredVulnerability[];
 
   vulns.vulnerabilities = ignore(
     config.ignore,
@@ -181,10 +191,10 @@ test('vulns filtered by security policy and config ignores', async () => {
     ],
   };
 
-  const actual = filtered.reduce((actual, vuln: any) => {
-    actual[vuln.id] = vuln.filtered.ignored;
+  const actual = filtered.reduce((actual, vuln) => {
+    actual[vuln.id] = vuln.filtered?.ignored;
     return actual;
-  }, {});
+  }, {} as Record<string, FilteredRule[] | undefined>);
 
   expect(actual).toStrictEqual(expected);
 });
@@ -192,14 +202,14 @@ test('vulns filtered by security policy and config ignores', async () => {
 test('does not accept incomplete security policy to ignore vulns', async () => {
   const fixturesSecPolicy = __dirname + '/../fixtures/ignore-security-policy';
   const vulns = require(fixturesSecPolicy +
-    '/vulns-incomplete-security-metadata.json');
+    '/vulns-incomplete-security-metadata.json') as VulnerabilityReport;
 
   const config = await policy.load(fixtures);
 
   const start = vulns.vulnerabilities.length;
   expect(vulns.vulnerabilities).length.greaterThan(0);
 
-  const filtered = [];
+  const filtered = [] as FilteredVulnerability[];
 
   vulns.vulnerabilities = ignore(
     config.ignore,

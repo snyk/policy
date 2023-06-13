@@ -1,5 +1,7 @@
 import { afterEach, expect, test, vi } from 'vitest';
+
 import * as policy from '../../lib';
+import { stripFunctions } from './helpers';
 
 const fixtures = __dirname + '/../fixtures';
 
@@ -45,14 +47,3 @@ test('policy loads without args - non simple', async () => {
   const res = await policy.load();
   expect(Object.keys(res.ignore)).not.toBe(0);
 });
-
-function stripFunctions(res: object) {
-  // strip functions (as they don't land in the final config)
-  Object.keys(res).forEach((key) => {
-    if (typeof res[key] === 'function') {
-      delete res[key];
-    }
-  });
-
-  return res;
-}

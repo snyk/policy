@@ -1,11 +1,17 @@
 import fs from 'fs';
 import resolve from 'snyk-resolve';
 import { afterEach, expect, test, vi } from 'vitest';
+
 import * as policy from '../../lib';
 import patch from '../../lib/filter/patch';
+import {
+  FilteredRule,
+  FilteredVulnerability,
+  VulnerabilityReport,
+} from '../types';
 
 const fixtures = __dirname + '/../fixtures/patch';
-const vulns = require(fixtures + '/vulns.json');
+const vulns = require(fixtures + '/vulns.json') as VulnerabilityReport;
 
 afterEach(() => {
   vi.resetAllMocks();
@@ -20,7 +26,7 @@ test('patched vulns do not turn up in tests', async () => {
   const start = vulns.vulnerabilities.length;
   expect(vulns.vulnerabilities).length.greaterThan(0);
 
-  const filtered = [];
+  const filtered = [] as FilteredVulnerability[];
 
   vulns.vulnerabilities = patch(
     config.patch,
@@ -51,10 +57,10 @@ test('patched vulns do not turn up in tests', async () => {
     'npm:semver:20150403': [{ path: ['*'] }],
   };
 
-  const actual = filtered.reduce((actual, vuln: any) => {
-    actual[vuln.id] = vuln.filtered.patches;
+  const actual = filtered.reduce((actual, vuln) => {
+    actual[vuln.id] = vuln.filtered?.patches;
     return actual;
-  }, {});
+  }, {} as Record<string, FilteredRule[] | undefined>);
 
   expect(actual).toStrictEqual(expected);
   expect(vulns.vulnerabilities.every((vuln) => !!vuln.patches)).toBe(true);

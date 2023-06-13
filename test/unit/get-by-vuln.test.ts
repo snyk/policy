@@ -1,10 +1,12 @@
 import { promises as fs } from 'fs';
 import { expect, test } from 'vitest';
+
 import { getByVuln, loadFromText } from '../../lib';
+import { Policy, VulnerabilityReport } from '../types';
 
 const fixtures = __dirname + '/../fixtures';
-const policy = require(fixtures + '/ignore/parsed.json');
-const vulns = require(fixtures + '/ignore/vulns.json');
+const policy = require(fixtures + '/ignore/parsed.json') as Policy;
+const vulns = require(fixtures + '/ignore/vulns.json') as VulnerabilityReport;
 
 test('getByVuln (no args)', () => {
   const res = getByVuln();
@@ -19,6 +21,11 @@ test('getByVuln (no vulns)', () => {
 test('getByVuln', () => {
   const res = vulns.vulnerabilities.map(getByVuln.bind(null, policy));
   res.forEach((res, i) => {
+    expect(res).not.toBeNull();
+    if (res === null) {
+      return;
+    }
+
     expect(res.type).toBe('ignore');
     expect(res.id).toBe(vulns.vulnerabilities[i].id);
   });
@@ -36,8 +43,12 @@ test('getByVuln with star rules', async () => {
   const policy = await loadFromText(file);
   const res = getByVuln(policy, vuln);
 
-  expect(res.id).toBe(id);
-  expect(res.rule).not.empty;
+  expect(res).not.toBeNull();
+
+  if (res !== null) {
+    expect(res.id).toBe(id);
+    expect(res.rule).not.empty;
+  }
 });
 
 test('getByVuln with exact match rules', async () => {
@@ -48,6 +59,10 @@ test('getByVuln with exact match rules', async () => {
   const policy = await loadFromText(file);
   const res = getByVuln(policy, vuln);
 
-  expect(res.id).toBe(id);
-  expect(res.rule).not.empty;
+  expect(res).not.toBeNull();
+
+  if (res !== null) {
+    expect(res.id).toBe(id);
+    expect(res.rule).not.empty;
+  }
 });

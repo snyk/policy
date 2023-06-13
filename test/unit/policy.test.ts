@@ -1,7 +1,9 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { expect, test } from 'vitest';
+
 import * as policy from '../../lib';
+import { stripFunctions } from './helpers';
 
 const fixtures = __dirname + '/../fixtures';
 
@@ -92,7 +94,12 @@ test('policy.load (multiple - ignore first)', async () => {
   const patchIds = Object.keys(res.patch);
   const id = patchIds.shift();
 
-  const deepPatchPath = Object.keys(res.patch[id][0]).shift().split(' > ');
+  expect(id).toBeDefined();
+  if (id === undefined) {
+    return;
+  }
+
+  const deepPatchPath = Object.keys(res.patch[id][0]).shift()!.split(' > ');
 
   // FIXME is this right, should it include the version?
   expect(deepPatchPath[0]).toBe(patchPkg.name + '@' + patchPkg.version);
@@ -143,15 +150,19 @@ test('policy.load (merge)', async () => {
 
   const formatted = policy.demunge(res);
 
-  const single = formatted.patch.filter((p) => p.id === id).shift();
+  const single = formatted.patch.filter((p) => p.id === id).shift()!;
 
-  expect(single.paths).toHaveLength(3);
+  expect(single).toBeDefined();
 
-  const filtered = single.paths.filter(
-    (item) => item.path.indexOf('mean') === 0
-  );
+  if (single !== undefined) {
+    expect(single.paths).toHaveLength(3);
 
-  expect(filtered).toHaveLength(2);
+    const filtered = single.paths.filter(
+      (item) => item.path.indexOf('mean') === 0
+    );
+
+    expect(filtered).toHaveLength(2);
+  }
 });
 
 test('policy.loadFromText', async () => {
@@ -189,12 +200,3 @@ test('policy.load (multiple - expect ENOENT)', () => {
       })
   ).rejects.toThrow();
 });
-
-function stripFunctions(res) {
-  // strip functions (as they don't land in the final config)
-  Object.keys(res).forEach((key) => {
-    if (typeof res[key] === 'function') {
-      delete res[key];
-    }
-  });
-}

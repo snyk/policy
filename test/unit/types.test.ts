@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { isObject } from 'lib/types';
+import { isObject } from '../../lib/types';
 
 test('isObject', () => {
   // Testing for objects
