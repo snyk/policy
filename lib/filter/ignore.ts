@@ -4,8 +4,15 @@ import newDebug from 'debug';
 import cloneDeep from 'lodash.clonedeep';
 
 import { matchToRule } from '../match';
-import { MatchStrategy, PathObj, RuleSet, Vulnerability } from '../types';
-import { FilteredRule, FilteredVulnerability } from '.';
+import {
+  FilteredRule,
+  FilteredVulnerability,
+  MatchStrategy,
+  MetaRule,
+  PathObj,
+  RuleSet,
+  Vulnerability,
+} from '../types';
 
 const debug = newDebug('snyk:policy');
 
@@ -65,7 +72,7 @@ function filterIgnored(
 
           appliedRules = [
             {
-              [path[0]]: {
+              [path[0] as string]: {
                 reason,
                 reasonType,
                 source,
@@ -143,7 +150,7 @@ function filterIgnored(
   );
 }
 
-const vulnHasSecurityPolicyIgnore = (vuln: Vulnerability) =>
+const vulnHasSecurityPolicyIgnore = (vuln: Vulnerability): vuln is Vulnerability & { securityPolicyMetaData: { ignore: MetaRule } } =>
   !!(vuln.securityPolicyMetaData && vuln.securityPolicyMetaData.ignore);
 
 const isNotNull = <T>(v: T): v is NonNullable<T> => v !== null;

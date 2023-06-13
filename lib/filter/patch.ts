@@ -6,9 +6,13 @@ import cloneDeep from 'lodash.clonedeep';
 import * as path from 'path';
 
 import { matchToRule } from '../match';
-import { RuleSet, Vulnerability } from '../types';
+import {
+  FilteredRule,
+  FilteredVulnerability,
+  RuleSet,
+  Vulnerability,
+} from '../types';
 import getVulnSource from './get-vuln-source';
-import { FilteredRule, FilteredVulnerability } from '.';
 
 const debug = newDebug('snyk:policy');
 
@@ -52,7 +56,7 @@ function filterPatched(
 
         // if rules.find, then ignore vuln
         const vulnRules = patched[vuln.id]
-          .map(function (rule) {
+          .map((rule) => {
             // first check if the path is a match on the rule
             const pathMatch = matchToRule(vuln, rule);
 
@@ -66,9 +70,9 @@ function filterPatched(
               return rule;
             }
 
-            return false;
+            return null;
           })
-          .filter(Boolean);
+          .filter(isNotNull);
 
         // run through the potential rules to check if there's a patch flag in place
         const appliedRules = vulnRules.filter(() => {

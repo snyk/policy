@@ -3,40 +3,17 @@ export default filter;
 import newDebug from 'debug';
 
 import {
+  FilteredVulnerability,
+  FilteredVulnerabilityReport,
   MatchStrategy,
   Policy,
-  Rule,
-  Vulnerability,
-  VulnsObject,
+  VulnerabilityReport,
 } from '../types';
 import ignore from './ignore';
 import notes from './notes';
 import patch from './patch';
 
 const debug = newDebug('snyk:policy');
-
-export interface FilteredRule extends Rule {
-  path: string[];
-}
-
-export interface FilteredVulnerability extends Vulnerability {
-  filtered?: {
-    ignored?: FilteredRule[];
-    patches?: FilteredRule[];
-  };
-  note?: string;
-}
-
-export interface FilteredVulns {
-  ok: boolean;
-
-  vulnerabilities: FilteredVulnerability[];
-
-  filtered?: {
-    ignore: Vulnerability[];
-    patch: Vulnerability[];
-  };
-}
 
 /**
  * Applies the specified policy to the vulnerabilities object.
@@ -47,9 +24,9 @@ export interface FilteredVulns {
  * @returns the filtered vulnerabilities object
  */
 function filter(
-  vulns: VulnsObject,
+  vulns: VulnerabilityReport,
   policy: Policy,
-  root: string,
+  root?: string,
   matchStrategy: MatchStrategy = 'packageManager'
 ) {
   if (!root) {
@@ -57,7 +34,7 @@ function filter(
   }
 
   if (vulns.ok) {
-    return vulns as FilteredVulns;
+    return vulns as FilteredVulnerabilityReport;
   }
 
   const filtered = {
@@ -66,7 +43,7 @@ function filter(
   };
 
   // converts vulns to filtered vulns
-  const filteredVulns = vulns as FilteredVulns;
+  const filteredVulns = vulns as FilteredVulnerabilityReport;
 
   // strip the ignored modules from the results
   filteredVulns.vulnerabilities = ignore(
@@ -106,6 +83,7 @@ function filter(
     // check what's left and switch the failure flag if there's anything
     // under our threshold
     const levels = {
+      critical: 4,
       high: 3,
       medium: 2,
       low: 1,

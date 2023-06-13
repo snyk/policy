@@ -3,8 +3,7 @@ export default attachNotes;
 import newDebug from 'debug';
 
 import { matchToRule } from '../match';
-import { RuleSet, Vulnerability } from '../types';
-import { FilteredVulnerability } from '.';
+import { FilteredVulnerability, RuleSet, Vulnerability } from '../types';
 
 const debug = newDebug('snyk:policy');
 
@@ -64,7 +63,7 @@ function attachNotes(notes: RuleSet, vuln: Vulnerability[]) {
 
           if (pathMatch) {
             // strip any control characters in the 3rd party reason file
-            const reason = rule[path].reason.replace(
+            const reason = rule[path].reason?.replace(
               '/[\x00-\x1F\x7F-\x9F]/u',
               ''
             );
