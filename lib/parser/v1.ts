@@ -82,6 +82,18 @@ function checkForOldFormat(ruleSet: unknown) {
  * @param ruleSet (*mutates!*) the rule set to validate
  */
 function validate(ruleSet: RuleSet) {
+  // replace nulls with empty arrays and empty rules with empty objects
+  for (const [id, pathObjs] of Object.entries(ruleSet)) {
+    // default ruleset entries to []
+    ruleSet[id] = pathObjs ?? [] as PathObj[];
+    for (const pathObj of ruleSet[id]) {
+      for (const path in pathObj) {
+        // default empty rules to {}
+        pathObj[path] = pathObj[path] ?? {} as Rule;
+      }
+    }
+  }
+
   const fix = needsFixing(ruleSet);
 
   if (fix) {
