@@ -26,14 +26,14 @@ const debug = newDebug('snyk:policy');
  * @param matchStrategy the strategy used to match vulnerabilities
  * @returns the remaining un-ignored vulnerabilities
  */
-function filterIgnored(
+function filterIgnored<T extends Vulnerability>(
   ignore: RuleSet,
-  vulns: Vulnerability[],
-  filtered: Vulnerability[] = [],
+  vulns: T[],
+  filtered: T[] = [],
   matchStrategy: MatchStrategy = 'packageManager'
 ) {
   if (!ignore) {
-    return vulns as FilteredVulnerability[];
+    return vulns as FilteredVulnerability<T>[];
   }
 
   debug('filtering ignored');
@@ -43,7 +43,7 @@ function filterIgnored(
     vulns
       // forcing vuln to be a filteredVulnerability to get around the fact that we're mutating the
       // vuln object in place - we should refactor this to be more functional
-      .map((vuln: FilteredVulnerability) => {
+      .map((vuln: FilteredVulnerability<T>) => {
         const applySecurityPolicyIgnore = vulnHasSecurityPolicyIgnore(vuln);
         if (!ignore[vuln.id] && !applySecurityPolicyIgnore) {
           return vuln;

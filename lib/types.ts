@@ -34,7 +34,7 @@ export interface FilteredRule extends Rule {
   path: string[];
 }
 
-export interface FilteredVulnerability extends Vulnerability {
+export type FilteredVulnerability<T extends Vulnerability = Vulnerability> = T & {
   filtered?: {
     ignored?: FilteredRule[];
     patches?: FilteredRule[];
@@ -42,10 +42,10 @@ export interface FilteredVulnerability extends Vulnerability {
   note?: string;
 }
 
-export interface FilteredVulnerabilityReport {
+export interface FilteredVulnerabilityReport<T extends Vulnerability = Vulnerability> {
   ok: boolean;
 
-  vulnerabilities: FilteredVulnerability[];
+  vulnerabilities: FilteredVulnerability<T>[];
 
   filtered?: {
     ignore: Vulnerability[];
@@ -143,11 +143,11 @@ export interface Policy {
   addIgnore: (options: AddRuleOptions) => Policy;
   addPatch: (options: AddRuleOptions) => Policy;
   demunge: (apiRoot?: string) => DemungedResults;
-  filter: (
-    vulns: VulnerabilityReport,
+  filter: <T extends Vulnerability = Vulnerability>(
+    vulns: VulnerabilityReport<T>,
     root?: string,
     matchStrategy?: MatchStrategy
-  ) => FilteredVulnerabilityReport;
+  ) => FilteredVulnerabilityReport<T>;
   save: (root?: string | undefined, spinner?: Spinner) => Promise<void>;
 }
 
@@ -268,7 +268,7 @@ export interface VulnRule extends Rule {
   rule: Array<string>;
 }
 
-export interface VulnerabilityReport {
+export interface VulnerabilityReport<T extends Vulnerability = Vulnerability> {
   /**
    * If all the vulns are stripped because of the policy, then the `ok` bool is set to `true`.
    */
@@ -277,7 +277,7 @@ export interface VulnerabilityReport {
   /**
    * The vulnerabilities found in the project.
    */
-  vulnerabilities: Vulnerability[];
+  vulnerabilities: T[];
 }
 
 export interface VulnRules {

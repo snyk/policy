@@ -26,15 +26,15 @@ const debug = newDebug('snyk:policy');
  * @param filteredPatches (**mutates!**) an optional out parameter to collect vulnerabilities that have been ignored
  * @returns the remaining un-patched vulnerabilities
  */
-function filterPatched(
+function filterPatched<T extends Vulnerability>(
   patched: RuleSet,
-  vulns: Vulnerability[],
+  vulns: T[],
   cwd: string,
   skipVerifyPatch: boolean,
-  filteredPatches: Vulnerability[] = []
+  filteredPatches: T[] = []
 ) {
   if (!patched) {
-    return vulns as FilteredVulnerability[];
+    return vulns as FilteredVulnerability<T>[];
   }
 
   debug('filtering patched');
@@ -42,7 +42,7 @@ function filterPatched(
     vulns
       // forcing vuln to be a filteredVulnerability to get around the fact that we're mutating the
       // vuln object in place - we should refactor this to be more functional
-      .map((vuln: FilteredVulnerability) => {
+      .map((vuln: FilteredVulnerability<T>) => {
         if (!patched[vuln.id]) {
           return vuln;
         }
