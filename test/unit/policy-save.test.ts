@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { afterEach, expect, test, vi } from 'vitest';
-import * as policy from '../../lib';
+import * as policy from '../../lib/policy';
 
 const fixtures = __dirname + '/../fixtures';
 
