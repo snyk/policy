@@ -45,7 +45,10 @@ function filterIgnored<T extends Vulnerability>(
       // vuln object in place - we should refactor this to be more functional
       .map((vuln: FilteredVulnerability<T>) => {
         const applySecurityPolicyIgnore = vulnHasSecurityPolicyIgnore(vuln);
-        if (!ignore[vuln.id] && !applySecurityPolicyIgnore) {
+
+        const vulnId = findRuleForVulnerability(vuln.id, ignore);
+
+        if (!ignore[vulnId] && !applySecurityPolicyIgnore) {
           return vuln;
         }
 
@@ -89,7 +92,7 @@ function filterIgnored<T extends Vulnerability>(
           // keep it.
 
           // if rules.find, then ignore vuln
-          appliedRules = ignore[vuln.id].filter((rule) => {
+          appliedRules = ignore[vulnId].filter((rule) => {
             const path = Object.keys(rule)[0];
             let expires = rule[path].expires;
 
@@ -150,7 +153,26 @@ function filterIgnored<T extends Vulnerability>(
   );
 }
 
-const vulnHasSecurityPolicyIgnore = (vuln: Vulnerability): vuln is Vulnerability & { securityPolicyMetaData: { ignore: MetaRule } } =>
+const vulnHasSecurityPolicyIgnore = (
+  vuln: Vulnerability
+): vuln is Vulnerability & { securityPolicyMetaData: { ignore: MetaRule } } =>
   !!(vuln.securityPolicyMetaData && vuln.securityPolicyMetaData.ignore);
 
 const isNotNull = <T>(v: T): v is NonNullable<T> => v !== null;
+
+/**
+ * Checks whether a rule already exists for a vulnerability with the same ID but different case sensitivity.
+ * If a matching rule is found, it returns the corresponding ID.
+ * @param vulnId the vulnerability id
+ * @param ignore the ignore rule set
+ * @returns the vulnerability id
+ */
+function findRuleForVulnerability(vulnId: string, ignore: RuleSet) {
+  const existingIgnoredVulnID = Object.keys(ignore).find(
+    (key) => key.toUpperCase() === vulnId.toUpperCase()
+  );
+  if (existingIgnoredVulnID) {
+    return existingIgnoredVulnID;
+  }
+  return vulnId;
+}

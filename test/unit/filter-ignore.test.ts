@@ -248,3 +248,30 @@ test('filters vulnerabilities by exact match', async () => {
   const filtered = config.filter(vulns, undefined, 'exact');
   expect(filtered.vulnerabilities).toStrictEqual(expected.vulnerabilities);
 });
+
+test('vulnerabilities filter is case insensitive', async () => {
+  const vulns = {
+    vulnerabilities: [
+      {
+        id: 'A-vuLn',
+        from: ['dir/file.json', 'foo', 'bar'],
+      },
+      {
+        id: 'A-VULN',
+        from: ['file.json', 'foo', 'bar'],
+      },
+      {
+        id: 'another-vuln',
+        from: ['file.json', 'foo', 'bar'],
+      },
+    ],
+  } as VulnerabilityReport;
+
+  const expected = cloneDeep(vulns);
+  expected.vulnerabilities.splice(1, 1);
+
+  const config = await policy.load(__dirname + '/../fixtures/ignore-exact');
+
+  const filtered = config.filter(vulns, undefined, 'exact');
+  expect(filtered.vulnerabilities).toStrictEqual(expected.vulnerabilities);
+});
