@@ -7,6 +7,7 @@ import {
   FilteredRule,
   FilteredVulnerability,
   FilteredVulnerabilityReport,
+  Vulnerability,
   VulnerabilityReport,
 } from '../../lib/types';
 
@@ -250,25 +251,26 @@ test('filters vulnerabilities by exact match', async () => {
 });
 
 test('vulnerabilities filter is case insensitive', async () => {
+  const vulnToBeIgnored = {
+    id: 'A-VULN',
+    from: ['file.json', 'foo', 'bar'],
+  };
+  const vulnOne = {
+    id: 'A-vuLn',
+    from: ['dir/file.json', 'foo', 'bar'],
+  };
+  const vulnTwo = {
+    id: 'another-vuln',
+    from: ['file.json', 'foo', 'bar'],
+  };
+
   const vulns = {
-    vulnerabilities: [
-      {
-        id: 'A-vuLn',
-        from: ['dir/file.json', 'foo', 'bar'],
-      },
-      {
-        id: 'A-VULN',
-        from: ['file.json', 'foo', 'bar'],
-      },
-      {
-        id: 'another-vuln',
-        from: ['file.json', 'foo', 'bar'],
-      },
-    ],
+    vulnerabilities: [vulnToBeIgnored, vulnOne, vulnTwo],
   } as VulnerabilityReport;
 
-  const expected = cloneDeep(vulns);
-  expected.vulnerabilities.splice(1, 1);
+  const expected = {
+    vulnerabilities: [vulnOne, vulnTwo],
+  } as VulnerabilityReport;
 
   const config = await policy.load(__dirname + '/../fixtures/ignore-exact');
 
