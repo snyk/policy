@@ -67,11 +67,11 @@ function checkForOldFormat(ruleSet: unknown) {
   // alpha format, and we'll throw
   if (isObject(ruleSet)) {
     for (const id in ruleSet) {
-      if (!Array.isArray(ruleSet[id])) {
+      if (ruleSet[id] && !Array.isArray(ruleSet[id])) {
         // create an error and add a code field to it without using `any`
-        // const error = new Error('old, unsupported .snyk format detected');
-        // error.code = 'OLD_DOTFILE_FORMAT';
-        // throw error;
+        const error: NodeJS.ErrnoException = new Error('old, unsupported .snyk format detected');
+        error.code = 'OLD_DOTFILE_FORMAT';
+        throw error;
       }
     }
   }
