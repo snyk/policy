@@ -24,8 +24,8 @@ const debug = newDebug('snyk:policy');
  * @param matchStrategy the strategy used to match vulnerabilities (defaults to 'packageManager')
  * @returns the filtered vulnerabilities object
  */
-function filter<T extends Vulnerability>(
-  vulns: VulnerabilityReport<T>,
+function filter<VulnType extends Vulnerability, ReportType>(
+  vulns: ReportType & VulnerabilityReport<VulnType>,
   policy: Policy,
   root?: string,
   matchStrategy: MatchStrategy = 'packageManager'
@@ -34,17 +34,17 @@ function filter<T extends Vulnerability>(
     root = process.cwd();
   }
 
+  // converts vulns to filtered vulns
+  const filteredVulns = vulns as ReportType & FilteredVulnerabilityReport<VulnType>;
+
   if (vulns.ok) {
-    return vulns as FilteredVulnerabilityReport<T>;
+    return filteredVulns;
   }
 
   const filtered = {
-    ignore: [] as FilteredVulnerability<T>[],
-    patch: [] as FilteredVulnerability<T>[],
+    ignore: [] as FilteredVulnerability<VulnType>[],
+    patch: [] as FilteredVulnerability<VulnType>[],
   };
-
-  // converts vulns to filtered vulns
-  const filteredVulns = vulns as FilteredVulnerabilityReport<T>;
 
   // strip the ignored modules from the results
   filteredVulns.vulnerabilities = ignore(
@@ -92,7 +92,7 @@ function filter<T extends Vulnerability>(
     const level = levels[policy.failThreshold];
     filteredVulns.ok = true;
     filteredVulns.vulnerabilities.some((vuln) => {
-      if (levels[vuln.severity] >= level) {
+      if (vuln.severity && levels[vuln.severity] >= level) {
         filteredVulns.ok = false;
         return true; // breaks
       }

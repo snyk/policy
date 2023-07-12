@@ -52,7 +52,7 @@ function attachNotes<T extends Vulnerability>(notes: RuleSet, vuln: T[]) {
           if (
             pathMatch &&
             rule[path].disregardIfFixable &&
-            (vuln.upgradePath.length || vuln.patches.length)
+            (vuln.upgradePath?.length || vuln.patches?.length)
           ) {
             debug(
               '%s vuln is fixable and rule is set to disregard if fixable',
