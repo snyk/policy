@@ -2,17 +2,15 @@ import * as yaml from 'js-yaml';
 import cloneDeep from 'lodash.clonedeep';
 import * as semver from 'semver';
 
-import { version as versionFromPackageJson } from '../../package.json';
-import { latestVersion } from '../';
+import { latestVersion } from '../policy';
 import { Policy, isObject } from '../types';
 import addComments from './add-comments';
 import v1 from './v1';
 
 export { default as demunge } from './demunge';
-export { imports as import, exportsFn as export, packageVersion as version };
+export { imports as import, exportsFn as export };
 
 const defaultPolicyVersion = 'v1';
-const packageVersion = version();
 
 type parser = (policy: Record<string, unknown>) => Policy;
 
@@ -86,16 +84,4 @@ function exportsFn(policy: Policy) {
   data.version = latestVersion();
   // put inline comments into the exported yaml file
   return addComments(yaml.dump(data));
-}
-
-/**
- * @deprecated default version of the imported policy file is now always v1 and not coupled to the
- * current library version.
- */
-function version() {
-  if (versionFromPackageJson && versionFromPackageJson !== '0.0.0') {
-    return 'v' + versionFromPackageJson;
-  }
-
-  return 'v1.0.0';
 }
