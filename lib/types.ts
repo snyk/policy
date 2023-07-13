@@ -47,7 +47,7 @@ export interface FilteredVulnerabilityReport<T extends Vulnerability = Vulnerabi
 
   vulnerabilities: FilteredVulnerability<T>[];
 
-  filtered?: {
+  filtered: {
     ignore: Vulnerability[];
     patch: Vulnerability[];
   };
@@ -143,11 +143,11 @@ export interface Policy {
   addIgnore: (options: AddRuleOptions) => Policy;
   addPatch: (options: AddRuleOptions) => Policy;
   demunge: (apiRoot?: string) => DemungedResults;
-  filter: <T extends Vulnerability = Vulnerability>(
-    vulns: VulnerabilityReport<T>,
+  filter: <VulnType extends Vulnerability, ReportType>(
+    vulns: ReportType & VulnerabilityReport<VulnType>,
     root?: string,
     matchStrategy?: MatchStrategy
-  ) => FilteredVulnerabilityReport<T>;
+  ) => ReportType & FilteredVulnerabilityReport<VulnType>;
   save: (root?: string | undefined, spinner?: Spinner) => Promise<void>;
 }
 
@@ -224,7 +224,7 @@ export type Spinner = {
 export interface Vulnerability {
   __filename?: string;
   readonly id: string;
-  severity: Severity;
+  severity?: Severity;
 
   /**
    * The dependency path in which the vulnerability was introduced. A chain of the packages leading
@@ -235,18 +235,18 @@ export interface Vulnerability {
    */
   from: string[];
 
-  isUpgradable: boolean;
+  isUpgradable?: boolean;
 
   /**
    * A possible upgrade remediation path. Mirrors the `from` field above, but contains upgraded
    * versions. The element [0] is usually `false` and is of no use.  If the element [1] is false,
    * there's no valid complete upgrade path yet.
    */
-  upgradePath: (string | boolean)[];
+  upgradePath?: (string | boolean)[];
 
-  isPatchable: boolean;
+  isPatchable?: boolean;
 
-  patches: Patch[];
+  patches?: Patch[];
 
   securityPolicyMetaData?: SecurityPolicyMetaData;
 }
