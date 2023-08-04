@@ -23,7 +23,7 @@ export default defineConfig({
     globals: true,
     dir: 'test',
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       reporter: ['text', 'html'],
 
       branches: 85,
