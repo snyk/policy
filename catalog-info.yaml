@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: policy
+  annotations:
+    github.com/project-slug: snyk/policy
+    github.com/team-slug: snyk/narwhal
+spec:
+  type: external-library
+  lifecycle: "-"
+  owner: narwhal
