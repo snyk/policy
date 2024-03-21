@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  prodsec: snyk/prodsec-orb@1.0
+  prodsec: snyk/prodsec-orb@1
   snyk:
     commands:
       install:
@@ -51,7 +51,7 @@ orbs:
               steps:
                 - run:
                     name: Report OpenSource results
-                    command: snyk monitor --project-name=<<parameters.project>> --org=narwhal-xqs
+                    command: snyk monitor --project-name=<<parameters.project>> --org=appsecex_ignores
       scan_code:
         parameters:
           severity_threshold:
@@ -199,7 +199,9 @@ workflows:
 
       - scan:
           name: Snyk Vuln Scan
-          context: narwhal-policy
+          context: 
+            - narwhal-policy
+            - appsecex_ignores
           requires:
             - Install
 
@@ -217,7 +219,9 @@ workflows:
           name: Install
       - scan:
           name: Snyk Vuln Scan
-          context: narwhal-policy
+          context: 
+            - narwhal-policy
+            - appsecex_ignores
           requires:
             - Install
     triggers:
