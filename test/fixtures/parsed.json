@@ -17,9 +17,9 @@
   },
   "version": "v1",
   "ignore": {
-    "npm:hawk:20160119": [
+    "snyk:lic:npm:shescape:MPL-2.0": [
       {
-        "sqlite > sqlite3 > node-pre-gyp > request > hawk": {
+        "*": {
           "reason": "None given",
           "expires": "2016-03-01T14:30:04.136Z"
         }

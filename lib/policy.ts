@@ -8,7 +8,13 @@ import add from './add';
 import addExclude from './add-exclude';
 import filter from './filter';
 import * as parse from './parser';
-import { PathObj, Policy, Spinner, isNodeError } from './types';
+import {
+  PathObj,
+  Policy,
+  Spinner,
+  isNodeError,
+  ApiRootFunction,
+} from './types';
 
 export { demunge } from './parser';
 export { getByVuln, matchToRule } from './match';
@@ -38,7 +44,8 @@ function attachMethods(policy: Pick<Policy, '__filename'> & Partial<Policy>) {
     );
   policy.save = (root, spinner) => save(policy as Policy, root, spinner);
   policy.toString = () => parse.export(policy as Policy);
-  policy.demunge = (apiRoot) => parse.demunge(policy as Policy, apiRoot);
+  policy.demunge = (apiRoot?: ApiRootFunction | string) =>
+    parse.demunge(policy as Policy, apiRoot);
   policy.add = (type: 'ignore' | 'patch', options) =>
     add(policy as Policy, type, options);
   policy.addIgnore = (options) => add(policy as Policy, 'ignore', options);
