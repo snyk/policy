@@ -15,7 +15,7 @@ function addExclude(
   policy: Policy,
   pattern: string,
   group: PatternGroup = 'global',
-  options = {} as AddExcludeOptions
+  options = {} as AddExcludeOptions,
 ) {
   if (!isPatternGroupValid(group)) {
     throw new Error('invalid file pattern-group');
@@ -27,7 +27,7 @@ function addExclude(
 
   // Remove duplicates
   patterns = patterns.filter((p) =>
-    typeof p === 'string' ? p !== pattern : !p[pattern]
+    typeof p === 'string' ? p !== pattern : !p[pattern],
   );
 
   options.created = new Date();

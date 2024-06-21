@@ -32,7 +32,7 @@ function imports(rawYaml = '') {
   const data = isObject(yamlData) ? yamlData : {};
 
   const isVersioned = (
-    yamlObj: Record<string, unknown>
+    yamlObj: Record<string, unknown>,
   ): yamlObj is versioned => typeof yamlObj.version === 'string';
 
   let version = isVersioned(data) ? data.version : defaultPolicyVersion;

@@ -56,7 +56,7 @@ function attachNotes<T extends Vulnerability>(notes: RuleSet, vuln: T[]) {
           ) {
             debug(
               '%s vuln is fixable and rule is set to disregard if fixable',
-              vuln.id
+              vuln.id,
             );
             return false;
           }
@@ -65,13 +65,13 @@ function attachNotes<T extends Vulnerability>(notes: RuleSet, vuln: T[]) {
             // strip any control characters in the 3rd party reason file
             const reason = rule[path].reason?.replace(
               '/[\x00-\x1F\x7F-\x9F]/u',
-              ''
+              '',
             );
             if (debug.enabled) {
               debug(
                 'adding note based on path match: %s ~= %s',
                 path,
-                vuln.from.slice(1).join(' > ')
+                vuln.from.slice(1).join(' > '),
               );
             }
             vuln.note =

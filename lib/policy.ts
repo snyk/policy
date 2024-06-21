@@ -28,15 +28,14 @@ function defaultFilename() {
 }
 
 function attachMethods(policy: Pick<Policy, '__filename'> & Partial<Policy>) {
-  policy.filter =
-    (vulns, root?, matchStrategy = 'packageManager') =>
-      filter(
-        vulns,
-        policy as Policy,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        root || path.dirname(policy.__filename!), // will throw if __filename is null
-        matchStrategy
-      );
+  policy.filter = (vulns, root?, matchStrategy = 'packageManager') =>
+    filter(
+      vulns,
+      policy as Policy,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      root || path.dirname(policy.__filename!), // will throw if __filename is null
+      matchStrategy,
+    );
   policy.save = (root, spinner) => save(policy as Policy, root, spinner);
   policy.toString = () => parse.export(policy as Policy);
   policy.demunge = (apiRoot) => parse.demunge(policy as Policy, apiRoot);
@@ -63,7 +62,7 @@ export async function loadFromText(text = '') {
   policy.__modified = now;
   policy.__created = now;
 
-  return attachMethods(policy)
+  return attachMethods(policy);
 }
 
 interface loadOptions {
@@ -80,7 +79,7 @@ interface loadOptions {
  */
 export function load(
   root?: string | string[] | loadOptions,
-  options?: loadOptions
+  options?: loadOptions,
 ): Promise<Policy> {
   if (!Array.isArray(root) && typeof root !== 'string') {
     // the first argument are the load options
@@ -140,7 +139,7 @@ export function load(
             debug(JSON.stringify(res, null, 2));
           }
           return res;
-        })
+        }),
       );
     }
 
@@ -149,7 +148,7 @@ export function load(
 
   const promises: [Promise<Policy>, Promise<Stats>] = [
     promise,
-    fs.stat(filename).catch(() => ({} as Stats)),
+    fs.stat(filename).catch(() => ({}) as Stats),
   ];
 
   return Promise.all(promises)
@@ -191,7 +190,7 @@ async function mergePolicies(policyDirs: string[], options?: loadOptions) {
     options && options['trust-policies'] ? 'ignore' : 'suggest';
 
   const [rootPolicy, ...others] = await Promise.all(
-    policyDirs.map((dir) => load(dir, options))
+    policyDirs.map((dir) => load(dir, options)),
   );
 
   await Promise.all(
@@ -204,7 +203,7 @@ async function mergePolicies(policyDirs: string[], options?: loadOptions) {
 
         mergePath('ignore', ignoreTarget, full, rootPolicy, policy);
         mergePath('patch', 'patch', full, rootPolicy, policy);
-      })
+      }),
   );
 
   return rootPolicy;
@@ -223,7 +222,7 @@ function mergePath(
   into: 'patch' | 'ignore' | 'suggest',
   pathRoot: string,
   rootPolicy: Policy,
-  policy: Policy
+  policy: Policy,
 ) {
   if (!rootPolicy[into]) {
     rootPolicy[into] = {};

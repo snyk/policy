@@ -53,7 +53,7 @@ test('policy.load (double .snyk in path name)', async () => {
     patch: {},
     __filename: path.relative(
       process.cwd(),
-      fixtures + '/project.snyk/project1.snyk/.snyk'
+      fixtures + '/project.snyk/project1.snyk/.snyk',
     ),
     __modified: res.__modified ? new Date(res.__modified) : false,
     __created: res.__created ? new Date(res.__created) : false,
@@ -72,7 +72,7 @@ test('policy.load (single .snyk in path name but at upper level)', async () => {
     patch: {},
     __filename: path.relative(
       process.cwd(),
-      fixtures + '/project.snyk/project1/.snyk'
+      fixtures + '/project.snyk/project1/.snyk',
     ),
     __modified: res.__modified ? new Date(res.__modified) : false,
     __created: res.__created ? new Date(res.__created) : false,
@@ -158,7 +158,7 @@ test('policy.load (merge)', async () => {
     expect(single.paths).toHaveLength(3);
 
     const filtered = single.paths.filter(
-      (item) => item.path.indexOf('mean') === 0
+      (item) => item.path.indexOf('mean') === 0,
     );
 
     expect(filtered).toHaveLength(2);
@@ -197,6 +197,6 @@ test('policy.load (multiple - expect ENOENT)', () => {
       .catch((e) => {
         expect(e.code).toBe('ENOENT');
         throw e;
-      })
+      }),
   ).rejects.toThrow();
 });

@@ -30,7 +30,7 @@ function filterIgnored<T extends Vulnerability>(
   ignore: RuleSet,
   vulns: T[],
   filtered: T[] = [],
-  matchStrategy: MatchStrategy = 'packageManager'
+  matchStrategy: MatchStrategy = 'packageManager',
 ) {
   if (!ignore) {
     return vulns as FilteredVulnerability<T>[];
@@ -115,7 +115,7 @@ function filterIgnored<T extends Vulnerability>(
             ) {
               debug(
                 '%s vuln is fixable and rule is set to disregard if fixable',
-                vuln.id
+                vuln.id,
               );
               return false;
             }
@@ -125,7 +125,7 @@ function filterIgnored<T extends Vulnerability>(
                 debug(
                   'ignoring based on path match: %s ~= %s',
                   path,
-                  vuln.from.slice(1).join(' > ')
+                  vuln.from.slice(1).join(' > '),
                 );
               }
               return true;
@@ -154,7 +154,7 @@ function filterIgnored<T extends Vulnerability>(
 }
 
 const vulnHasSecurityPolicyIgnore = (
-  vuln: Vulnerability
+  vuln: Vulnerability,
 ): vuln is Vulnerability & { securityPolicyMetaData: { ignore: MetaRule } } =>
   !!(vuln.securityPolicyMetaData && vuln.securityPolicyMetaData.ignore);
 
@@ -169,7 +169,7 @@ const isNotNull = <T>(v: T): v is NonNullable<T> => v !== null;
  */
 function findRuleForVulnerability(vulnId: string, ignore: RuleSet) {
   const existingIgnoredVulnID = Object.keys(ignore).find(
-    (key) => key.toUpperCase() === vulnId.toUpperCase()
+    (key) => key.toUpperCase() === vulnId.toUpperCase(),
   );
   if (existingIgnoredVulnID) {
     return existingIgnoredVulnID;

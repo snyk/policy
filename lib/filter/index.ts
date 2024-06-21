@@ -28,14 +28,15 @@ function filter<VulnType extends Vulnerability, ReportType>(
   vulns: ReportType & VulnerabilityReport<VulnType>,
   policy: Policy,
   root?: string,
-  matchStrategy: MatchStrategy = 'packageManager'
+  matchStrategy: MatchStrategy = 'packageManager',
 ) {
   if (!root) {
     root = process.cwd();
   }
 
   // converts vulns to filtered vulns
-  const filteredVulns = vulns as ReportType & FilteredVulnerabilityReport<VulnType>;
+  const filteredVulns = vulns as ReportType &
+    FilteredVulnerabilityReport<VulnType>;
 
   if (vulns.ok) {
     return filteredVulns;
@@ -51,7 +52,7 @@ function filter<VulnType extends Vulnerability, ReportType>(
     policy.ignore,
     filteredVulns.vulnerabilities,
     filtered.ignore,
-    matchStrategy
+    matchStrategy,
   );
 
   filteredVulns.vulnerabilities = patch(
@@ -59,13 +60,13 @@ function filter<VulnType extends Vulnerability, ReportType>(
     filteredVulns.vulnerabilities,
     root,
     policy.skipVerifyPatch ? true : false,
-    filtered.patch
+    filtered.patch,
   );
 
   if (policy.suggest) {
     filteredVulns.vulnerabilities = notes(
       policy.suggest,
-      filteredVulns.vulnerabilities
+      filteredVulns.vulnerabilities,
     );
   }
 
