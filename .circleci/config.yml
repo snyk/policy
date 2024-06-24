@@ -67,16 +67,9 @@ orbs:
 
 defaults: &defaults
   resource_class: small
+  docker:
+  - image: cimg/node:18.18.1
   working_directory: ~/policy
-
-executors:
-  docker-node:
-    parameters:
-      version:
-        default: '18.16.0'
-        type: string
-    docker:
-      - image: cimg/node:<<parameters.version>>
 
 commands:
   npmrc:
@@ -98,16 +91,12 @@ commands:
 jobs:
   install:
     <<: *defaults
-    executor:
-      name: docker-node
     steps:
       - checkout
       - npmrc
       - install
   lint:
     <<: *defaults
-    executor:
-      name: docker-node
     steps:
       - checkout
       - attach_workspace:
@@ -117,8 +106,6 @@ jobs:
           command: npm run lint
   scan:
     <<: *defaults
-    executor:
-      name: docker-node
     resource_class: medium
     steps:
       - checkout
@@ -133,12 +120,6 @@ jobs:
 
   test:
     <<: *defaults
-    parameters:
-      version:
-        type: string
-    executor:
-      name: docker-node
-      version: <<parameters.version>>
     steps:
       - checkout
       - attach_workspace:
@@ -152,8 +133,6 @@ jobs:
           path: reports/jest/
   release:
     <<: *defaults
-    executor:
-      name: docker-node
     steps:
       - checkout
       - npmrc
@@ -185,11 +164,6 @@ workflows:
           name: Test
           requires:
             - Lint
-          matrix:
-            parameters:
-              version:
-                - 16.14.0
-                - 18.16.0
           filters:
             branches:
               ignore:
