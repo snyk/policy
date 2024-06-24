@@ -160,7 +160,7 @@ jobs:
       - install
       - run:
           name: Release on GitHub
-          command: npx semantic-release
+          command: npx semantic-release@22.0.0
 
 workflows:
   version: 2
