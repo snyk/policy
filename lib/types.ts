@@ -145,7 +145,7 @@ export interface Policy {
   addExclude: (pattern: string, group?: PatternGroup, options?: Rule) => void;
   addIgnore: (options: AddRuleOptions) => Policy;
   addPatch: (options: AddRuleOptions) => Policy;
-  demunge: (apiRoot?: string) => DemungedResults;
+  demunge: (apiRoot?: ApiRootFunction | string) => DemungedResults;
   filter: <VulnType extends Vulnerability, ReportType>(
     vulns: ReportType & VulnerabilityReport<VulnType>,
     root?: string,
@@ -299,6 +299,11 @@ export interface VulnRules {
    */
   paths: PathRule[];
 }
+
+/**
+ * Type of a function returning the root of a vulnerability URL
+ */
+export type ApiRootFunction = (vulnId: string) => string;
 
 /**
  * Returns true if the value is an object. This is a more reliable check than `typeof` or
