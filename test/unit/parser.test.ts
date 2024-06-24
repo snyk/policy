@@ -29,7 +29,7 @@ test('parser fills out defaults for invalid inputs', () => {
 test('parser fills out defaults for invalid array input', () => {
   const res = parser.import(
     `# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.+
-    - object Object`
+    - object Object`,
   );
   const expected = {
     version: 'v1.0.0',
@@ -63,7 +63,7 @@ test('test unsupported version', () => {
     parser.import(
       yaml.dump({
         version: 'v20.0.1',
-      })
+      }),
     );
   }).toThrow(/unsupported version/);
 });

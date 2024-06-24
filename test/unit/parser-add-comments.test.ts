@@ -8,17 +8,17 @@ test('policy with no patches or ignores', () => {
       version: 'v1.0.0',
       patch: {},
       ignore: {},
-    })
+    }),
   );
 
   expect(res).toMatch(/^# Snyk \(https:\/\/snyk\.io\) policy file/);
   expect(res).not.toMatch(
     '# patches apply the minimum changes required to fix ' +
-      'a vulnerability\npatch:'
+      'a vulnerability\npatch:',
   );
   expect(res).not.toMatch(
     '# ignores vulnerabilities until expiry date; change ' +
-      'duration by modifying expiry date\nignore:'
+      'duration by modifying expiry date\nignore:',
   );
 });
 
@@ -34,16 +34,16 @@ test('policy with patches', () => {
         ],
       },
       ignore: {},
-    })
+    }),
   );
 
   expect(res).toMatch(
     '# patches apply the minimum changes required to fix ' +
-      'a vulnerability\npatch:'
+      'a vulnerability\npatch:',
   );
   expect(res).not.toMatch(
     '# ignores vulnerabilities until expiry date; change ' +
-      'duration by modifying expiry date\nignore:'
+      'duration by modifying expiry date\nignore:',
   );
 });
 
@@ -59,16 +59,16 @@ test('policy with ignores', () => {
           },
         ],
       },
-    })
+    }),
   );
 
   expect(res).toMatch(
     '# ignores vulnerabilities until expiry date; change ' +
-      'duration by modifying expiry date\nignore:'
+      'duration by modifying expiry date\nignore:',
   );
   expect(res).not.toMatch(
     '# patches apply the minimum changes required to fix ' +
-      'a vulnerability\npatch:'
+      'a vulnerability\npatch:',
   );
 });
 
@@ -90,15 +90,15 @@ test('policy with ignores and patches', () => {
           },
         ],
       },
-    })
+    }),
   );
 
   expect(res).toMatch(
     '# ignores vulnerabilities until expiry date; change ' +
-      'duration by modifying expiry date\nignore:'
+      'duration by modifying expiry date\nignore:',
   );
   expect(res).toMatch(
     '# patches apply the minimum changes required to fix ' +
-      'a vulnerability\npatch:'
+      'a vulnerability\npatch:',
   );
 });

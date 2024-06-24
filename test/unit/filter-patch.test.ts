@@ -33,7 +33,7 @@ test('patched vulns do not turn up in tests', async () => {
     vulns.vulnerabilities,
     fixtures,
     true,
-    filtered
+    filtered,
   );
 
   // should strip 3
@@ -57,10 +57,13 @@ test('patched vulns do not turn up in tests', async () => {
     'npm:semver:20150403': [{ path: ['*'] }],
   };
 
-  const actual = filtered.reduce((actual, vuln) => {
-    actual[vuln.id] = vuln.filtered?.patches;
-    return actual;
-  }, {} as Record<string, FilteredRule[] | undefined>);
+  const actual = filtered.reduce(
+    (actual, vuln) => {
+      actual[vuln.id] = vuln.filtered?.patches;
+      return actual;
+    },
+    {} as Record<string, FilteredRule[] | undefined>,
+  );
 
   expect(actual).toStrictEqual(expected);
   expect(vulns.vulnerabilities.every((vuln) => !!vuln.patches)).toBe(true);

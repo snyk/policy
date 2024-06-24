@@ -20,7 +20,7 @@ const validReasonTypes: ReasonType[] = [
 function add(
   policy: Policy,
   type: 'ignore' | 'patch',
-  options: AddRuleOptions
+  options: AddRuleOptions,
 ) {
   if (type !== 'ignore' && type !== 'patch') {
     throw new Error('policy.add: unknown type "' + type + '" to add to');

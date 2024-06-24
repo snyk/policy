@@ -31,7 +31,7 @@ function filterPatched<T extends Vulnerability>(
   vulns: T[],
   cwd: string,
   skipVerifyPatch: boolean,
-  filteredPatches: T[] = []
+  filteredPatches: T[] = [],
 ) {
   if (!patched) {
     return vulns as FilteredVulnerability<T>[];
@@ -65,7 +65,7 @@ function filterPatched<T extends Vulnerability>(
               debug(
                 '(patch) ignoring based on path match: %s ~= %s',
                 path,
-                vuln.from.slice(1).join(' > ')
+                vuln.from.slice(1).join(' > '),
               );
               return rule;
             }

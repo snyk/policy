@@ -69,7 +69,9 @@ function checkForOldFormat(ruleSet: unknown) {
     for (const id in ruleSet) {
       if (ruleSet[id] && !Array.isArray(ruleSet[id])) {
         // create an error and add a code field to it without using `any`
-        const error: NodeJS.ErrnoException = new Error('old, unsupported .snyk format detected');
+        const error: NodeJS.ErrnoException = new Error(
+          'old, unsupported .snyk format detected',
+        );
         error.code = 'OLD_DOTFILE_FORMAT';
         throw error;
       }
@@ -85,11 +87,11 @@ function validate(ruleSet: RuleSet) {
   // replace nulls with empty arrays and empty rules with empty objects
   for (const [id, pathObjs] of Object.entries(ruleSet)) {
     // default ruleset entries to []
-    ruleSet[id] = pathObjs ?? [] as PathObj[];
+    ruleSet[id] = pathObjs ?? ([] as PathObj[]);
     for (const pathObj of ruleSet[id]) {
       for (const path in pathObj) {
         // default empty rules to {}
-        pathObj[path] = pathObj[path] ?? {} as Rule;
+        pathObj[path] = pathObj[path] ?? ({} as Rule);
       }
     }
   }
@@ -166,7 +168,7 @@ function getFailThreshold(policy: Record<string, unknown>): Severity | null {
   if (!isSeverity(strThreshold)) {
     throw new PolicyError(
       'unknown threshold value "' + strThreshold + '"',
-      'POLICY_BAD_THRESHOLD'
+      'POLICY_BAD_THRESHOLD',
     );
   }
 

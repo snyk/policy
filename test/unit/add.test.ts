@@ -55,12 +55,11 @@ test('add ignore with invalid reasonType', async () => {
   let policy = await create();
 
   expect(() =>
-    policy
-      .addIgnore({
-        id: 'a',
-        path: 'a > b',
-        reasonType: 'test' as ReasonType,
-      })
+    policy.addIgnore({
+      id: 'a',
+      path: 'a > b',
+      reasonType: 'test' as ReasonType,
+    }),
   ).toThrow('invalid reasonType test');
 });
 
@@ -94,6 +93,6 @@ test('add ignore with invalid ignoredBy', async () => {
       id: 'a',
       path: 'a > b',
       ignoredBy: ignoredBy,
-    })
+    }),
   ).toThrow('ignoredBy.email must be a valid email address');
 });

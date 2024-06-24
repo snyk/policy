@@ -44,7 +44,7 @@ function demunge(policy: Policy, apiRoot = '') {
               }
 
               return res;
-            }
+            },
           );
           return {
             id: id,
