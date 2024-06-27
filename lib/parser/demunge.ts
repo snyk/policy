@@ -1,4 +1,5 @@
 import {
+  ApiRootFunction,
   DemungedResults,
   PathObj,
   PathRule,
@@ -11,10 +12,10 @@ export default demunge;
 /**
  * Demunges the given policy object.
  * @param policy  The policy object to demunge
- * @param apiRoot The root URL of the Snyk API
+ * @param apiRoot A string or func calculating the base URL for the Snyk API
  * @returns The demunged policy object
  */
-function demunge(policy: Policy, apiRoot = '') {
+function demunge(policy: Policy, apiRoot?: ApiRootFunction | string) {
   const res = (
     ['ignore', 'patch', 'exclude'] as ('ignore' | 'patch' | 'exclude')[]
   ).reduce((acc, type) => {
@@ -44,11 +45,12 @@ function demunge(policy: Policy, apiRoot = '') {
               }
 
               return res;
-            }
+            },
           );
+
           return {
             id: id,
-            url: apiRoot + '/vuln/' + id,
+            url: getBaseUrl(id, apiRoot) + '/vuln/' + id,
             paths: paths,
           } as VulnRules;
         })
@@ -59,4 +61,14 @@ function demunge(policy: Policy, apiRoot = '') {
   res.version = policy.version;
 
   return res;
+}
+
+function getBaseUrl(
+  vulnId: string,
+  apiRoot?: ApiRootFunction | string,
+): string {
+  if (apiRoot == undefined) {
+    return '';
+  }
+  return typeof apiRoot === 'function' ? apiRoot(vulnId) : apiRoot;
 }

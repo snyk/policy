@@ -24,6 +24,6 @@ test('load different types of policies', () => {
     dirs.map((dir) => {
       expect(() => policy.load(fixtures + '/' + dir, { loose: true })).not
         .toThrow;
-    })
+    }),
   );
 });

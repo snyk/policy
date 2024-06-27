@@ -42,6 +42,6 @@ test('severity-control fails on bad value', () => {
     policy.loadFromText('failThreshold: foo').catch((error) => {
       expect(error.code).toBe('POLICY_BAD_THRESHOLD');
       throw error;
-    })
+    }),
   ).rejects.toThrow();
 });

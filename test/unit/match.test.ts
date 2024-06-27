@@ -7,7 +7,7 @@ import { Rule, Vulnerability } from '../types';
 const fixtures = __dirname + '/../fixtures';
 
 const vulnWithGitUrl = JSON.parse(
-  fs.readFileSync(fixtures + '/patch-with-git-url.json', 'utf8')
+  fs.readFileSync(fixtures + '/patch-with-git-url.json', 'utf8'),
 );
 const exactMatchVuln = {
   from: ['a-dir/a-file.json', 'foo', 'bar'],

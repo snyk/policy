@@ -26,7 +26,7 @@ function getVulnSource(vuln: Vulnerability, cwd: string, live: boolean) {
   const viaPath = path.resolve(
     cwd || process.cwd(),
     'node_modules',
-    from.join('/node_modules/')
+    from.join('/node_modules/'),
   );
 
   let source = vuln.__filename ? path.dirname(vuln.__filename) : viaPath;

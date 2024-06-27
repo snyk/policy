@@ -5,8 +5,9 @@ import * as policy from '../../lib';
 import notes from '../../lib/filter/notes';
 
 const fixtures = __dirname + '/../fixtures';
-const vulns = require(fixtures +
-  '/patch/vulns.json') as FilteredVulnerabilityReport;
+const vulns = require(
+  fixtures + '/patch/vulns.json',
+) as FilteredVulnerabilityReport;
 
 test('ignored vulns do not turn up in tests', async () => {
   const res = await policy.load([

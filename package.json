@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "description": "Snyk's policy parser and matching logic",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -37,16 +39,16 @@
     "@types/lodash.clonedeep": "^4.5.7",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
-    "@vitest/coverage-v8": "^0.34.1",
+    "@vitest/coverage-v8": "^1.6.0",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^9.0.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.0.1",
     "ts-node": "^10.9.1",
     "typescript": "~5.3.3",
-    "vite": "^4.3.9",
+    "vite": "^5.1.0",
     "vite-plugin-dts": "^2.3.0",
-    "vitest": "^0.34.1"
+    "vitest": "^1.6.0"
   },
   "dependencies": {
     "debug": "^4.1.1",

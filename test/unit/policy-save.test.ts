@@ -35,6 +35,6 @@ test('policy.save', async () => {
   expect(parsed).toBe(asText);
   expect(parsed).toMatch(
     '# Snyk (https://snyk.io) policy file, patches or ' +
-      'ignores known vulnerabilities.'
+      'ignores known vulnerabilities.',
   );
 });

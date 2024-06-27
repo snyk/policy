@@ -103,7 +103,7 @@ test('add dates and reasons', async (t) => {
     if (exclude1 && typeof exclude1 !== 'string') {
       expect(exclude1['./deps/*.ts'].expires).toBe('2092-12-24');
       expect(exclude1['./deps/*.ts'].reason).toBe(
-        'incidents already fixed by user'
+        'incidents already fixed by user',
       );
     }
   }).does.not.toThrow();

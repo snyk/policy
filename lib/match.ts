@@ -131,12 +131,12 @@ function matchPath(from: string[], path: string) {
  * @returns whether any ignore rules match the vulnerabilities import path
  */
 function matchToRule(
-  vuln: {id?: string, from: string[]},
+  vuln: { id?: string; from: string[] },
   pathObj: PathObj,
-  matchStrategy: MatchStrategy = 'packageManager'
+  matchStrategy: MatchStrategy = 'packageManager',
 ) {
   return Object.keys(pathObj).some((path) =>
-    matchToSingleRule(vuln, path, matchStrategy)
+    matchToSingleRule(vuln, path, matchStrategy),
   );
 }
 
@@ -148,9 +148,9 @@ function matchToRule(
  * @returns whether the rule `path` matches a dependency path in the `from` array
  */
 function matchToSingleRule(
-  vuln: {id?: string, from: string[]},
+  vuln: { id?: string; from: string[] },
   path: string,
-  matchStrategy: MatchStrategy
+  matchStrategy: MatchStrategy,
 ) {
   if (matchStrategy === 'exact') {
     return matchExactWithStars(vuln, path);
@@ -169,7 +169,10 @@ function matchToSingleRule(
   return pathMatch;
 }
 
-function matchExactWithStars(vuln: {id?: string, from: string[]}, path: string) {
+function matchExactWithStars(
+  vuln: { id?: string; from: string[] },
+  path: string,
+) {
   const parts = path.split(' > ');
   if (parts[parts.length - 1] === '*') {
     const paddingLength = vuln.from.length - parts.length;

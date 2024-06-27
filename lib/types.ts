@@ -10,8 +10,8 @@ export interface AddRuleOptions extends Rule {
   path: string;
 
   ignoredBy?: {
-    email: string
-  }
+    email: string;
+  };
 
   patched?: string;
   reasonType?: ReasonType;
@@ -34,15 +34,18 @@ export interface FilteredRule extends Rule {
   path: string[];
 }
 
-export type FilteredVulnerability<T extends Vulnerability = Vulnerability> = T & {
-  filtered?: {
-    ignored?: FilteredRule[];
-    patches?: FilteredRule[];
+export type FilteredVulnerability<T extends Vulnerability = Vulnerability> =
+  T & {
+    filtered?: {
+      ignored?: FilteredRule[];
+      patches?: FilteredRule[];
+    };
+    note?: string;
   };
-  note?: string;
-}
 
-export interface FilteredVulnerabilityReport<T extends Vulnerability = Vulnerability> {
+export interface FilteredVulnerabilityReport<
+  T extends Vulnerability = Vulnerability,
+> {
   ok: boolean;
 
   vulnerabilities: FilteredVulnerability<T>[];
@@ -56,7 +59,7 @@ export interface FilteredVulnerabilityReport<T extends Vulnerability = Vulnerabi
 export type MatchStrategy = 'packageManager' | 'exact';
 
 export interface MetaRule extends Rule {
-  path: string[] | { module: string; url?: string; }[];
+  path: string[] | { module: string; url?: string }[];
 }
 
 /**
@@ -142,11 +145,11 @@ export interface Policy {
   addExclude: (pattern: string, group?: PatternGroup, options?: Rule) => void;
   addIgnore: (options: AddRuleOptions) => Policy;
   addPatch: (options: AddRuleOptions) => Policy;
-  demunge: (apiRoot?: string) => DemungedResults;
+  demunge: (apiRoot?: ApiRootFunction | string) => DemungedResults;
   filter: <VulnType extends Vulnerability, ReportType>(
     vulns: ReportType & VulnerabilityReport<VulnType>,
     root?: string,
-    matchStrategy?: MatchStrategy
+    matchStrategy?: MatchStrategy,
   ) => ReportType & FilteredVulnerabilityReport<VulnType>;
   save: (root?: string | undefined, spinner?: Spinner) => Promise<void>;
 }
@@ -296,6 +299,11 @@ export interface VulnRules {
    */
   paths: PathRule[];
 }
+
+/**
+ * Type of a function returning the root of a vulnerability URL
+ */
+export type ApiRootFunction = (vulnId: string) => string;
 
 /**
  * Returns true if the value is an object. This is a more reliable check than `typeof` or
