@@ -4,8 +4,8 @@ metadata:
   name: policy
   annotations:
     github.com/project-slug: snyk/policy
-    github.com/team-slug: snyk/narwhal
+    github.com/team-slug: snyk/ignores
 spec:
   type: external-library
   lifecycle: "-"
-  owner: narwhal
+  owner: ignores
