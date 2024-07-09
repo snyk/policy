@@ -2,68 +2,6 @@ version: 2.1
 
 orbs:
   prodsec: snyk/prodsec-orb@1
-  snyk:
-    commands:
-      install:
-        description: Install Snyk
-        steps:
-          - run:
-              name: Install Snyk
-              command: |
-                if [[ ! -x "/usr/local/bin/snyk" ]]; then
-                  LATEST_SNYK_CLI_VERSION=$(curl https://static.snyk.io/cli/latest/version)
-                  echo "Downloading Snyk CLI version ${LATEST_SNYK_CLI_VERSION}"
-                  curl -sO https://static.snyk.io/cli/v${LATEST_SNYK_CLI_VERSION}/snyk-linux
-                  curl -sO https://static.snyk.io/cli/v${LATEST_SNYK_CLI_VERSION}/snyk-linux.sha256
-                  sha256sum -c snyk-linux.sha256
-                  sudo mv snyk-linux /usr/local/bin/snyk
-                  sudo chmod +x /usr/local/bin/snyk
-                fi
-                snyk config set disableSuggestions=true
-                snyk auth $SNYK_TOKEN
-      scan_open_source:
-        parameters:
-          project:
-            description: The name of the Snyk project to publish results
-            type: string
-          current_branch:
-            description: |
-              If current_branch equals the monitor_branch, then report the results to Snyk.
-              The variable `pipeline.git.branch` is not in scope in orbs
-            type: string
-          monitor_branch:
-            description: If current_branch equals the monitor_branch, then report the results to Snyk
-            type: string
-            default: main
-          severity_threshold:
-            description: Fail the build if issues are found with severity equal to or above this threshold 
-            type: enum
-            enum: [critical, high, medium, low]
-            default: low
-        steps:
-          - install
-          - run:
-              name: Snyk OpenSource Scan
-              command: snyk test --severity-threshold=<<parameters.severity_threshold>>
-          - when:
-              condition:
-                equal: [ <<parameters.current_branch>>, <<parameters.monitor_branch>> ]
-              steps:
-                - run:
-                    name: Report OpenSource results
-                    command: snyk monitor --project-name=<<parameters.project>> --org=appsecex_ignores
-      scan_code:
-        parameters:
-          severity_threshold:
-            description: Fail the build if issues are found with severity equal to or above this threshold 
-            type: enum
-            enum: [critical, high, medium, low]
-            default: low
-        steps:
-          - install
-          - run:
-              name: Snyk Code Scan
-              command: snyk code test --severity-threshold=<<parameters.severity_threshold>>
 
 defaults: &defaults
   resource_class: small
@@ -104,20 +42,19 @@ jobs:
       - run:
           name: Run linting
           command: npm run lint
-  scan:
+  security_scans:
     <<: *defaults
-    resource_class: medium
     steps:
       - checkout
       - attach_workspace:
           at: ~/policy
-      - snyk/scan_open_source:
-          project: snyk/policy
-          current_branch: << pipeline.git.branch >>
-          monitor_branch: master
-      - snyk/scan_code:
-          severity_threshold: high
-
+      - prodsec/security_scans:
+          mode: auto
+          release-branch: master
+          open-source-scan: low # severity threshold used for SCA
+          code-scan: high # severity threshold used for SAST
+          open-source-additional-arguments: --exclude=test
+          org: appsecex_ignores
   test:
     <<: *defaults
     steps:
@@ -160,6 +97,13 @@ workflows:
             branches:
               ignore:
                 - master
+      - security_scans:
+          name: Security Scans
+          context:
+            - narwhal-policy
+            - appsecex_ignores
+          requires:
+            - Install
       - test:
           name: Test
           requires:
@@ -168,15 +112,6 @@ workflows:
             branches:
               ignore:
                 - master
-
-      - scan:
-          name: Snyk Vuln Scan
-          context: 
-            - narwhal-policy
-            - appsecex_ignores
-          requires:
-            - Install
-
       - release:
           name: Release
           context: narwhal-policy
@@ -189,9 +124,9 @@ workflows:
     jobs:
       - install:
           name: Install
-      - scan:
-          name: Snyk Vuln Scan
-          context: 
+      - security_scans:
+          name: Security Scans
+          context:
             - narwhal-policy
             - appsecex_ignores
           requires:
