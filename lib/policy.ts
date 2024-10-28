@@ -1,4 +1,4 @@
-import newDebug from 'debug';
+// import newDebug from 'debug';
 import { lstatSync, promises as fs, Stats } from 'fs';
 import * as path from 'path';
 
@@ -20,7 +20,7 @@ export { demunge } from './parser';
 export { getByVuln, matchToRule } from './match';
 export * from './types';
 
-const debug = newDebug('snyk:policy');
+// const debug = newDebug('snyk:policy');
 
 /** Returns the version of the latest policy schema */
 export const latestVersion = () => 'v1.25.1'; // only major _should_ matter, but deferring for now
@@ -127,7 +127,7 @@ export function load(
   } catch (error) {
     if (isNodeError(error) && error.code === 'ENOENT') {
       // Ignore if EOENT
-      debug('ENOENT on file, while checking if directory');
+      // debug('ENOENT on file, while checking if directory');
     } else {
       throw error;
     }
@@ -141,10 +141,10 @@ export function load(
     if (!ignorePolicy && Array.isArray(root)) {
       return resolve(
         mergePolicies(root, options).then((res) => {
-          if (debug.enabled) {
-            debug('final policy:');
-            debug(JSON.stringify(res, null, 2));
-          }
+          // if (debug.enabled) {
+            // debug('final policy:');
+            // debug(JSON.stringify(res, null, 2));
+          // }
           return res;
         }),
       );
@@ -161,7 +161,7 @@ export function load(
   return Promise.all(promises)
     .catch((error) => {
       if (options?.loose && error.code === 'ENOENT') {
-        debug('ENOENT on file, but running loose');
+        // debug('ENOENT on file, but running loose');
         return [parse.import(), {} as Stats] as [Policy, Stats];
       }
 

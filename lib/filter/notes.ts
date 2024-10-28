@@ -1,11 +1,11 @@
 export default attachNotes;
 
-import newDebug from 'debug';
+// import newDebug from 'debug';
 
 import { matchToRule } from '../match';
 import { FilteredVulnerability, RuleSet, Vulnerability } from '../types';
 
-const debug = newDebug('snyk:policy');
+// const debug = newDebug('snyk:policy');
 
 /**
  * Attaches notes specified in the Policy file to the corresponding vulnerabilities.
@@ -18,7 +18,7 @@ function attachNotes<T extends Vulnerability>(notes: RuleSet, vuln: T[]) {
     return vuln as FilteredVulnerability<T>[];
   }
 
-  debug('attaching notes');
+  // debug('attaching notes');
   const now = new Date().toJSON();
 
   return (
@@ -30,7 +30,7 @@ function attachNotes<T extends Vulnerability>(notes: RuleSet, vuln: T[]) {
           return vuln;
         }
 
-        debug('%s has rules', vuln.id);
+        // debug('%s has rules', vuln.id);
 
         // if rules.some, then add note to the vuln
         notes[vuln.id].forEach((rule) => {
@@ -45,7 +45,7 @@ function attachNotes<T extends Vulnerability>(notes: RuleSet, vuln: T[]) {
           }
 
           if (pathMatch && expires && expires < now) {
-            debug('%s vuln rule has expired (%s)', vuln.id, expires);
+            // debug('%s vuln rule has expired (%s)', vuln.id, expires);
             return false;
           }
 
@@ -54,10 +54,10 @@ function attachNotes<T extends Vulnerability>(notes: RuleSet, vuln: T[]) {
             rule[path].disregardIfFixable &&
             (vuln.upgradePath?.length || vuln.patches?.length)
           ) {
-            debug(
-              '%s vuln is fixable and rule is set to disregard if fixable',
-              vuln.id,
-            );
+            // debug(
+            //   '%s vuln is fixable and rule is set to disregard if fixable',
+            //   vuln.id,
+            // );
             return false;
           }
 
@@ -67,13 +67,13 @@ function attachNotes<T extends Vulnerability>(notes: RuleSet, vuln: T[]) {
               '/[\x00-\x1F\x7F-\x9F]/u',
               '',
             );
-            if (debug.enabled) {
-              debug(
-                'adding note based on path match: %s ~= %s',
-                path,
-                vuln.from.slice(1).join(' > '),
-              );
-            }
+            // if (debug.enabled) {
+              // debug(
+              //   'adding note based on path match: %s ~= %s',
+              //   path,
+              //   vuln.from.slice(1).join(' > '),
+              // );
+            // }
             vuln.note =
               'Snyk policy in ' +
               rule[path].from +

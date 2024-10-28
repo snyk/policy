@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs, { Stats } from 'fs';
 import resolve from 'snyk-resolve';
 import { afterEach, expect, test, vi } from 'vitest';
 
@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 test('patched vulns do not turn up in tests', async () => {
-  vi.spyOn(fs, 'statSync').mockReturnValueOnce(new fs.Stats());
+  vi.spyOn(fs, 'statSync').mockReturnValueOnce({} as Stats);
   vi.spyOn(resolve, 'sync').mockReturnValueOnce('.');
 
   const config = await policy.load(fixtures);
