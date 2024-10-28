@@ -1,4 +1,4 @@
-import newDebug from 'debug';
+// import newDebug from 'debug';
 import * as semver from 'semver';
 
 import { parsePackageString as moduleToObject } from 'snyk-module';
@@ -14,8 +14,8 @@ import {
 
 export { matchToRule, getByVuln };
 
-const debug = newDebug('snyk:policy');
-const debugPolicy = newDebug('snyk:protect');
+// const debug = newDebug('snyk:policy');
+// const debugPolicy = newDebug('snyk:protect');
 
 /**
  * matchPath will take the array of dependencies that a vulnerability came from and try to match it
@@ -34,17 +34,17 @@ const debugPolicy = newDebug('snyk:protect');
  */
 function matchPath(from: string[], path: string) {
   const parts = path.split(' > ');
-  debugPolicy('checking path: %s vs. %s', path, from);
+  // debugPolicy('checking path: %s vs. %s', path, from);
   let offset = 0;
 
   const res = parts.every((pkg, i) => {
-    debugPolicy('for %s...(against %s)', pkg, from[i + offset]);
+    // debugPolicy('for %s...(against %s)', pkg, from[i + offset]);
     let fromPkg = from[i + offset]
       ? moduleToObject(from[i + offset])
       : ({} as Package);
 
     if (pkg === '*') {
-      debugPolicy('star rule');
+      // debugPolicy('star rule');
 
       // handle the rule being `*` alone
       if (!parts[i + 1]) {
@@ -57,7 +57,7 @@ function matchPath(from: string[], path: string) {
       // the next matching package in the chain. So `* > semver` matches
       // `foo > bar > semver`
       if (next) {
-        debugPolicy('next', next);
+        // debugPolicy('next', next);
         // move forward until we find a matching package
         for (let j = i; i < parts.length; j++) {
           // if we've run out of paths, then we didn't match
@@ -65,15 +65,15 @@ function matchPath(from: string[], path: string) {
             return false;
           }
           fromPkg = moduleToObject(from[i + offset]);
-          debugPolicy('fromPkg', fromPkg, next);
+          // debugPolicy('fromPkg', fromPkg, next);
 
           if (next.name === fromPkg.name) {
             // adjust for the `i` index incrementing in the next .every call
             offset--;
-            debugPolicy('next has a match');
+            // debugPolicy('next has a match');
             break;
           }
-          debugPolicy('pushing offset');
+          // debugPolicy('pushing offset');
           offset++;
         }
       }
@@ -81,10 +81,10 @@ function matchPath(from: string[], path: string) {
       return true;
     }
 
-    debugPolicy('next test', pkg, fromPkg);
+    // debugPolicy('next test', pkg, fromPkg);
 
     if (pkg === from[i + offset]) {
-      debugPolicy('exact match');
+      // debugPolicy('exact match');
       return true;
     }
 
@@ -102,7 +102,7 @@ function matchPath(from: string[], path: string) {
     // shortcut version match, if it's exact, then skip the semver check
     if (target.name === fromPkg.name) {
       if (fromPkg.version === pkgVersion) {
-        debugPolicy('exact version match');
+        // debugPolicy('exact version match');
         return true;
       }
 
@@ -110,16 +110,16 @@ function matchPath(from: string[], path: string) {
         semver.valid(fromPkg.version) &&
         semver.satisfies(fromPkg.version, pkgVersion)
       ) {
-        debugPolicy('semver match');
+        // debugPolicy('semver match');
         return true;
       }
     }
 
-    debugPolicy('failed match');
+    // debugPolicy('failed match');
 
     return false;
   });
-  debugPolicy('result of path test %s: %s', path, res);
+  // debugPolicy('result of path test %s: %s', path, res);
   return res;
 }
 
@@ -160,7 +160,7 @@ function matchToSingleRule(
   let pathMatch = false;
   const from = vuln.from.slice(1);
   if (path.indexOf(from.join(' > ')) !== -1) {
-    debug('%s exact match from %s', vuln.id, from);
+    // debug('%s exact match from %s', vuln.id, from);
     pathMatch = true;
   } else if (matchPath(from, path)) {
     pathMatch = true;

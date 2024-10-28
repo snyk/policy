@@ -1,6 +1,6 @@
 export default filter;
 
-import newDebug from 'debug';
+// import newDebug from 'debug';
 
 import {
   FilteredVulnerability,
@@ -14,7 +14,7 @@ import ignore from './ignore';
 import notes from './notes';
 import patch from './patch';
 
-const debug = newDebug('snyk:policy');
+// const debug = newDebug('snyk:policy');
 
 /**
  * Applies the specified policy to the vulnerabilities object.
@@ -79,7 +79,7 @@ function filter<VulnType extends Vulnerability, ReportType>(
 
   filteredVulns.filtered = filtered;
 
-  debug('> has threshold? %s', policy.failThreshold);
+  // debug('> has threshold? %s', policy.failThreshold);
 
   if (policy.failThreshold && vulns.ok === false) {
     // check what's left and switch the failure flag if there's anything
