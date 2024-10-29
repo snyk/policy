@@ -114,7 +114,8 @@ workflows:
                 - master
       - release:
           name: Release
-          context: narwhal-policy
+          context:
+            - nodejs-lib-release
           filters:
             branches:
               only:
