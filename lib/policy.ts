@@ -21,6 +21,8 @@ export { getByVuln, matchToRule } from './match';
 export * from './types';
 
 const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 
 /** Returns the version of the latest policy schema */
 export const latestVersion = () => 'v1.25.1'; // only major _should_ matter, but deferring for now

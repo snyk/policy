@@ -15,6 +15,8 @@ import notes from './notes';
 import patch from './patch';
 
 const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 
 /**
  * Applies the specified policy to the vulnerabilities object.

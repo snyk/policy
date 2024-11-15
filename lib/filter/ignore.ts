@@ -15,6 +15,8 @@ import {
 } from '../types';
 
 const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 
 /**
  * Given an ignore rule set (parsed from the `.snyk` yaml file) and a array of vulnerabilities,

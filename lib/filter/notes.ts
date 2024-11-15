@@ -6,6 +6,8 @@ import { matchToRule } from '../match';
 import { FilteredVulnerability, RuleSet, Vulnerability } from '../types';
 
 const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 
 /**
  * Attaches notes specified in the Policy file to the corresponding vulnerabilities.

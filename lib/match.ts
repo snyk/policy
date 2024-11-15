@@ -15,7 +15,11 @@ import {
 export { matchToRule, getByVuln };
 
 const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 const debugPolicy = newDebug('snyk:protect');
+// eslint-disable-next-line no-console
+debugPolicy.log = console.error.bind(console);
 
 /**
  * matchPath will take the array of dependencies that a vulnerability came from and try to match it

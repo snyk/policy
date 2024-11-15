@@ -15,6 +15,8 @@ import {
 import getVulnSource from './get-vuln-source';
 
 const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 
 /**
  * Given a patched rule set (parsed from the `.snyk` yaml file) and a array of vulnerabilities,

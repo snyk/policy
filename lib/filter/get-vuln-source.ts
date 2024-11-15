@@ -12,6 +12,8 @@ import resolve from 'snyk-resolve';
 import { Vulnerability } from '../types';
 
 const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 
 /**
  * Get the path to the vulnerable dependency's source
