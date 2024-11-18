@@ -1,6 +1,6 @@
 export default filterPatched;
 
-// import newDebug from 'debug';
+import newDebug from 'debug';
 import { statSync, Stats } from 'fs';
 import cloneDeep from 'lodash.clonedeep';
 import * as path from 'path';
@@ -14,7 +14,9 @@ import {
 } from '../types';
 import getVulnSource from './get-vuln-source';
 
-// const debug = newDebug('snyk:policy');
+const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 
 /**
  * Given a patched rule set (parsed from the `.snyk` yaml file) and a array of vulnerabilities,
@@ -37,7 +39,7 @@ function filterPatched<T extends Vulnerability>(
     return vulns as FilteredVulnerability<T>[];
   }
 
-  // debug('filtering patched');
+  debug('filtering patched');
   return (
     vulns
       // forcing vuln to be a filteredVulnerability to get around the fact that we're mutating the
@@ -47,7 +49,7 @@ function filterPatched<T extends Vulnerability>(
           return vuln;
         }
 
-        // debug('%s has rules', vuln.id);
+        debug('%s has rules', vuln.id);
 
         // logic: loop through all rules (from `patched[vuln.id]`), and if *any* dep
         // paths match our vuln.from dep chain AND a flag exists, then the
@@ -62,11 +64,11 @@ function filterPatched<T extends Vulnerability>(
 
             if (pathMatch) {
               const path = Object.keys(rule)[0]; // this is a string
-              // debug(
-              //   '(patch) ignoring based on path match: %s ~= %s',
-              //   path,
-              //   vuln.from.slice(1).join(' > '),
-              // );
+              debug(
+                '(patch) ignoring based on path match: %s ~= %s',
+                path,
+                vuln.from.slice(1).join(' > '),
+              );
               return rule;
             }
 
@@ -97,7 +99,7 @@ function filterPatched<T extends Vulnerability>(
             }
           }
 
-          // debug('flag found for %s? %s', vuln.id);
+          debug('flag found for %s? %s', vuln.id);
 
           return !!res;
         });

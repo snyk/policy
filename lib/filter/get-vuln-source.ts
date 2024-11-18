@@ -2,7 +2,7 @@
 
 export default getVulnSource;
 
-// import newDebug from 'debug';
+import newDebug from 'debug';
 import { statSync } from 'fs';
 import * as path from 'path';
 
@@ -11,7 +11,9 @@ import resolve from 'snyk-resolve';
 
 import { Vulnerability } from '../types';
 
-// const debug = newDebug('snyk:policy');
+const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 
 /**
  * Get the path to the vulnerable dependency's source
@@ -50,7 +52,7 @@ function getVulnSource(vuln: Vulnerability, cwd: string, live: boolean) {
       // able to patch - likely a scenario run, so it's fine that the
       // patch target won't be found
     }
-    // debug('found better source for package: %s', source);
+    debug('found better source for package: %s', source);
   }
 
   return source;

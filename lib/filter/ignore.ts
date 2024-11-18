@@ -1,6 +1,6 @@
 export default filterIgnored;
 
-// import newDebug from 'debug';
+import newDebug from 'debug';
 import cloneDeep from 'lodash.clonedeep';
 
 import { matchToRule } from '../match';
@@ -14,7 +14,9 @@ import {
   Vulnerability,
 } from '../types';
 
-// const debug = newDebug('snyk:policy');
+const debug = newDebug('snyk:policy');
+// eslint-disable-next-line no-console
+debug.log = console.error.bind(console);
 
 /**
  * Given an ignore rule set (parsed from the `.snyk` yaml file) and a array of vulnerabilities,
@@ -36,7 +38,7 @@ function filterIgnored<T extends Vulnerability>(
     return vulns as FilteredVulnerability<T>[];
   }
 
-  // debug('filtering ignored');
+  debug('filtering ignored');
   const now = new Date().toJSON();
 
   return (
@@ -52,7 +54,7 @@ function filterIgnored<T extends Vulnerability>(
           return vuln;
         }
 
-        // debug('%s has rules', vuln.id);
+        debug('%s has rules', vuln.id);
 
         let appliedRules: PathObj[] = [];
 
@@ -110,20 +112,20 @@ function filterIgnored<T extends Vulnerability>(
               rule[path].disregardIfFixable &&
               (vuln.isUpgradable || vuln.isPatchable)
             ) {
-              // debug(
-              //  '%s vuln is fixable and rule is set to disregard if fixable',
-              //  vuln.id,
-              //);
+              debug(
+                '%s vuln is fixable and rule is set to disregard if fixable',
+                vuln.id,
+              );
               return false;
             }
 
-            // if (debug.enabled) {
-              // debug(
-              //   'ignoring based on path match: %s ~= %s',
-              //   path,
-              //   vuln.from.slice(1).join(' > '),
-              // );
-            // }
+            if (debug.enabled) {
+              debug(
+                'ignoring based on path match: %s ~= %s',
+                path,
+                vuln.from.slice(1).join(' > '),
+              );
+            }
             return true;
           });
         }
@@ -175,11 +177,11 @@ function isValidAndNotExpired(expires: Date | string, vulnId: string): boolean {
     expires = new Date(expires);
   }
   if (isNaN(expires.getTime())) {
-    // debug('%s vuln rule has invalid expiry date (%s)', vulnId, expires);
+    debug('%s vuln rule has invalid expiry date (%s)', vulnId, expires);
     return false;
   }
   if (expires < new Date()) {
-    // debug('%s vuln rule has expired (%s)', vulnId, expires);
+    debug('%s vuln rule has expired (%s)', vulnId, expires);
     return false;
   }
   return true;
