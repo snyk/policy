@@ -89,26 +89,29 @@ function filterIgnored<T extends Vulnerability>(
           ];
         } else {
           // logic: loop through all rules (from `ignore[vuln.id]`), and if *any* dep
-          // paths match our vuln.from dep chain AND the expiry date is valid AND the rule hasn't expired, then the
+          // paths match our vuln.from dep chain AND the rule hasn't expired, then the
           // vulnerability is ignored. if none of the rules match, then let we'll
           // keep it.
 
           // if rules.find, then ignore vuln
           appliedRules = ignore[vulnId].filter((rule) => {
             const path = Object.keys(rule)[0];
+            let expires = rule[path].expires;
+
+            if (expires && expires instanceof Date) {
+              expires = expires.toJSON();
+            }
 
             // first check if the path is a match on the rule
             const pathMatch = matchToRule(vuln, rule, matchStrategy);
-            if (!pathMatch) {
-              return false;
-            }
 
-            const expires = rule[path].expires;
-            if (expires && !isValidAndNotExpired(expires, vuln.id)) {
+            if (pathMatch && expires && expires < now) {
+              debug('%s vuln rule has expired (%s)', vuln.id, expires);
               return false;
             }
 
             if (
+              pathMatch &&
               rule[path].disregardIfFixable &&
               (vuln.isUpgradable || vuln.isPatchable)
             ) {
@@ -119,14 +122,18 @@ function filterIgnored<T extends Vulnerability>(
               return false;
             }
 
-            if (debug.enabled) {
-              debug(
-                'ignoring based on path match: %s ~= %s',
-                path,
-                vuln.from.slice(1).join(' > '),
-              );
+            if (pathMatch) {
+              if (debug.enabled) {
+                debug(
+                  'ignoring based on path match: %s ~= %s',
+                  path,
+                  vuln.from.slice(1).join(' > '),
+                );
+              }
+              return true;
             }
-            return true;
+
+            return false;
           });
         }
 
@@ -170,19 +177,4 @@ function findRuleForVulnerability(vulnId: string, ignore: RuleSet) {
     return existingIgnoredVulnID;
   }
   return vulnId;
-}
-
-function isValidAndNotExpired(expires: Date | string, vulnId: string): boolean {
-  if (typeof expires === 'string') {
-    expires = new Date(expires);
-  }
-  if (isNaN(expires.getTime())) {
-    debug('%s vuln rule has invalid expiry date (%s)', vulnId, expires);
-    return false;
-  }
-  if (expires < new Date()) {
-    debug('%s vuln rule has expired (%s)', vulnId, expires);
-    return false;
-  }
-  return true;
 }
