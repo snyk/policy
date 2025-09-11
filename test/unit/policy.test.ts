@@ -109,6 +109,7 @@ test('policy.load (multiple - ignore last)', async () => {
   const res = await policy.load([fixtures + '/patch', fixtures + '/ignore']);
 
   const ids = [
+    'NPM:HAWK:20160119',
     'npm:hawk:20160119',
     'npm:is-my-json-valid:20160118',
     'npm:tar:20151103',
@@ -127,6 +128,7 @@ test('policy.load (multiple - ignore last - trust deep policy)', async () => {
   });
 
   const ids = [
+    'NPM:HAWK:20160119',
     'npm:hawk:20160119',
     'npm:is-my-json-valid:20160118',
     'npm:tar:20151103',
