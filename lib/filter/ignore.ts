@@ -48,9 +48,9 @@ function filterIgnored<T extends Vulnerability>(
       .map((vuln: FilteredVulnerability<T>) => {
         const applySecurityPolicyIgnore = vulnHasSecurityPolicyIgnore(vuln);
 
-        const vulnId = findRuleForVulnerability(vuln.id, ignore);
+        const matchingRuleIds = findAllMatchingRules(vuln.id, ignore);
 
-        if (!ignore[vulnId] && !applySecurityPolicyIgnore) {
+        if (matchingRuleIds.length === 0 && !applySecurityPolicyIgnore) {
           return vuln;
         }
 
@@ -88,53 +88,55 @@ function filterIgnored<T extends Vulnerability>(
             },
           ];
         } else {
-          // logic: loop through all rules (from `ignore[vuln.id]`), and if *any* dep
-          // paths match our vuln.from dep chain AND the rule hasn't expired, then the
-          // vulnerability is ignored. if none of the rules match, then let we'll
-          // keep it.
+          // Check all matching rules (with different casing)
+          for (const ruleId of matchingRuleIds) {
+            const rules = ignore[ruleId];
+            if (rules) {
+              const matchingRules = rules.filter((rule) => {
+                const path = Object.keys(rule)[0];
+                let expires = rule[path].expires;
 
-          // if rules.find, then ignore vuln
-          appliedRules = ignore[vulnId].filter((rule) => {
-            const path = Object.keys(rule)[0];
-            let expires = rule[path].expires;
+                if (expires && expires instanceof Date) {
+                  expires = expires.toJSON();
+                }
 
-            if (expires && expires instanceof Date) {
-              expires = expires.toJSON();
+                // first check if the path is a match on the rule
+                const pathMatch = matchToRule(vuln, rule, matchStrategy);
+
+                if (pathMatch && expires && expires < now) {
+                  debug('%s vuln rule has expired (%s)', vuln.id, expires);
+                  return false;
+                }
+
+                if (
+                  pathMatch &&
+                  rule[path].disregardIfFixable &&
+                  (vuln.isUpgradable || vuln.isPatchable)
+                ) {
+                  debug(
+                    '%s vuln is fixable and rule is set to disregard if fixable',
+                    vuln.id,
+                  );
+                  return false;
+                }
+
+                if (pathMatch) {
+                  if (debug.enabled) {
+                    debug(
+                      'ignoring based on path match: %s ~= %s',
+                      path,
+                      vuln.from.slice(1).join(' > '),
+                    );
+                  }
+                  return true;
+                }
+
+                return false;
+              });
+
+              appliedRules.push(...matchingRules);
             }
-
-            // first check if the path is a match on the rule
-            const pathMatch = matchToRule(vuln, rule, matchStrategy);
-
-            if (pathMatch && expires && expires < now) {
-              debug('%s vuln rule has expired (%s)', vuln.id, expires);
-              return false;
-            }
-
-            if (
-              pathMatch &&
-              rule[path].disregardIfFixable &&
-              (vuln.isUpgradable || vuln.isPatchable)
-            ) {
-              debug(
-                '%s vuln is fixable and rule is set to disregard if fixable',
-                vuln.id,
-              );
-              return false;
-            }
-
-            if (pathMatch) {
-              if (debug.enabled) {
-                debug(
-                  'ignoring based on path match: %s ~= %s',
-                  path,
-                  vuln.from.slice(1).join(' > '),
-                );
-              }
-              return true;
-            }
-
-            return false;
-          });
+          }
         }
 
         if (appliedRules.length) {
@@ -163,18 +165,13 @@ const vulnHasSecurityPolicyIgnore = (
 const isNotNull = <T>(v: T): v is NonNullable<T> => v !== null;
 
 /**
- * Checks whether a rule already exists for a vulnerability with the same ID but different case sensitivity.
- * If a matching rule is found, it returns the corresponding ID.
+ * Finds all rules that match a vulnerability ID regardless of case sensitivity.
  * @param vulnId the vulnerability id
  * @param ignore the ignore rule set
- * @returns the vulnerability id
+ * @returns array of vulnerability IDs that match (case-insensitive)
  */
-function findRuleForVulnerability(vulnId: string, ignore: RuleSet) {
-  const existingIgnoredVulnID = Object.keys(ignore).find(
+function findAllMatchingRules(vulnId: string, ignore: RuleSet): string[] {
+  return Object.keys(ignore).filter(
     (key) => key.toUpperCase() === vulnId.toUpperCase(),
   );
-  if (existingIgnoredVulnID) {
-    return existingIgnoredVulnID;
-  }
-  return vulnId;
 }
