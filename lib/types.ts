@@ -249,8 +249,6 @@ export interface Vulnerability {
 
   isPatchable?: boolean;
 
-  isPinnable?: boolean;
-
   patches?: Patch[];
 
   securityPolicyMetaData?: SecurityPolicyMetaData;
