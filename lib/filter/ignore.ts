@@ -111,7 +111,7 @@ function filterIgnored<T extends Vulnerability>(
                 if (
                   pathMatch &&
                   rule[path].disregardIfFixable &&
-                  (vuln.isUpgradable || vuln.isPatchable)
+                  (vuln.isUpgradable || vuln.isPatchable || vuln.isPinnable)
                 ) {
                   debug(
                     '%s vuln is fixable and rule is set to disregard if fixable',
