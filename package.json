@@ -63,5 +63,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/snyk/policy.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/snyk/policy#readme",
+  "bugs": {
+    "url": "https://github.com/snyk/policy/issues"
   }
 }
