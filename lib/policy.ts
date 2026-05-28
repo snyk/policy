@@ -1,9 +1,7 @@
 import newDebug from 'debug';
 import { lstatSync, promises as fs, Stats } from 'fs';
 import * as path from 'path';
-
-import tryRequire from 'snyk-try-require';
-
+import { tryRequire } from './try-require';
 import add from './add';
 import addExclude from './add-exclude';
 import filter from './filter';
@@ -208,14 +206,14 @@ async function mergePolicies(policyDirs: string[], options?: loadOptions) {
       .map(async (policy) => {
         const filename = path.dirname(policy.__filename!) + '/package.json'; // eslint-disable-line @typescript-eslint/no-non-null-assertion
         const pkg = await tryRequire(filename);
-        const full = pkg.name + '@' + pkg.version;
+        const full = pkg?.name + '@' + pkg?.version;
 
         mergePath('ignore', ignoreTarget, full, rootPolicy, policy);
         mergePath('patch', 'patch', full, rootPolicy, policy);
       }),
   );
 
-  return rootPolicy;
+  return rootPolicy;  
 }
 
 /**
