@@ -6,7 +6,7 @@ orbs:
 defaults: &defaults
   resource_class: small
   docker:
-  - image: cimg/node:18.18.1
+  - image: cimg/node:20.20.2
   working_directory: ~/policy
 
 commands:
@@ -75,8 +75,10 @@ jobs:
       - npmrc
       - install
       - run:
-          name: Release on GitHub
-          command: npx semantic-release@22.0.0
+          name: Release on GitHub and npm (OIDC Trusted Publishing)
+          command: |
+            export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
+            npx semantic-release@^24
 
 workflows:
   version: 2
@@ -115,7 +117,8 @@ workflows:
       - release:
           name: Release
           context:
-            - nodejs-lib-release
+            - nodejs-install
+            - github-release
           filters:
             branches:
               only:
