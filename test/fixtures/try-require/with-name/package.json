@@ -1,0 +1,10 @@
+{
+  "name": "with-name",
+  "version": "1.2.3",
+  "dependencies": {
+    "lodash": "^4.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
+  }
+}

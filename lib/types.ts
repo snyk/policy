@@ -17,6 +17,34 @@ export interface AddRuleOptions extends Rule {
   reasonType?: ReasonType;
 }
 
+export interface AbbreviatedVersion {
+  readonly name: string;
+  readonly version: string;
+  readonly dist?: {
+      readonly shasum: string;
+      readonly tarball: string;
+      readonly integrity?: string;
+  };
+  readonly deprecated?: string;
+  readonly dependencies?: {readonly [name: string]: string};
+  readonly optionalDependencies?: {readonly [name: string]: string};
+  readonly devDependencies?: {readonly [name: string]: string};
+  readonly bundleDependencies?: {readonly [name: string]: string};
+  readonly peerDependencies?: {readonly [name: string]: string};
+  readonly bin?: {readonly [key: string]: string};
+  readonly directories?: readonly string[];
+  readonly engines?: {readonly [type: string]: string};
+  readonly _hasShrinkwrap?: boolean;
+  readonly [key: string]: unknown;
+}
+
+// Intermediate type used during parsing
+export interface PackageJsonEnriched extends AbbreviatedVersion {
+  full?: string;
+  __from?: string[];
+  shrinkwrap: any;
+}
+
 export interface DemungedResults {
   exclude: VulnRules[];
   ignore: VulnRules[];
