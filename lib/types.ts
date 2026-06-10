@@ -20,7 +20,7 @@ export interface AddRuleOptions extends Rule {
 export interface AbbreviatedVersion {
   readonly name: string;
   readonly version: string;
-  readonly dist: {
+  readonly dist?: {
       readonly shasum: string;
       readonly tarball: string;
       readonly integrity?: string;
@@ -40,8 +40,8 @@ export interface AbbreviatedVersion {
 
 // Intermediate type used during parsing
 export interface PackageJsonEnriched extends AbbreviatedVersion {
-  full: string;
-  __from: string[];
+  full?: string;
+  __from?: string[];
   shrinkwrap: any;
 }
 

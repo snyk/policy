@@ -1,6 +1,6 @@
 import * as fs from 'then-fs';
 import * as path from 'path';
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash.clonedeep';
 import LRU from 'lru-cache';
 import {PackageJsonEnriched} from "./types";
 import newDebug from 'debug';

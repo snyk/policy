@@ -206,6 +206,10 @@ async function mergePolicies(policyDirs: string[], options?: loadOptions) {
       .map(async (policy) => {
         const filename = path.dirname(policy.__filename!) + '/package.json'; // eslint-disable-line @typescript-eslint/no-non-null-assertion
         const pkg = await tryRequire(filename);
+        if (!pkg) {
+          return;
+        }
+        
         const full = pkg?.name + '@' + pkg?.version;
 
         mergePath('ignore', ignoreTarget, full, rootPolicy, policy);
