@@ -153,7 +153,7 @@ export type PathRule = {
   reason?: string;
 };
 
-export type PatternGroup = 'global' | 'code' | 'iac-drift';
+export type PatternGroup = 'global' | 'code' | 'iac-drift' | 'secrets';
 
 export interface Policy {
   __filename: string | null;
