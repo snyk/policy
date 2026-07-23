@@ -39,5 +39,5 @@ function addExclude(
 }
 
 function isPatternGroupValid(group: string) {
-  return ['global', 'code', 'iac-drift'].includes(group);
+  return ['global', 'code', 'iac-drift', 'secrets'].includes(group);
 }

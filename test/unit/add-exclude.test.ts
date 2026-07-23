@@ -62,6 +62,17 @@ test('add a new file pattern to iac drift-group', async (_t) => {
   }).does.not.toThrow();
 });
 
+test('add a new file pattern to secrets-group', async (_t) => {
+  let policy = await create();
+  expect(() => {
+    const validGroup = 'secrets';
+    policy.addExclude('./deps/*.ts', validGroup);
+
+    const expected = { secrets: ['./deps/*.ts'] };
+    expect(policy.exclude).toStrictEqual(expected);
+  }).does.not.toThrow();
+});
+
 test('add two new unique file pattern to a group', async (_t) => {
   let policy = await create();
   expect(() => {
