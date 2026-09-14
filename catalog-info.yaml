@@ -4,8 +4,8 @@ metadata:
   name: policy
   annotations:
     github.com/project-slug: snyk/policy
-    github.com/team-slug: snyk/ignores
+    github.com/team-slug: snyk/appsec_guardrails
 spec:
   type: external-library
   lifecycle: "-"
-  owner: ignores
+  owner: appsec_guardrails
