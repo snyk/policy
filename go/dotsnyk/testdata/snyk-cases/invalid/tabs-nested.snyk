@@ -1,0 +1,8 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - '*':
+		reason: tabs are forbidden
+		created: 2021-01-01T00:00:00Z
+		expires: 2099-01-01T00:00:00Z
+patch: {}

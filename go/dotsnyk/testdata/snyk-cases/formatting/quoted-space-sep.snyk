@@ -1,0 +1,8 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - '*':
+        reason: formatting case
+        created: '2021-01-01 00:00:00'
+        expires: '2099-01-01 00:00:00'
+patch: {}

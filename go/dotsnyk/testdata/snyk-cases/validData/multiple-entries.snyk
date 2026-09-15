@@ -1,0 +1,11 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - "*":
+        reason: wildcard entry
+        expires: 2099-01-01T00:00:00.000Z
+    - app > cxct:
+        reason: specific entry
+        expires: 2099-01-01T00:00:00.000Z
+        disregardIfFixable: true
+patch: {}

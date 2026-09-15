@@ -1,0 +1,6 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - "*":
+        reason: no expiry
+patch: {}

@@ -1,0 +1,13 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - "*":
+        reason: disregard
+        expires: 2099-01-01T00:00:00.000Z
+        disregardIfFixable: true
+  SNYK-JS-LODASH-567746:
+    - "*":
+        reason: do not disregard
+        expires: 2099-01-01T00:00:00.000Z
+        disregardIfFixable: false
+patch: {}
