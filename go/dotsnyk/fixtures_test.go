@@ -192,8 +192,7 @@ func TestPolicy_Unmarshal_RepoFixtures(t *testing.T) {
 			data, err := os.ReadFile(repoFixtures + tc.file)
 			require.NoError(t, err)
 
-			var p dotsnyk.Policy
-			err = dotsnyk.Unmarshal(bytes.NewReader(data), &p)
+			p, err := dotsnyk.Unmarshal(bytes.NewReader(data))
 
 			if tc.wantErr != "" {
 				require.EqualError(t, err, tc.wantErr)
@@ -201,7 +200,7 @@ func TestPolicy_Unmarshal_RepoFixtures(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			assert.Equal(t, tc.want, p)
+			assert.Equal(t, tc.want, *p)
 		})
 	}
 }

@@ -3,6 +3,7 @@ package dotsnyk_test
 import (
 	"bytes"
 	"embed"
+	"os"
 	"path"
 	"testing"
 	"time"
@@ -45,8 +46,12 @@ patch: {}
 `, buf.String())
 }
 
-func TestPolicy_Load(t *testing.T) {
-	p, err := dotsnyk.Load("testdata/ignore.yaml")
+func TestPolicy_Unmarshal_FromFile(t *testing.T) {
+	fd, err := os.Open("testdata/ignore.yaml")
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, fd.Close()) })
+
+	p, err := dotsnyk.Unmarshal(fd)
 	require.NoError(t, err)
 
 	assert.NotNil(t, p)
@@ -141,10 +146,10 @@ func TestPolicy_Unmarshal_ValidEmptyCases(t *testing.T) {
 			data, err := validEmptyCases.ReadFile(path.Join(validEmptyDir, tc.file))
 			require.NoError(t, err)
 
-			var p dotsnyk.Policy
-			require.NoError(t, dotsnyk.Unmarshal(bytes.NewReader(data), &p))
+			p, err := dotsnyk.Unmarshal(bytes.NewReader(data))
+			require.NoError(t, err)
 
-			assert.Equal(t, tc.want, p)
+			assert.Equal(t, tc.want, *p)
 		})
 	}
 
@@ -351,10 +356,10 @@ func TestPolicy_Unmarshal_ValidDataCases(t *testing.T) {
 			data, err := validDataCases.ReadFile(path.Join(validDataDir, tc.file))
 			require.NoError(t, err)
 
-			var p dotsnyk.Policy
-			require.NoError(t, dotsnyk.Unmarshal(bytes.NewReader(data), &p))
+			p, err := dotsnyk.Unmarshal(bytes.NewReader(data))
+			require.NoError(t, err)
 
-			assert.Equal(t, tc.want, p)
+			assert.Equal(t, tc.want, *p)
 		})
 	}
 
@@ -374,8 +379,8 @@ func TestPolicy_Unmarshal_FormattingCases(t *testing.T) {
 	forEachCase(t, formattingCases, formattingDir, func(t *testing.T, data []byte) {
 		t.Helper()
 
-		var p dotsnyk.Policy
-		require.NoError(t, dotsnyk.Unmarshal(bytes.NewReader(data), &p))
+		p, err := dotsnyk.Unmarshal(bytes.NewReader(data))
+		require.NoError(t, err)
 
 		assert.Equal(t, "v1.25.0", p.Version)
 		assert.Empty(t, p.Patch)
@@ -461,8 +466,7 @@ func TestPolicy_Unmarshal_InvalidCases(t *testing.T) {
 			data, err := invalidCases.ReadFile(path.Join(invalidDir, tc.file))
 			require.NoError(t, err)
 
-			var p dotsnyk.Policy
-			err = dotsnyk.Unmarshal(bytes.NewReader(data), &p)
+			_, err = dotsnyk.Unmarshal(bytes.NewReader(data))
 
 			require.EqualError(t, err, tc.wantErr)
 		})

@@ -25,10 +25,17 @@ in the library needs a language feature newer than 1.24.
 
 ## What it does
 
-Parses a `.snyk` file into a `Policy`, and writes one back out.
+Parses a `.snyk` file into a `Policy`, and writes one back out. It reads from an
+`io.Reader` and writes to an `io.Writer`; opening the file is the caller's job.
 
 ```go
-p, err := dotsnyk.Load(".snyk")
+fd, err := os.Open(".snyk")
+if err != nil {
+    return err
+}
+defer fd.Close()
+
+p, err := dotsnyk.Unmarshal(fd)
 if err != nil {
     return err
 }
@@ -56,8 +63,12 @@ space-separated, and date-only forms are all accepted.
 ## Status
 
 Lifted from [`cli-extension-os-flows`](https://github.com/snyk/cli-extension-os-flows)
-`pkg/localpolicy` without behaviour changes, so that the parser has one
-open-source home.
+`pkg/localpolicy` so that the parser has one open-source home. Parsing behaviour
+is unchanged — every error message, accepted timestamp format and coercion is
+what the CLI has been shipping. The entry points were reshaped on review:
+`Unmarshal` returns `(*Policy, error)` rather than filling in a caller-supplied
+pointer, and the path-based `Load` helper did not come across, since a library
+that takes an `io.Reader` has no reason to own file opening.
 
 It is **not** at parity with the TypeScript implementation in `lib/`. The two
 agree on the fixtures in `test/fixtures/`, which both are tested against, and on
