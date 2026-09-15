@@ -20,8 +20,7 @@ const repoFixtures = "../../test/fixtures/"
 // TestPolicy_Unmarshal_RepoFixtures pins this parser against the fixtures the
 // TypeScript implementation in lib/ is tested on, so the two can be compared
 // directly. The expectations record what the parser does today, including the
-// places where that differs from lib/ — see Appendix A of
-// docs/plans/2026-09-15-go-snyk-file-parser.md.
+// places where that differs from lib/ — see the parity table in go/README.md.
 func TestPolicy_Unmarshal_RepoFixtures(t *testing.T) {
 	const (
 		hawkPath      = "sqlite > sqlite3 > node-pre-gyp > request > hawk"
@@ -182,9 +181,9 @@ func TestPolicy_Unmarshal_RepoFixtures(t *testing.T) {
 	}, {
 		name: "malformed-patch",
 		file: "issues/BST-264/missing-path-to-package.snyk",
-		// Diverges from lib/parser/v1.ts — see Appendix A / Phase 3. This
-		// parser applies the old-format check to `patch` as well as `ignore`;
-		// TypeScript checks only `ignore` and silently drops the entry.
+		// Diverges from lib/parser/v1.ts — see the parity table in go/README.md.
+		// This parser applies the old-format check to `patch` as well as
+		// `ignore`; TypeScript checks only `ignore` and silently drops the entry.
 		wantErr: "old, unsupported .snyk format detected",
 	}}
 
