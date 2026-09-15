@@ -9,6 +9,12 @@ defaults: &defaults
   - image: cimg/node:20.20.2
   working_directory: ~/policy
 
+go_defaults: &go_defaults
+  resource_class: small
+  docker:
+  - image: cimg/go:1.26
+  working_directory: ~/policy
+
 commands:
   npmrc:
     steps:
@@ -68,6 +74,22 @@ jobs:
           path: reports/jest/
       - store_artifacts:
           path: reports/jest/
+  go_lint:
+    <<: *go_defaults
+    docker:
+    - image: golangci/golangci-lint:v2.9.0-alpine
+    steps:
+      - checkout
+      - run:
+          name: Run Go linting
+          command: cd go && golangci-lint run
+  go_test:
+    <<: *go_defaults
+    steps:
+      - checkout
+      - run:
+          name: Run Go tests
+          command: cd go && go test ./... -count=1
   release:
     <<: *defaults
     steps:
@@ -112,6 +134,18 @@ workflows:
           name: Test
           requires:
             - Lint
+          filters:
+            branches:
+              ignore:
+                - master
+      - go_lint:
+          name: Go Lint
+          filters:
+            branches:
+              ignore:
+                - master
+      - go_test:
+          name: Go Test
           filters:
             branches:
               ignore:

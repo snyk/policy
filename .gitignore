@@ -8,3 +8,4 @@
 dist
 tmp
 .idea
+go/coverage.out
