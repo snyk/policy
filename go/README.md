@@ -19,6 +19,10 @@ The module path is `github.com/snyk/policy/go` — note the `/go` suffix. It is 
 subdirectory module, so its releases are tagged `go/vX.Y.Z` and are independent
 of the npm `vX.Y.Z` tags that `snyk-policy` uses.
 
+Requires Go 1.25.12 or later. The floor is that specific rather than `1.25`
+because 1.25.12 is the first release fixing CVE-2026-39822 in `std/os`; nothing
+in the library needs a language feature newer than 1.24.
+
 ## What it does
 
 Parses a `.snyk` file into a `Policy`, and writes one back out.
