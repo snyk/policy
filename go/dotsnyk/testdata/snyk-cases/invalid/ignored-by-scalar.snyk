@@ -1,0 +1,5 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-LODASH-590103:
+    - '*':
+        ignoredBy: someone

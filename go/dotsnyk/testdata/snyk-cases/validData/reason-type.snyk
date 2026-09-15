@@ -1,0 +1,12 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - "*":
+        reason: rt
+        reasonType: wont-fix
+        created: 2024-01-15T09:00:00Z
+        expires: 2099-01-01T00:00:00.000Z
+        ignoredBy:
+          name: Someone
+          email: s@example.com
+patch: {}

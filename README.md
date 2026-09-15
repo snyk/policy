@@ -8,6 +8,10 @@ From there, the policy object can `filter` vulnerabilities based on `vuln.id` an
 
 Policies can also load from multiple locations, and optionally support trusting deep policies, or ignoring all policies entirely.
 
+## Go
+
+This repo now ships two implementations of the `.snyk` format: the TypeScript one documented below, and a Go one under [`go/`](go). The Go library, `github.com/snyk/policy/go/dotsnyk`, is the younger and more limited of the two — it reads and writes the file but does no matching or filtering, and it is not yet at parity with the TypeScript parser on malformed input. See [`go/README.md`](go/README.md) for what it covers and where the two differ.
+
 ## How it works
 
 The policy module is written to support future versions of policy formats, so you shouldn't need to worry about what version you're dealing with.
