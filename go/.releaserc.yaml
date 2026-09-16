@@ -1,0 +1,12 @@
+branches: master
+tagFormat: "go/v${version}"
+plugins:
+  - [
+      "@semantic-release/commit-analyzer",
+      { "releaseRules": [{ "breaking": true, "release": "minor" }] },
+    ]
+  - "@semantic-release/release-notes-generator"
+  - [
+      "@semantic-release/github",
+      { "successComment": false, "failComment": false },
+    ]

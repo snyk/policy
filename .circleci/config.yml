@@ -101,6 +101,20 @@ jobs:
           command: |
             export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
             npx semantic-release@^24
+      - run:
+          name: Release the Go module on GitHub
+          working_directory: go
+          command: |
+            git fetch --quiet --tags origin
+            last_release=$(git describe --tags --abbrev=0 --match 'go/v*' HEAD 2>/dev/null || true)
+            if [ -z "$last_release" ]; then
+              echo "No go/v* tag yet, releasing the initial version of the Go module"
+            elif ! git diff --name-only "$last_release" HEAD | grep -q '^go/'; then
+              echo "No changes under go/ since $last_release, skipping the Go module release"
+              exit 0
+            fi
+            npm install
+            npx semantic-release
 
 workflows:
   version: 2
