@@ -9,3 +9,4 @@ dist
 tmp
 .idea
 go/coverage.out
+go/node_modules/
