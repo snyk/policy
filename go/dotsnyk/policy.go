@@ -76,9 +76,21 @@ func (p *Policy) UnmarshalYAML(node *yaml.Node) error {
 	if err := node.Decode(&shadow); err != nil {
 		return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
 	}
+	if shadow.FailThreshold != nil && !isValidFailThreshold(*shadow.FailThreshold) {
+		return &PolicyError{msg: fmt.Sprintf("invalid .snyk policy: unknown threshold value '%s'", *shadow.FailThreshold)}
+	}
 
 	*p = Policy(shadow)
 	return nil
+}
+
+func isValidFailThreshold(s Severity) bool {
+	switch Severity(strings.ToLower(strings.TrimSpace(string(s)))) {
+	case "", SeverityLow, SeverityMedium, SeverityHigh:
+		return true
+	default:
+		return false
+	}
 }
 
 // Severity models an issues severity level.

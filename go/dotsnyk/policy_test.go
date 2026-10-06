@@ -46,6 +46,56 @@ patch: {}
 `, buf.String())
 }
 
+func TestPolicy_Unmarshal_FailThreshold(t *testing.T) {
+	testCases := []struct {
+		name    string
+		input   string
+		want    *dotsnyk.Severity
+		wantErr string
+	}{{
+		name:  "missing",
+		input: "ignore: {}\n",
+	}, {
+		name:  "high",
+		input: "failThreshold: high\n",
+		want:  ptr(dotsnyk.SeverityHigh),
+	}, {
+		name:  "medium",
+		input: "failThreshold: medium\n",
+		want:  ptr(dotsnyk.SeverityMedium),
+	}, {
+		name:  "low",
+		input: "failThreshold: low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "uppercase and padded",
+		input: "failThreshold: ' HIGH '\n",
+		want:  ptr(dotsnyk.Severity(" HIGH ")),
+	}, {
+		name:    "critical",
+		input:   "failThreshold: critical\n",
+		wantErr: "invalid .snyk policy: unknown threshold value 'critical'",
+	}, {
+		name:    "unknown word",
+		input:   "failThreshold: banana\n",
+		wantErr: "invalid .snyk policy: unknown threshold value 'banana'",
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := dotsnyk.Unmarshal(bytes.NewReader([]byte(tc.input)))
+
+			if tc.wantErr != "" {
+				require.EqualError(t, err, tc.wantErr)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, p.FailThreshold)
+		})
+	}
+}
+
 func TestPolicy_Unmarshal_FromFile(t *testing.T) {
 	fd, err := os.Open("testdata/ignore.yaml")
 	require.NoError(t, err)
