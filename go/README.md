@@ -85,7 +85,6 @@ almost always with `dotsnyk` being the stricter of the two:
 | `reason: 5` | coerced to `"5"` | untyped, passes through |
 | `version: v2.0.0` | accepted | error |
 | `version: 1` (non-string) | coerced to `"1"` | defaults to `v1` |
-| `<<:` merge key inside a rule entry | treated as a literal dependency path | merged |
 | Two YAML documents in one file | first document wins | `js-yaml` errors |
 | Tab indentation, under-indented rule body | error, with the line number | error |
 | Aliases, duplicate keys, document-level merge | same | same |
