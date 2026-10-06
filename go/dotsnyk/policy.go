@@ -2,9 +2,12 @@ package dotsnyk
 
 import (
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
+	"maps"
+	"slices"
 	"strings"
 	"time"
 
@@ -146,13 +149,21 @@ func (re *RuleEntry) UnmarshalYAML(node *yaml.Node) error {
 			node.Line, describeNode(node))}
 	}
 
-	rules := make(map[string]*Rule, len(node.Content)/2)
-	for i := 0; i+1 < len(node.Content); i += 2 {
-		keyNode, valueNode := node.Content[i], node.Content[i+1]
+	var bodies map[string]yaml.Node
+	if err := node.Decode(&bodies); err != nil {
+		return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
+	}
 
-		var dependencyPath string
-		if err := keyNode.Decode(&dependencyPath); err != nil {
-			return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
+	paths := slices.SortedFunc(maps.Keys(bodies), func(a, b string) int {
+		return cmp.Or(cmp.Compare(bodies[a].Line, bodies[b].Line), cmp.Compare(bodies[a].Column, bodies[b].Column))
+	})
+
+	rules := make(map[string]*Rule, len(bodies))
+	for _, dependencyPath := range paths {
+		body := bodies[dependencyPath]
+		valueNode := &body
+		if valueNode.Kind == yaml.AliasNode {
+			valueNode = valueNode.Alias
 		}
 
 		if isNullNode(valueNode) {

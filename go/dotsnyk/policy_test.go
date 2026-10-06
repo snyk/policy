@@ -180,6 +180,41 @@ func TestPolicy_Unmarshal_ValidDataCases(t *testing.T) {
 		file string
 		want dotsnyk.Policy
 	}{{
+		file: "alias-rule-body.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{
+				vulnCXCT: {{"*": {
+					Reason:  ptr("shared rule"),
+					Expires: ptr(expires2099),
+				}}},
+				vulnLodash: {{"*": {
+					Reason:  ptr("shared rule"),
+					Expires: ptr(expires2099),
+				}}},
+			},
+			Patch: dotsnyk.RuleSet{},
+		},
+	}, {
+		file: "merge-in-entry.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{
+				vulnCXCT: {{"*": {
+					Reason:  ptr("merged entry"),
+					Expires: ptr(expires2099),
+				}}},
+				vulnLodash: {{
+					"*": {
+						Reason:  ptr("merged entry"),
+						Expires: ptr(expires2099),
+					},
+					"app > lodash": {Reason: ptr("own path")},
+				}},
+			},
+			Patch: dotsnyk.RuleSet{},
+		},
+	}, {
 		file: "disregard-if-fixable.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
@@ -456,6 +491,9 @@ func TestPolicy_Unmarshal_InvalidCases(t *testing.T) {
 		file: "under-indented-rule.snyk",
 		wantErr: `invalid .snyk policy: line 5: dependency path 'reason' must map to a set of ignore settings, ` +
 			`but it is scalar "None Given"; check the indentation`,
+	}, {
+		file:    "duplicate-path.snyk",
+		wantErr: `invalid .snyk policy: line 6: mapping key "*" already defined at line 4`,
 	}, {
 		file:    "ignored-by-scalar.snyk",
 		wantErr: "invalid .snyk policy: line 5: cannot unmarshal !!str `someone`",
