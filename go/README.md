@@ -60,6 +60,10 @@ you want a flat list of ignores, you build it yourself for now.
 Timestamps are parsed leniently: RFC 3339 with and without a zone,
 space-separated, and date-only forms are all accepted.
 
+`Unmarshal` keeps `version` exactly as written, including `""` when the file has
+none. `Marshal` always writes the current spec version, `v1.25.1`, as the
+TypeScript implementation does, so every file it writes loads in both.
+
 ## Status
 
 Lifted from [`cli-extension-os-flows`](https://github.com/snyk/cli-extension-os-flows)
