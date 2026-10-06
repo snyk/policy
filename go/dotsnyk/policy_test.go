@@ -46,6 +46,43 @@ patch: {}
 `, buf.String())
 }
 
+func TestPolicy_Marshal_WritesSpecVersion(t *testing.T) {
+	testCases := []struct {
+		name        string
+		input       string
+		wantVersion string
+	}{{
+		name:        "empty document",
+		input:       "",
+		wantVersion: "",
+	}, {
+		name:        "no version",
+		input:       "ignore: {}\n",
+		wantVersion: "",
+	}, {
+		name:        "older version",
+		input:       "version: v1.0.0\n",
+		wantVersion: "v1.0.0",
+	}, {
+		name:        "unsupported version",
+		input:       "version: v2.0.0\n",
+		wantVersion: "v2.0.0",
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := dotsnyk.Unmarshal(bytes.NewReader([]byte(tc.input)))
+			require.NoError(t, err)
+
+			var buf bytes.Buffer
+			require.NoError(t, dotsnyk.Marshal(&buf, p))
+
+			assert.Contains(t, buf.String(), "version: v1.25.1\n")
+			assert.Equal(t, tc.wantVersion, p.Version)
+		})
+	}
+}
+
 func TestPolicy_Unmarshal_FromFile(t *testing.T) {
 	fd, err := os.Open("testdata/ignore.yaml")
 	require.NoError(t, err)
