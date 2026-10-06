@@ -99,8 +99,10 @@ difference, and picking a winner for each row is deliberately deferred.
 - **Key order is not preserved.** Rules are stored in maps, so `Load` followed by
   `Marshal` will reorder vulnerability IDs and dependency paths. The content
   round-trips; the layout does not.
-- **`failThreshold` is not validated.** Any string is accepted, not just the four
-  `Severity` values.
+- **`failThreshold` is only validated, not applied.** As in the TypeScript
+  implementation, only `low`, `medium` and `high` are accepted, ignoring case and
+  surrounding spaces, and `critical` is rejected. The value is kept as written,
+  and nothing in this package acts on it.
 - **The parser is partial.** It covers `ignore` and `patch`. There is no
   `suggest`, and no matching or filtering — `lib/filter` has no Go equivalent.
 
