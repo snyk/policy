@@ -1,0 +1,256 @@
+package dotsnyk_test
+
+import (
+	"bytes"
+	"fmt"
+	"path"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/snyk/policy/go/dotsnyk"
+)
+
+const (
+	vulnCXCT            = dotsnyk.VulnID("SNYK-JS-CXCT-535487")
+	vulnLodash          = dotsnyk.VulnID("SNYK-JS-LODASH-567746")
+	vulnLodashPrototype = dotsnyk.VulnID("SNYK-JS-LODASH-590103")
+	vulnMinimist        = dotsnyk.VulnID("SNYK-JS-MINIMIST-559764")
+)
+
+func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
+	var (
+		expires2099 = time.Date(2099, time.January, 1, 0, 0, 0, 0, time.UTC)
+		patched2021 = time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC)
+	)
+
+	testCases := []struct {
+		file string
+		want dotsnyk.Policy
+	}{{
+		file: "bad-timestamp.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Patch:   dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
+				Reason: "expires: 'not-a-date' is not a valid timestamp",
+			}},
+		},
+	}, {
+		file: "expires-not-scalar.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Patch:   dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 7,
+				Reason: "expires: must be a timestamp, got a sequence",
+			}},
+		},
+	}, {
+		file: "expires-tagged-null.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Patch:   dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
+				Reason: "expires: '2000-01-01' is tagged !!null",
+			}},
+		},
+	}, {
+		file: "disregard-not-bool.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Patch:   dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
+				Reason: "disregardIfFixable: cannot unmarshal !!str `maybe` into bool",
+			}},
+		},
+	}, {
+		file: "entry-not-mapping.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Patch:   dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Line: 4,
+				Reason: `entry must be a mapping of dependency paths, got scalar "app > cxct"`,
+			}},
+		},
+	}, {
+		file: "under-indented-rule.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnLodashPrototype: {}},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "reason", Line: 5,
+				Reason: `dependency path must map to a set of ignore settings, but it is scalar "None Given"; check the indentation`,
+			}},
+		},
+	}, {
+		file: "aliased-rule-body.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{
+				vulnCXCT:   {{"*": {Reason: ptr("shared"), Expires: ptr(expires2099)}}},
+				vulnLodash: {},
+			},
+			Patch: dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodash, Path: "*", Line: 8,
+				Reason: "a rule cannot be an alias",
+			}},
+		},
+	}, {
+		file: "shared-anchor.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}, vulnLodash: {}, vulnMinimist: {}},
+			Patch:   dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 7,
+				Reason: "expires: 'soon' is not a valid timestamp",
+			}, &dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodash, Path: "*", Line: 7,
+				Reason: "expires: 'soon' is not a valid timestamp",
+			}, &dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnMinimist, Path: "*", Line: 7,
+				Reason: "expires: 'soon' is not a valid timestamp",
+			}},
+		},
+	}, {
+		file: "ignored-by-scalar.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnLodashPrototype: {{"*": {}}}},
+			Warnings: []dotsnyk.Warning{&dotsnyk.DroppedField{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "*", Field: "ignoredBy", Line: 5,
+				Reason: "cannot unmarshal !!str `someone`",
+			}},
+		},
+	}, {
+		file: "descriptive-fields.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {{"*": {
+				ReasonType: ptr(dotsnyk.ReasonTypeWontFix),
+				Expires:    ptr(expires2099),
+			}}}},
+			Patch: dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.DroppedField{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Field: "reason", Line: 6,
+				Reason: "cannot unmarshal !!seq into string",
+			}, &dotsnyk.DroppedField{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Field: "created", Line: 9,
+				Reason: "'last tuesday' is not a valid timestamp",
+			}, &dotsnyk.DroppedField{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Field: "ignoredBy", Line: 10,
+				Reason: "cannot unmarshal !!str `someone`",
+			}},
+		},
+	}, {
+		file: "mixed.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{
+				vulnCXCT: {{"*": {Reason: ptr("valid"), Expires: ptr(expires2099)}}},
+				vulnLodash: {{"*": {
+					Reason:    ptr("valid"),
+					IgnoredBy: &dotsnyk.IgnoredBy{Email: ptr("someone@example.com")},
+				}}},
+				vulnMinimist: {{"*": {Reason: ptr("valid, with an unreadable author")}}},
+			},
+			Patch: dotsnyk.RuleSet{
+				vulnLodash: {{"app > lodash": {Patched: ptr(patched2021)}}},
+			},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "app > cxct", Line: 9,
+				Reason: "expires: '2099-13-45' is not a valid timestamp",
+			}, &dotsnyk.DroppedField{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnMinimist, Path: "*", Field: "ignoredBy", Line: 18,
+				Reason: "cannot unmarshal !!str `someone`",
+			}, &dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionPatch, VulnID: vulnLodash, Line: 23,
+				Reason: `entry must be a mapping of dependency paths, got scalar "app > lodash > nested"`,
+			}},
+		},
+	}, {
+		file: "alias.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{
+				vulnCXCT:   {{"*": {Reason: ptr("shared reason"), Expires: ptr(expires2099)}}},
+				vulnLodash: {},
+			},
+			Patch: dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodash, Path: "*", Line: 10,
+				Reason: "expires: 'soon' is not a valid timestamp",
+			}},
+		},
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.file, func(t *testing.T) {
+			data, err := partialCases.ReadFile(path.Join(partialDir, tc.file))
+			require.NoError(t, err)
+
+			p, err := dotsnyk.Unmarshal(bytes.NewReader(data))
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.want, *p)
+		})
+	}
+
+	covered := make([]string, 0, len(testCases))
+	for _, tc := range testCases {
+		covered = append(covered, tc.file)
+	}
+	assertEveryCaseIsCovered(t, partialCases, partialDir, covered)
+}
+
+func TestPolicy_Unmarshal_RejectsExcessiveAliasing(t *testing.T) {
+	var doc strings.Builder
+	doc.WriteString("entry: &entry\n")
+	for i := range 1000 {
+		fmt.Fprintf(&doc, "  'path-%d': {reason: r}\n", i)
+	}
+	doc.WriteString("entries: &entries [" + strings.Repeat("*entry, ", 99) + "*entry]\n")
+	doc.WriteString("ignore:\n")
+	for i := range 100 {
+		fmt.Fprintf(&doc, "  SNYK-JS-VULN-%d: *entries\n", i)
+	}
+
+	_, err := dotsnyk.Unmarshal(strings.NewReader(doc.String()))
+
+	require.EqualError(t, err, "invalid .snyk policy: line 1004: yaml: document contains excessive aliasing")
+}
+
+func TestWarning_String(t *testing.T) {
+	assert.Equal(t,
+		"line 6: skipped ignore rule for SNYK-JS-CXCT-535487 at '*': expires: 'not-a-date' is not a valid timestamp",
+		(&dotsnyk.SkippedRule{
+			Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
+			Reason: "expires: 'not-a-date' is not a valid timestamp",
+		}).String())
+	assert.Equal(t,
+		`line 23: skipped patch rule for SNYK-JS-LODASH-567746: entry must be a mapping of dependency paths, got scalar "x"`,
+		(&dotsnyk.SkippedRule{
+			Section: dotsnyk.SectionPatch, VulnID: vulnLodash, Line: 23,
+			Reason: `entry must be a mapping of dependency paths, got scalar "x"`,
+		}).String())
+	assert.Equal(t,
+		"line 5: dropped ignoredBy from ignore rule for SNYK-JS-LODASH-590103 at '*': cannot unmarshal !!str `someone`",
+		(&dotsnyk.DroppedField{
+			Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "*", Field: "ignoredBy", Line: 5,
+			Reason: "cannot unmarshal !!str `someone`",
+		}).String())
+}

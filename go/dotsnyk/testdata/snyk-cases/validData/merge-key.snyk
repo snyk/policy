@@ -1,0 +1,13 @@
+version: v1.25.0
+shared: &shared
+  SNYK-JS-CXCT-535487:
+    - '*':
+        reason: merged
+        expires: 2099-01-01T00:00:00Z
+ignore:
+  <<: *shared
+  SNYK-JS-LODASH-567746:
+    - '*':
+        reason: direct
+        expires: 2099-01-01T00:00:00Z
+patch: {}

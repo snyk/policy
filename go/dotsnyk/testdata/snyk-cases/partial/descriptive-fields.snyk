@@ -1,0 +1,12 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - '*':
+        reason:
+          - first
+          - second
+        reasonType: wont-fix
+        created: last tuesday
+        ignoredBy: someone
+        expires: 2099-01-01T00:00:00Z
+patch: {}

@@ -60,12 +60,40 @@ you want a flat list of ignores, you build it yourself for now.
 Timestamps are parsed leniently: RFC 3339 with and without a zone,
 space-separated, and date-only forms are all accepted.
 
+## Rules that cannot be read
+
+A problem inside one rule does not fail the file. `Unmarshal` returns every
+other rule and lists what it could not read in `Policy.Warnings`, each with the
+vulnerability ID, dependency path, line and reason:
+
+```go
+for _, w := range p.Warnings {
+    log.Println(w)
+}
+// line 6: skipped ignore rule for SNYK-JS-CXCT-535487 at '*': expires: 'not-a-date' is not a valid timestamp
+```
+
+- **`SkippedRule`.** The entry is left out of `Ignore` or `Patch` when `expires`
+  or `disregardIfFixable` cannot be read, or when the entry is not shaped like a
+  rule. Both fields decide what the rule hides and for how long, so guessing
+  them could hide an issue indefinitely. The issue is reported instead. The
+  whole list item is left out, including any other dependency paths it holds.
+- **`DroppedField`.** The rule is kept without the field when a descriptive
+  field cannot be read: `reason`, `reasonType`, `source`, `from`, `ignoredBy`,
+  `created` or `patched`.
+
+Problems with the file as a whole still return an error: invalid YAML, tab
+indentation, a top level or rule set that is not a mapping, a vulnerability ID
+that does not map to a list, the old `.snyk` format, a duplicate vulnerability
+ID or rule field, and a vulnerability ID or rule field that is not a string.
+
 ## Status
 
 Lifted from [`cli-extension-os-flows`](https://github.com/snyk/cli-extension-os-flows)
-`pkg/localpolicy` so that the parser has one open-source home. Parsing behaviour
-is unchanged — every error message, accepted timestamp format and coercion is
-what the CLI has been shipping. The entry points were reshaped on review:
+`pkg/localpolicy` so that the parser has one open-source home. Accepted
+timestamp formats and coercions are what the CLI has been shipping. Since then, a
+problem inside one rule no longer fails the whole file, as described above. The
+entry points were reshaped on review:
 `Unmarshal` returns `(*Policy, error)` rather than filling in a caller-supplied
 pointer, and the path-based `Load` helper did not come across, since a library
 that takes an `io.Reader` has no reason to own file opening.
@@ -79,15 +107,18 @@ almost always with `dotsnyk` being the stricter of the two:
 | --- | --- | --- |
 | Top-level scalar or sequence | error, `policy must be a mapping` | empty policy, no error |
 | Non-list `patch` entry | error, `old, unsupported .snyk format detected` | entry dropped, no error |
-| `expires: not-a-date` | error, `is not a valid timestamp` | kept, `new Date` → Invalid Date |
+| `expires: not-a-date` | rule skipped, reported in `Policy.Warnings` | kept as a string and compared to the current time as text |
 | `expires: '...+02:00'` | offset preserved | JS `Date`, normalised to UTC |
 | Date-only, space-separated, zone-less timestamps | accepted via a fixed format list | accepted via JS `Date` parsing |
 | `reason: 5` | coerced to `"5"` | untyped, passes through |
+| `ignoredBy: someone`, `reason: [a, b]` | field dropped, rule kept, reported in `Policy.Warnings` | untyped, passes through |
 | `version: v2.0.0` | accepted | error |
 | `version: 1` (non-string) | coerced to `"1"` | defaults to `v1` |
 | `<<:` merge key inside a rule entry | treated as a literal dependency path | merged |
 | Two YAML documents in one file | first document wins | `js-yaml` errors |
-| Tab indentation, under-indented rule body | error, with the line number | error |
+| Tab indentation | error, with the line number | error |
+| Under-indented rule body | entry skipped, reported in `Policy.Warnings` | `'*'` applied with no settings, stray keys become separate entries |
+| Rule written as an alias, `'*': *body` | rule skipped, reported in `Policy.Warnings` | accepted |
 | Aliases, duplicate keys, document-level merge | same | same |
 
 The strictness is not obviously wrong — a user who writes garbage into `.snyk`
@@ -99,6 +130,9 @@ difference, and picking a winner for each row is deliberately deferred.
 - **Key order is not preserved.** Rules are stored in maps, so `Load` followed by
   `Marshal` will reorder vulnerability IDs and dependency paths. The content
   round-trips; the layout does not.
+- **Unreadable rules are not written back.** `Marshal` writes only what the
+  policy holds, so a rule or field reported in `Policy.Warnings` is gone after a
+  load and save, as unknown keys already are.
 - **`failThreshold` is not validated.** Any string is accepted, not just the four
   `Severity` values.
 - **The parser is partial.** It covers `ignore` and `patch`. There is no

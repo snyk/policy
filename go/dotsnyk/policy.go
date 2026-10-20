@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 	"time"
 
@@ -20,6 +21,8 @@ type Policy struct {
 	Ignore        RuleSet         `yaml:"ignore"`
 	Patch         RuleSet         `yaml:"patch"`
 	Exclude       *map[string]any `yaml:"exclude,omitempty"`
+
+	Warnings []Warning `yaml:"-"`
 }
 
 // New returns a pointer to a Policy, which will be prepopulated with a version
@@ -33,7 +36,9 @@ func New() *Policy {
 }
 
 // Unmarshal reads a policy from r. An empty document is a valid policy: it
-// yields a zero-valued Policy rather than an error.
+// yields a zero-valued Policy rather than an error. A rule that cannot be read in
+// full does not fail the policy: it is skipped or kept without the unreadable
+// field, and reported in Policy.Warnings.
 func Unmarshal(r io.Reader) (*Policy, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {
@@ -62,25 +67,6 @@ func Marshal(w io.Writer, p *Policy) error {
 	return nil
 }
 
-// UnmarshalYAML decodes a Policy, rejecting a document that is not a mapping.
-func (p *Policy) UnmarshalYAML(node *yaml.Node) error {
-	if node.Kind != yaml.MappingNode {
-		if node.Kind == yaml.ScalarNode && (node.Tag == tagNull || node.Value == "") {
-			return nil
-		}
-		return notAPolicy(node)
-	}
-
-	type policyShadow Policy
-	var shadow policyShadow
-	if err := node.Decode(&shadow); err != nil {
-		return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
-	}
-
-	*p = Policy(shadow)
-	return nil
-}
-
 // Severity models an issues severity level.
 type Severity string
 
@@ -98,84 +84,8 @@ type VulnID string
 // RuleSet models rules grouped by vulnerability identifiers.
 type RuleSet map[VulnID][]RuleEntry
 
-// UnmarshalYAML accepts an empty sequence, empty mapping, or null as an empty RuleSet.
-func (r *RuleSet) UnmarshalYAML(node *yaml.Node) error {
-	switch node.Kind {
-	case yaml.MappingNode:
-		for i := 1; i < len(node.Content); i += 2 {
-			if node.Content[i].Kind == yaml.MappingNode {
-				return &PolicyError{msg: "old, unsupported .snyk format detected"}
-			}
-		}
-		var m map[VulnID][]RuleEntry
-		if err := node.Decode(&m); err != nil {
-			return fmt.Errorf("line %d: %w", node.Line, err)
-		}
-		*r = m
-		return nil
-	case yaml.SequenceNode:
-		if len(node.Content) == 0 {
-			*r = RuleSet{}
-			return nil
-		}
-		return fmt.Errorf("line %d: rule set must be a mapping, got a non-empty sequence", node.Line)
-	case yaml.ScalarNode:
-		if node.Tag == tagNull || node.Value == "" {
-			*r = RuleSet{}
-			return nil
-		}
-		return fmt.Errorf("line %d: rule set must be a mapping, got scalar %q", node.Line, node.Value)
-	default:
-		return fmt.Errorf("line %d: rule set has unsupported YAML kind %d", node.Line, node.Kind)
-	}
-}
-
 // RuleEntry models rules grouped by the dependency path.
 type RuleEntry map[string]*Rule
-
-// UnmarshalYAML decodes a RuleEntry, substituting an empty rule for a null rule
-// body. A body that is not a mapping is reported against its dependency path.
-func (re *RuleEntry) UnmarshalYAML(node *yaml.Node) error {
-	if isNullNode(node) {
-		*re = nil
-		return nil
-	}
-	if node.Kind != yaml.MappingNode {
-		return &PolicyError{msg: fmt.Sprintf(
-			"invalid .snyk policy: line %d: ignore entry must be a mapping of dependency paths, got %s",
-			node.Line, describeNode(node))}
-	}
-
-	rules := make(map[string]*Rule, len(node.Content)/2)
-	for i := 0; i+1 < len(node.Content); i += 2 {
-		keyNode, valueNode := node.Content[i], node.Content[i+1]
-
-		var dependencyPath string
-		if err := keyNode.Decode(&dependencyPath); err != nil {
-			return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
-		}
-
-		if isNullNode(valueNode) {
-			rules[dependencyPath] = &Rule{}
-			continue
-		}
-		if valueNode.Kind != yaml.MappingNode {
-			return &PolicyError{msg: fmt.Sprintf(
-				"invalid .snyk policy: line %d: dependency path '%s' must map to a set of ignore settings, "+
-					"but it is %s; check the indentation",
-				valueNode.Line, dependencyPath, describeNode(valueNode))}
-		}
-
-		var rule Rule
-		if err := valueNode.Decode(&rule); err != nil {
-			return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
-		}
-		rules[dependencyPath] = &rule
-	}
-
-	*re = rules
-	return nil
-}
 
 // Rule models an actual policy rule.
 type Rule struct {
@@ -188,34 +98,6 @@ type Rule struct {
 	Source             *string     `yaml:"source,omitempty"`
 	From               *string     `yaml:"from,omitempty"`
 	DisregardIfFixable *bool       `yaml:"disregardIfFixable,omitempty"`
-}
-
-// UnmarshalYAML decodes a Rule with lenient parsing for timestamp fields.
-func (r *Rule) UnmarshalYAML(node *yaml.Node) error {
-	var shadow struct {
-		Created            lenientTime `yaml:"created,omitempty"`
-		Expires            lenientTime `yaml:"expires,omitempty"`
-		Patched            lenientTime `yaml:"patched,omitempty"`
-		IgnoredBy          *IgnoredBy  `yaml:"ignoredBy,omitempty"`
-		Reason             *string     `yaml:"reason,omitempty"`
-		ReasonType         *ReasonType `yaml:"reasonType,omitempty"`
-		Source             *string     `yaml:"source,omitempty"`
-		From               *string     `yaml:"from,omitempty"`
-		DisregardIfFixable *bool       `yaml:"disregardIfFixable,omitempty"`
-	}
-	if err := node.Decode(&shadow); err != nil {
-		return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
-	}
-	r.Created = shadow.Created.t
-	r.Expires = shadow.Expires.t
-	r.Patched = shadow.Patched.t
-	r.IgnoredBy = shadow.IgnoredBy
-	r.Reason = shadow.Reason
-	r.ReasonType = shadow.ReasonType
-	r.Source = shadow.Source
-	r.From = shadow.From
-	r.DisregardIfFixable = shadow.DisregardIfFixable
-	return nil
 }
 
 // IgnoredBy models the user who applied a project-level ignore.
@@ -243,23 +125,6 @@ var lenientTimeFormats = []string{
 	"2006-01-02T15:04:05.999999999",
 	"2006-01-02 15:04:05.999999999",
 	"2006-01-02",
-}
-
-type lenientTime struct {
-	t *time.Time
-}
-
-func (lt *lenientTime) UnmarshalYAML(node *yaml.Node) error {
-	if node.Kind != yaml.ScalarNode || node.Tag == tagNull || node.Value == "" {
-		return nil
-	}
-	for _, layout := range lenientTimeFormats {
-		if parsed, err := time.Parse(layout, node.Value); err == nil {
-			lt.t = &parsed
-			return nil
-		}
-	}
-	return &PolicyError{msg: fmt.Sprintf("invalid .snyk policy: '%s' is not a valid timestamp", node.Value)}
 }
 
 // PolicyError is a user-facing error about the contents of a .snyk file.
@@ -300,6 +165,8 @@ func notAPolicy(node *yaml.Node) error {
 // describeNode names what was found at a node, for error messages.
 func describeNode(node *yaml.Node) string {
 	switch node.Kind {
+	case yaml.MappingNode:
+		return "a mapping"
 	case yaml.SequenceNode:
 		return "a sequence"
 	case yaml.ScalarNode:
@@ -363,5 +230,13 @@ func firstTabIndentedLine(data []byte) (int, bool) {
 const tagNull = "!!null"
 
 func isNullNode(node *yaml.Node) bool {
-	return node.Kind == yaml.ScalarNode && (node.Tag == tagNull || node.Value == "")
+	if node.Kind != yaml.ScalarNode {
+		return false
+	}
+	if node.Tag == tagNull {
+		return slices.Contains(nullValues, node.Value)
+	}
+	return node.Value == ""
 }
+
+var nullValues = []string{"", "~", "null", "Null", "NULL"}

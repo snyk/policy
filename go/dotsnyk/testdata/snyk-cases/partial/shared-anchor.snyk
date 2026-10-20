@@ -1,0 +1,12 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-MINIMIST-559764:
+    - &shared
+      '*':
+        reason: shared and broken
+        expires: soon
+  SNYK-JS-CXCT-535487:
+    - *shared
+  SNYK-JS-LODASH-567746:
+    - *shared
+patch: {}

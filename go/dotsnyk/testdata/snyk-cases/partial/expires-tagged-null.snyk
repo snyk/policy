@@ -1,0 +1,7 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - '*':
+        reason: tagged null
+        expires: !!null 2000-01-01
+patch: {}

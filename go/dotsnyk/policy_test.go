@@ -66,6 +66,7 @@ const (
 	validDataDir  = "testdata/snyk-cases/validData"
 	formattingDir = "testdata/snyk-cases/formatting"
 	invalidDir    = "testdata/snyk-cases/invalid"
+	partialDir    = "testdata/snyk-cases/partial"
 )
 
 //go:embed testdata/snyk-cases/validEmpty
@@ -79,6 +80,9 @@ var formattingCases embed.FS
 
 //go:embed testdata/snyk-cases/invalid
 var invalidCases embed.FS
+
+//go:embed testdata/snyk-cases/partial
+var partialCases embed.FS
 
 func TestPolicy_Unmarshal_ValidEmptyCases(t *testing.T) {
 	testCases := []struct {
@@ -161,11 +165,6 @@ func TestPolicy_Unmarshal_ValidEmptyCases(t *testing.T) {
 }
 
 func TestPolicy_Unmarshal_ValidDataCases(t *testing.T) {
-	const (
-		vulnCXCT   = dotsnyk.VulnID("SNYK-JS-CXCT-535487")
-		vulnLodash = dotsnyk.VulnID("SNYK-JS-LODASH-567746")
-	)
-
 	var (
 		expires2099    = time.Date(2099, time.January, 1, 0, 0, 0, 0, time.UTC)
 		expires2099Jun = time.Date(2099, time.June, 1, 0, 0, 0, 0, time.UTC)
@@ -229,6 +228,16 @@ func TestPolicy_Unmarshal_ValidDataCases(t *testing.T) {
 			Version: "v1.25.0",
 			Ignore:  dotsnyk.RuleSet{vulnCXCT: {{"*": {}}}},
 			Patch:   dotsnyk.RuleSet{},
+		},
+	}, {
+		file: "merge-key.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{
+				vulnCXCT:   {{"*": {Reason: ptr("merged"), Expires: ptr(expires2099)}}},
+				vulnLodash: {{"*": {Reason: ptr("direct"), Expires: ptr(expires2099)}}},
+			},
+			Patch: dotsnyk.RuleSet{},
 		},
 	}, {
 		file: "multiple-entries.snyk",
@@ -429,14 +438,14 @@ func TestPolicy_Unmarshal_InvalidCases(t *testing.T) {
 		file:    "ignore-nonempty-seq.snyk",
 		wantErr: "invalid .snyk policy: line 3: rule set must be a mapping, got a non-empty sequence",
 	}, {
+		file:    "vuln-scalar.snyk",
+		wantErr: "invalid .snyk policy: line 3: cannot unmarshal !!str `nonsense`",
+	}, {
 		file:    "vuln-empty-map.snyk",
 		wantErr: "old, unsupported .snyk format detected",
 	}, {
 		file:    "vuln-rule-body.snyk",
 		wantErr: "old, unsupported .snyk format detected",
-	}, {
-		file:    "bad-timestamp.snyk",
-		wantErr: "invalid .snyk policy: 'not-a-date' is not a valid timestamp",
 	}, {
 		file:    "toplevel-scalar.snyk",
 		wantErr: `invalid .snyk policy: line 1: policy must be a mapping, got scalar "this is not valid yaml"`,
@@ -452,13 +461,6 @@ func TestPolicy_Unmarshal_InvalidCases(t *testing.T) {
 	}, {
 		file:    "tabs-nested.snyk",
 		wantErr: "invalid .snyk policy: line 5: invalid indentation",
-	}, {
-		file: "under-indented-rule.snyk",
-		wantErr: `invalid .snyk policy: line 5: dependency path 'reason' must map to a set of ignore settings, ` +
-			`but it is scalar "None Given"; check the indentation`,
-	}, {
-		file:    "ignored-by-scalar.snyk",
-		wantErr: "invalid .snyk policy: line 5: cannot unmarshal !!str `someone`",
 	}}
 
 	for _, tc := range testCases {
