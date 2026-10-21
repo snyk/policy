@@ -1,0 +1,7 @@
+version: v1.25.0
+old: &old
+  '*':
+    reason: old format
+ignore:
+  SNYK-JS-CXCT-535487: *old
+patch: {}

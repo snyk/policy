@@ -34,7 +34,7 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "bad-timestamp.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Ignore:  dotsnyk.RuleSet{},
 			Patch:   dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
@@ -45,7 +45,7 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "expires-not-scalar.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Ignore:  dotsnyk.RuleSet{},
 			Patch:   dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 7,
@@ -56,7 +56,7 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "expires-tagged-null.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Ignore:  dotsnyk.RuleSet{},
 			Patch:   dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
@@ -67,7 +67,7 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "disregard-not-bool.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Ignore:  dotsnyk.RuleSet{},
 			Patch:   dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
@@ -78,7 +78,7 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "entry-not-mapping.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}},
+			Ignore:  dotsnyk.RuleSet{},
 			Patch:   dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Line: 4,
@@ -89,7 +89,7 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "under-indented-rule.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{vulnLodashPrototype: {}},
+			Ignore:  dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "reason", Line: 5,
 				Reason: `dependency path must map to a set of ignore settings, but it is scalar "None Given"; check the indentation`,
@@ -101,19 +101,32 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 			Version: "v1.25.0",
 			Ignore: dotsnyk.RuleSet{
 				vulnCXCT:   {{"*": {Reason: ptr("shared"), Expires: ptr(expires2099)}}},
-				vulnLodash: {},
+				vulnLodash: {{"*": {Reason: ptr("shared"), Expires: ptr(expires2099)}}},
 			},
 			Patch: dotsnyk.RuleSet{},
+		},
+	}, {
+		file: "sibling-paths.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {{
+				"a > b": {Reason: ptr("valid"), Expires: ptr(expires2099)},
+				"e > f": {Reason: ptr("kept without author")},
+			}}},
+			Patch: dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
-				Section: dotsnyk.SectionIgnore, VulnID: vulnLodash, Path: "*", Line: 8,
-				Reason: "a rule cannot be an alias",
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "c > d", Line: 9,
+				Reason: "expires: 'soon' is not a valid timestamp",
+			}, &dotsnyk.DroppedField{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "e > f", Field: "ignoredBy", Line: 12,
+				Reason: "cannot unmarshal !!str `someone`",
 			}},
 		},
 	}, {
 		file: "shared-anchor.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{vulnCXCT: {}, vulnLodash: {}, vulnMinimist: {}},
+			Ignore:  dotsnyk.RuleSet{},
 			Patch:   dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 7,
@@ -187,8 +200,7 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
 			Ignore: dotsnyk.RuleSet{
-				vulnCXCT:   {{"*": {Reason: ptr("shared reason"), Expires: ptr(expires2099)}}},
-				vulnLodash: {},
+				vulnCXCT: {{"*": {Reason: ptr("shared reason"), Expires: ptr(expires2099)}}},
 			},
 			Patch: dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{

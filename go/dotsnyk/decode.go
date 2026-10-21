@@ -108,6 +108,8 @@ func (d *policyDecoder) ruleSet(section Section, node *yaml.Node, dst *RuleSet) 
 	}
 }
 
+const tagMerge = "!!merge"
+
 type entryNode struct {
 	node *yaml.Node
 }
@@ -118,8 +120,9 @@ func (e *entryNode) UnmarshalYAML(node *yaml.Node) error {
 }
 
 func (d *policyDecoder) ruleMapping(section Section, node *yaml.Node, dst *RuleSet) error {
-	for i := 1; i < len(node.Content); i += 2 {
-		if node.Content[i].Kind == yaml.MappingNode {
+	for i := 0; i+1 < len(node.Content); i += 2 {
+		key, value := node.Content[i], node.Content[i+1]
+		if key.ShortTag() != tagMerge && resolveAlias(value).Kind == yaml.MappingNode {
 			return &PolicyError{msg: "old, unsupported .snyk format detected"}
 		}
 	}
@@ -146,6 +149,9 @@ func (d *policyDecoder) ruleMapping(section Section, node *yaml.Node, dst *RuleS
 				return err
 			}
 		}
+		if len(nodes) > 0 && len(entries) == 0 {
+			continue
+		}
 		rules[vulnID] = entries
 	}
 
@@ -171,7 +177,7 @@ func (d *policyDecoder) appendEntry(entries []RuleEntry, section Section, vulnID
 
 	entry := make(RuleEntry, len(node.Content)/2)
 	for i := 0; i+1 < len(node.Content); i += 2 {
-		keyNode, body := node.Content[i], node.Content[i+1]
+		keyNode, body := node.Content[i], resolveAlias(node.Content[i+1])
 
 		var path string
 		if err := keyNode.Decode(&path); err != nil {
@@ -181,37 +187,48 @@ func (d *policyDecoder) appendEntry(entries []RuleEntry, section Section, vulnID
 			entry[path] = &Rule{}
 			continue
 		}
-		if body.Kind == yaml.AliasNode {
-			return skip(path, body, "a rule cannot be an alias")
-		}
 		if body.Kind != yaml.MappingNode {
 			return skip(path, body, fmt.Sprintf(
 				"dependency path must map to a set of ignore settings, but it is %s; check the indentation", describeNode(body)))
 		}
 
-		var values map[string]yaml.Node
-		if err := body.Decode(&values); err != nil {
-			return nil, err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
+		if err := d.addRule(entry, section, vulnID, path, body); err != nil {
+			return nil, err
 		}
+	}
 
-		rule := &Rule{}
-		for _, field := range ruleFields {
-			value, ok := values[field.name]
-			if !ok {
-				continue
-			}
-			reason := field.decode(rule, resolveAlias(&value))
-			if reason == "" {
-				continue
-			}
-			if field.skipsRule {
-				return skip(path, &value, field.name+": "+reason)
-			}
-			d.warn(&value, &DroppedField{Section: section, VulnID: vulnID, Path: path, Field: field.name, Line: value.Line, Reason: reason})
-		}
-		entry[path] = rule
+	if len(entry) == 0 && len(node.Content) > 0 {
+		return entries, nil
 	}
 	return append(entries, entry), nil
+}
+
+func (d *policyDecoder) addRule(entry RuleEntry, section Section, vulnID VulnID, path string, body *yaml.Node) error {
+	var values map[string]yaml.Node
+	if err := body.Decode(&values); err != nil {
+		return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
+	}
+
+	kept := len(d.warnings)
+	rule := &Rule{}
+	for _, field := range ruleFields {
+		value, ok := values[field.name]
+		if !ok {
+			continue
+		}
+		reason := field.decode(rule, resolveAlias(&value))
+		if reason == "" {
+			continue
+		}
+		if field.skipsRule {
+			d.warnings = d.warnings[:kept]
+			d.warn(&value, &SkippedRule{Section: section, VulnID: vulnID, Path: path, Line: value.Line, Reason: field.name + ": " + reason})
+			return nil
+		}
+		d.warn(&value, &DroppedField{Section: section, VulnID: vulnID, Path: path, Field: field.name, Line: value.Line, Reason: reason})
+	}
+	entry[path] = rule
+	return nil
 }
 
 type ruleField struct {

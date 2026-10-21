@@ -441,6 +441,12 @@ func TestPolicy_Unmarshal_InvalidCases(t *testing.T) {
 		file:    "vuln-scalar.snyk",
 		wantErr: "invalid .snyk policy: line 3: cannot unmarshal !!str `nonsense`",
 	}, {
+		file:    "duplicate-rule-field.snyk",
+		wantErr: `invalid .snyk policy: line 6: mapping key "reason" already defined at line 5`,
+	}, {
+		file:    "vuln-aliased-old-format.snyk",
+		wantErr: "old, unsupported .snyk format detected",
+	}, {
 		file:    "vuln-empty-map.snyk",
 		wantErr: "old, unsupported .snyk format detected",
 	}, {

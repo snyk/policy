@@ -1,0 +1,13 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - a > b:
+        reason: valid
+        expires: 2099-01-01T00:00:00Z
+      c > d:
+        created: last tuesday
+        expires: soon
+      e > f:
+        reason: kept without author
+        ignoredBy: someone
+patch: {}

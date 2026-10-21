@@ -73,11 +73,13 @@ for _, w := range p.Warnings {
 // line 6: skipped ignore rule for SNYK-JS-CXCT-535487 at '*': expires: 'not-a-date' is not a valid timestamp
 ```
 
-- **`SkippedRule`.** The entry is left out of `Ignore` or `Patch` when `expires`
-  or `disregardIfFixable` cannot be read, or when the entry is not shaped like a
-  rule. Both fields decide what the rule hides and for how long, so guessing
-  them could hide an issue indefinitely. The issue is reported instead. The
-  whole list item is left out, including any other dependency paths it holds.
+- **`SkippedRule`.** A dependency path is left out of `Ignore` or `Patch` when
+  its `expires` or `disregardIfFixable` cannot be read. Both fields decide what
+  the rule hides and for how long, so guessing them could hide an issue
+  indefinitely. The issue is reported instead, and the other paths in the same
+  list item still apply. A list item that is not shaped like a rule, such as an
+  under-indented one, is left out whole. A vulnerability with no readable rules
+  left is left out too.
 - **`DroppedField`.** The rule is kept without the field when a descriptive
   field cannot be read: `reason`, `reasonType`, `source`, `from`, `ignoredBy`,
   `created` or `patched`.
@@ -118,7 +120,6 @@ almost always with `dotsnyk` being the stricter of the two:
 | Two YAML documents in one file | first document wins | `js-yaml` errors |
 | Tab indentation | error, with the line number | error |
 | Under-indented rule body | entry skipped, reported in `Policy.Warnings` | `'*'` applied with no settings, stray keys become separate entries |
-| Rule written as an alias, `'*': *body` | rule skipped, reported in `Policy.Warnings` | accepted |
 | Aliases, duplicate keys, document-level merge | same | same |
 
 The strictness is not obviously wrong — a user who writes garbage into `.snyk`
