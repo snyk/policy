@@ -1,0 +1,23 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - '*':
+        reason: valid
+        expires: 2099-01-01T00:00:00Z
+    - app > cxct:
+        reason: invalid expiry
+        expires: 2099-13-45
+  SNYK-JS-LODASH-567746:
+    - '*':
+        reason: valid
+        ignoredBy:
+          email: someone@example.com
+  SNYK-JS-MINIMIST-559764:
+    - '*':
+        reason: valid, with an unreadable author
+        ignoredBy: someone
+patch:
+  SNYK-JS-LODASH-567746:
+    - app > lodash:
+        patched: 2021-01-01T00:00:00Z
+    - app > lodash > nested

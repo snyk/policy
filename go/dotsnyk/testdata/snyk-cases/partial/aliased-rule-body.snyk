@@ -1,0 +1,9 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - '*': &body
+        reason: shared
+        expires: 2099-01-01T00:00:00Z
+  SNYK-JS-LODASH-567746:
+    - '*': *body
+patch: {}
