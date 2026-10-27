@@ -77,9 +77,12 @@ for _, w := range p.Warnings {
   its `expires` or `disregardIfFixable` cannot be read. Both fields decide what
   the rule hides and for how long, so guessing them could hide an issue
   indefinitely. The issue is reported instead, and the other paths in the same
-  list item still apply. A list item that is not shaped like a rule, such as an
-  under-indented one, is left out whole. A vulnerability with no readable rules
-  left is left out too.
+  list item still apply. A path whose key is not a string, or whose value is
+  not a mapping, is also left out, and the other paths still apply. A field
+  under-indented to the level of its path is read as such a path, which leaves
+  the real path with no settings: it ignores the issue with no expiry, as
+  snyk-policy does. A list item that is not a mapping is left out whole. A
+  vulnerability with no readable rules left is left out too.
 - **`DroppedField`.** The rule is kept without the field when a descriptive
   field cannot be read: `reason`, `reasonType`, `source`, `from`, `ignoredBy`,
   `created` or `patched`.

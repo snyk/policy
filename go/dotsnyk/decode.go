@@ -164,15 +164,13 @@ func (d *policyDecoder) appendEntry(entries []RuleEntry, section Section, vulnID
 		return append(entries, nil), nil
 	}
 
-	kept := len(d.warnings)
-	skip := func(path string, at *yaml.Node, reason string) ([]RuleEntry, error) {
-		d.warnings = d.warnings[:kept]
+	skip := func(path string, at *yaml.Node, reason string) {
 		d.warn(at, &SkippedRule{Section: section, VulnID: vulnID, Path: path, Line: at.Line, Reason: reason})
-		return entries, nil
 	}
 
 	if node.Kind != yaml.MappingNode {
-		return skip("", node, "entry must be a mapping of dependency paths, got "+describeNode(node))
+		skip("", node, "entry must be a mapping of dependency paths, got "+describeNode(node))
+		return entries, nil
 	}
 
 	entry := make(RuleEntry, len(node.Content)/2)
@@ -181,15 +179,17 @@ func (d *policyDecoder) appendEntry(entries []RuleEntry, section Section, vulnID
 
 		var path string
 		if err := keyNode.Decode(&path); err != nil {
-			return skip("", keyNode, "dependency path must be a string, got "+describeNode(keyNode))
+			skip("", keyNode, "dependency path must be a string, got "+describeNode(keyNode))
+			continue
 		}
 		if isNullNode(body) {
 			entry[path] = &Rule{}
 			continue
 		}
 		if body.Kind != yaml.MappingNode {
-			return skip(path, body, fmt.Sprintf(
+			skip(path, body, fmt.Sprintf(
 				"dependency path must map to a set of ignore settings, but it is %s; check the indentation", describeNode(body)))
+			continue
 		}
 
 		if err := d.addRule(entry, section, vulnID, path, body); err != nil {

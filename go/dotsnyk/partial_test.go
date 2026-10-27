@@ -89,10 +89,27 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "under-indented-rule.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{},
+			Ignore:  dotsnyk.RuleSet{vulnLodashPrototype: {{"*": {}}}},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "reason", Line: 5,
 				Reason: `dependency path must map to a set of ignore settings, but it is scalar "None Given"; check the indentation`,
+			}, &dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "expires", Line: 6,
+				Reason: `dependency path must map to a set of ignore settings, but it is scalar "2021-11-21T21:55:08.466Z"; check the indentation`,
+			}, &dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "created", Line: 7,
+				Reason: `dependency path must map to a set of ignore settings, but it is scalar "2021-10-22T21:55:08.469Z"; check the indentation`,
+			}},
+		},
+	}, {
+		file: "path-not-string.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {{"*": {Reason: ptr("kept")}}}},
+			Patch:   dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Line: 6,
+				Reason: "dependency path must be a string, got a sequence",
 			}},
 		},
 	}, {
