@@ -37,9 +37,10 @@ func New() *Policy {
 
 // Unmarshal reads a policy from r. An empty document is a valid policy: it
 // yields a zero-valued Policy rather than an error. A rule that cannot be read in
-// full does not fail the policy: it is skipped or kept without the unreadable
-// field, and reported in Policy.Warnings. An expires that is not a valid
-// timestamp is read as the TypeScript implementation reads it.
+// full does not fail the policy: it is skipped, kept without the unreadable
+// field, or kept with the field coerced, and reported in Policy.Warnings. An
+// expires that is not a valid timestamp is read as the TypeScript
+// implementation reads it.
 func Unmarshal(r io.Reader) (*Policy, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {

@@ -81,14 +81,14 @@ for _, w := range p.Warnings {
 ```
 
 - **`SkippedRule`.** A dependency path is left out of `Ignore` or `Patch` when
-  its `disregardIfFixable` cannot be read, or its `expires` is a list, a
-  mapping, or has a tag that does not fit the value. Both fields decide what
-  the rule hides and for how long, so guessing them could hide an issue
-  indefinitely. The issue is reported instead, and the other paths in the same
-  list item still apply. A path whose value is text, a number or a boolean is
-  also left out, and the other paths still apply. A field under-indented to the
-  level of its path is read as such a path, which leaves the real path with no
-  settings, as snyk-policy does. A list item that is not a mapping is left out
+  its `expires` is a list, a mapping, or has a tag that does not fit the value.
+  The field decides how long the rule hides an issue, so guessing it could hide
+  an issue indefinitely. The issue is reported instead, and the other paths in
+  the same list item still apply. A path whose value is text, a number or a
+  boolean is also left out, and the other paths still apply. A field
+  under-indented to the level of its path is read as such a path, which leaves
+  the real path with no settings, as snyk-policy does. A list item that is not a
+  mapping is left out
   whole. A vulnerability with no readable rules left is left out too.
 - **`DroppedField`.** The rule is kept without the field when a descriptive
   field cannot be read: `reason`, `reasonType`, `source`, `from`, `ignoredBy`,
@@ -101,6 +101,13 @@ for _, w := range p.Warnings {
   implementation gives it, when `expires` is not a valid timestamp, such as
   `never` or `2030/01/01`, or when that expiry differs from the time written,
   such as a quoted time with a zone offset.
+- **`CoercedField`.** The rule is kept when `disregardIfFixable` is not a
+  boolean, and the value is read the way the TypeScript implementation reads
+  it. A value that js-yaml 3 reads as zero or NaN, such as `0`, `-0`, `0x0`,
+  `0.0`, `1e-400`, `0:00.0` or `.nan`, is false. An empty value is the same as
+  no value. Any other value is true, including the strings `'false'`, `no` and
+  `off`. A value with an explicit tag that js-yaml 3 rejects, such as
+  `!!bool 0`, is also true.
 
 Problems with the file as a whole still return an error: invalid YAML, tab
 indentation, a top level or rule set that is not a mapping, a vulnerability ID
@@ -151,7 +158,8 @@ difference, and picking a winner for each row is deliberately deferred.
   round-trips; the layout does not.
 - **Unreadable rules are not written back.** `Marshal` writes only what the
   policy holds, so a rule or field reported in `Policy.Warnings` is gone after a
-  load and save, as unknown keys already are.
+  load and save, as unknown keys already are. A `CoercedField` is the exception:
+  it is written back as the boolean it was read as.
 - **`failThreshold` is not validated.** Any string is accepted, not just the four
   `Severity` values.
 - **The parser is partial.** It covers `ignore` and `patch`. There is no

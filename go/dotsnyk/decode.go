@@ -262,7 +262,6 @@ func (d *policyDecoder) addRule(entry RuleEntry, section Section, vulnID VulnID,
 		return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
 	}
 
-	kept := len(d.warnings)
 	rule := &Rule{}
 	if value, ok := values["expires"]; ok {
 		e := d.expiry(resolveAlias(&value))
@@ -277,6 +276,15 @@ func (d *policyDecoder) addRule(entry RuleEntry, section Section, vulnID VulnID,
 			})
 		}
 	}
+	if value, ok := values["disregardIfFixable"]; ok {
+		var reason string
+		rule.DisregardIfFixable, reason = d.disregardIfFixable(resolveAlias(&value))
+		if reason != "" {
+			d.warn(&value, &CoercedField{
+				Section: section, VulnID: vulnID, Path: path, Field: "disregardIfFixable", Line: value.Line, Reason: reason,
+			})
+		}
+	}
 	for _, field := range ruleFields {
 		value, ok := values[field.name]
 		if !ok {
@@ -286,11 +294,6 @@ func (d *policyDecoder) addRule(entry RuleEntry, section Section, vulnID VulnID,
 		if reason == "" {
 			continue
 		}
-		if field.skipsRule {
-			d.warnings = d.warnings[:kept]
-			d.warn(&value, &SkippedRule{Section: section, VulnID: vulnID, Path: path, Line: value.Line, Reason: field.name + ": " + reason})
-			return nil
-		}
 		d.warn(&value, &DroppedField{Section: section, VulnID: vulnID, Path: path, Field: field.name, Line: value.Line, Reason: reason})
 	}
 	entry[path] = rule
@@ -298,9 +301,8 @@ func (d *policyDecoder) addRule(entry RuleEntry, section Section, vulnID VulnID,
 }
 
 type ruleField struct {
-	name      string
-	skipsRule bool
-	decode    func(*Rule, *yaml.Node) string
+	name   string
+	decode func(*Rule, *yaml.Node) string
 }
 
 var ruleFields = []ruleField{
@@ -311,9 +313,6 @@ var ruleFields = []ruleField{
 	{name: "reasonType", decode: func(r *Rule, n *yaml.Node) string { return decodeValue(n, &r.ReasonType) }},
 	{name: "source", decode: func(r *Rule, n *yaml.Node) string { return decodeValue(n, &r.Source) }},
 	{name: "from", decode: func(r *Rule, n *yaml.Node) string { return decodeValue(n, &r.From) }},
-	{name: "disregardIfFixable", skipsRule: true, decode: func(r *Rule, n *yaml.Node) string {
-		return decodeValue(n, &r.DisregardIfFixable)
-	}},
 }
 
 func copyTime(t *time.Time) *time.Time {
