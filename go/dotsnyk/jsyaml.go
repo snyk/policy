@@ -1,6 +1,7 @@
 package dotsnyk
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strconv"
@@ -13,7 +14,7 @@ const tagJSUndefined = "!!js/undefined"
 
 var jsYAMLTrues = []string{"true", "True", "TRUE"}
 
-func (d *policyDecoder) disregardIfFixable(node *yaml.Node) (*bool, string) {
+func (d *policyDecoder) disregardIfFixable(node *yaml.Node) (value *bool, reason string) {
 	if isNullNode(node) {
 		return nil, ""
 	}
@@ -74,7 +75,8 @@ func jsYAMLFloatIsZero(value string) bool {
 		return true
 	}
 	for _, part := range strings.Split(body, ":") {
-		if n, _ := strconv.ParseFloat(part, 64); n != 0 {
+		n, err := strconv.ParseFloat(part, 64)
+		if (err != nil && !errors.Is(err, strconv.ErrRange)) || n != 0 {
 			return false
 		}
 	}
