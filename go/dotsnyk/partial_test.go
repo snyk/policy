@@ -89,10 +89,45 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "under-indented-rule.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{},
+			Ignore:  dotsnyk.RuleSet{vulnLodashPrototype: {{"*": {}}}},
 			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "reason", Line: 5,
 				Reason: `dependency path must map to a set of ignore settings, but it is scalar "None Given"; check the indentation`,
+			}, &dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "expires", Line: 6,
+				Reason: `dependency path must map to a set of ignore settings, but it is scalar "2021-11-21T21:55:08.466Z"; check the indentation`,
+			}, &dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "created", Line: 7,
+				Reason: `dependency path must map to a set of ignore settings, but it is scalar "2021-10-22T21:55:08.469Z"; check the indentation`,
+			}},
+		},
+	}, {
+		file: "path-key-not-string.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {{
+				"*":               {Reason: ptr("kept")},
+				"a,b":             {Reason: ptr("joined")},
+				"[object Object]": {Reason: ptr("an object")},
+			}}},
+			Patch: dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardPath{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "a,b", Line: 6,
+				Reason: "dependency path is a sequence, so it is read as text",
+			}, &dotsnyk.NonStandardPath{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "[object Object]", Line: 8,
+				Reason: "dependency path is a mapping, so it is read as text",
+			}},
+		},
+	}, {
+		file: "path-is-sequence.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {{"*": {}}}},
+			Patch:   dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardPath{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 4,
+				Reason: "dependency path maps to a sequence, so it applies with no settings",
 			}},
 		},
 	}, {
@@ -264,5 +299,12 @@ func TestWarning_String(t *testing.T) {
 		(&dotsnyk.DroppedField{
 			Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "*", Field: "ignoredBy", Line: 5,
 			Reason: "cannot unmarshal !!str `someone`",
+		}).String())
+	assert.Equal(t,
+		"line 4: ignore rule for SNYK-JS-CXCT-535487 at '*' is read as the TypeScript implementation reads it: "+
+			"dependency path maps to a sequence, so it applies with no settings",
+		(&dotsnyk.NonStandardPath{
+			Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 4,
+			Reason: "dependency path maps to a sequence, so it applies with no settings",
 		}).String())
 }

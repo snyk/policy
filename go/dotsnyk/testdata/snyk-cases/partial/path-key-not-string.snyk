@@ -1,0 +1,10 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - '*':
+        reason: kept
+      ? [a, b]
+      : reason: joined
+      ? {a: b}
+      : reason: an object
+patch: {}
