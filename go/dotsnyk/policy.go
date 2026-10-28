@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode"
 
 	"gopkg.in/yaml.v3"
 )
@@ -93,6 +94,24 @@ const (
 	SeverityHigh     = Severity("high")
 	SeverityCritical = Severity("critical")
 )
+
+var failThresholds = []Severity{SeverityLow, SeverityMedium, SeverityHigh}
+
+func parseFailThreshold(value string, line int) (Severity, error) {
+	threshold := Severity(jsLowerCase(strings.TrimFunc(value, isJSWhitespace)))
+	if !slices.Contains(failThresholds, threshold) {
+		return "", &PolicyError{msg: fmt.Sprintf("invalid .snyk policy: line %d: unknown threshold value %q", line, threshold)}
+	}
+	return threshold, nil
+}
+
+func jsLowerCase(s string) string {
+	return strings.ToLower(strings.ReplaceAll(s, "\u0130", "i\u0307"))
+}
+
+func isJSWhitespace(r rune) bool {
+	return r == '\uFEFF' || (r != '\u0085' && unicode.IsSpace(r))
+}
 
 // VulnID models the unique identifier of a Snyk vulnerability.
 type VulnID string

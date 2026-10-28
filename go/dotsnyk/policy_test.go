@@ -127,6 +127,10 @@ func TestPolicy_Unmarshal_FailThreshold(t *testing.T) {
 		input: "failThreshold: ' Medium '\n",
 		want:  ptr(dotsnyk.SeverityMedium),
 	}, {
+		name:  "byte order mark trimmed",
+		input: "failThreshold: \"\\ufeffhigh\"\n",
+		want:  ptr(dotsnyk.SeverityHigh),
+	}, {
 		name:  "block scalar",
 		input: "failThreshold: |\n  Low\n",
 		want:  ptr(dotsnyk.SeverityLow),
@@ -240,6 +244,10 @@ func TestPolicy_Unmarshal_UnknownFailThreshold(t *testing.T) {
 		input:   "version: v1.25.1\nfailThreshold: CRITICAL\n",
 		wantErr: `invalid .snyk policy: line 2: unknown threshold value "critical"`,
 	}, {
+		name:    "aliased value",
+		input:   "x: &a bogus\nignore: {}\nfailThreshold: *a\n",
+		wantErr: `invalid .snyk policy: line 3: unknown threshold value "bogus"`,
+	}, {
 		name:    "alias key",
 		input:   "fail_threshold: bogus\n",
 		wantErr: `invalid .snyk policy: line 1: unknown threshold value "bogus"`,
@@ -251,6 +259,18 @@ func TestPolicy_Unmarshal_UnknownFailThreshold(t *testing.T) {
 		name:    "quoted number",
 		input:   "failThreshold: '5'\n",
 		wantErr: `invalid .snyk policy: line 1: unknown threshold value "5"`,
+	}, {
+		name:    "next line character is not trimmed",
+		input:   "failThreshold: \"high\\u0085\"\n",
+		wantErr: `invalid .snyk policy: line 1: unknown threshold value "high\u0085"`,
+	}, {
+		name:    "dotted capital I",
+		input:   "failThreshold: \"H\\u0130GH\"\n",
+		wantErr: "invalid .snyk policy: line 1: unknown threshold value \"hi\u0307gh\"",
+	}, {
+		name:    "old format is reported first",
+		input:   "failThreshold: bogus\nignore:\n  SNYK-JS-A-1:\n    '*': {reason: x}\n",
+		wantErr: "old, unsupported .snyk format detected",
 	}, {
 		name:    "quoted null",
 		input:   "failThreshold: 'null'\n",

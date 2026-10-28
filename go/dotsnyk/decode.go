@@ -37,20 +37,19 @@ func (p *Policy) decode(node *yaml.Node, lines []string) error {
 	}
 
 	var shadow struct {
-		Version       string          `yaml:"version"`
-		FailThreshold *Severity       `yaml:"failThreshold,omitempty"`
-		Ignore        yaml.Node       `yaml:"ignore"`
-		Patch         yaml.Node       `yaml:"patch"`
-		Exclude       *map[string]any `yaml:"exclude,omitempty"`
+		Version string               `yaml:"version"`
+		Ignore  yaml.Node            `yaml:"ignore"`
+		Patch   yaml.Node            `yaml:"patch"`
+		Exclude *map[string]any      `yaml:"exclude,omitempty"`
+		Other   map[string]yaml.Node `yaml:",inline"`
 	}
 	if err := node.Decode(&shadow); err != nil {
 		return err //nolint:wrapcheck // Unmarshal adds the user-facing prefix.
 	}
 
 	decoded := Policy{
-		Version:       shadow.Version,
-		FailThreshold: shadow.FailThreshold,
-		Exclude:       shadow.Exclude,
+		Version: shadow.Version,
+		Exclude: shadow.Exclude,
 	}
 	d := policyDecoder{lines: lines}
 	if err := d.ruleSet(SectionIgnore, &shadow.Ignore, &decoded.Ignore); err != nil {
@@ -58,6 +57,13 @@ func (p *Policy) decode(node *yaml.Node, lines []string) error {
 	}
 	if err := d.ruleSet(SectionPatch, &shadow.Patch, &decoded.Patch); err != nil {
 		return err
+	}
+	threshold, err := d.failThreshold(shadow.Other)
+	if err != nil {
+		return err
+	}
+	if threshold != "" {
+		decoded.FailThreshold = &threshold
 	}
 	decoded.Warnings = d.finish()
 
@@ -94,6 +100,43 @@ func (d *policyDecoder) finish() []Warning {
 		warnings[i] = w.warning
 	}
 	return warnings
+}
+
+var failThresholdKeys = []string{
+	"failThreshold",
+	"fail_threshold",
+	"failthreshold",
+	"threshold",
+	"fail_threshhold", //nolint:misspell // A typo the TypeScript parser accepts.
+}
+
+func (d *policyDecoder) failThreshold(fields map[string]yaml.Node) (Severity, error) {
+	for _, key := range failThresholdKeys {
+		field, ok := fields[key]
+		if !ok {
+			continue
+		}
+		value := resolveAlias(&field)
+		if truthy, _ := d.jsYAMLTruthy(value); !truthy {
+			continue
+		}
+		if !d.isJSYAMLString(value) {
+			return "", nil
+		}
+		return parseFailThreshold(value.Value, field.Line)
+	}
+	return "", nil
+}
+
+func (d *policyDecoder) isJSYAMLString(node *yaml.Node) bool {
+	if node.Kind != yaml.ScalarNode {
+		return false
+	}
+	if d.hasNonSpecificTag(node) {
+		return true
+	}
+	tag, reason := jsYAMLNodeTag(node)
+	return reason == "" && tag == tagStr
 }
 
 func (d *policyDecoder) ruleSet(section Section, node *yaml.Node, dst *RuleSet) error {
