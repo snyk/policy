@@ -106,6 +106,178 @@ func TestPolicy_Marshal_NilPolicy(t *testing.T) {
 	assert.Empty(t, buf.String())
 }
 
+func TestPolicy_Unmarshal_FailThreshold(t *testing.T) {
+	testCases := []struct {
+		name  string
+		input string
+		want  *dotsnyk.Severity
+	}{{
+		name:  "missing",
+		input: "ignore: {}\n",
+	}, {
+		name:  "high",
+		input: "failThreshold: high\n",
+		want:  ptr(dotsnyk.SeverityHigh),
+	}, {
+		name:  "uppercase",
+		input: "failThreshold: HIGH\n",
+		want:  ptr(dotsnyk.SeverityHigh),
+	}, {
+		name:  "mixed case and padded",
+		input: "failThreshold: ' Medium '\n",
+		want:  ptr(dotsnyk.SeverityMedium),
+	}, {
+		name:  "block scalar",
+		input: "failThreshold: |\n  Low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "aliased",
+		input: "x: &a HIGH\nfailThreshold: *a\n",
+		want:  ptr(dotsnyk.SeverityHigh),
+	}, {
+		name:  "merged",
+		input: "x: &a {failThreshold: low}\n<<: *a\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "fail_threshold",
+		input: "fail_threshold: low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "failthreshold",
+		input: "failthreshold: low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "threshold",
+		input: "threshold: low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "fail_threshhold",        //nolint:misspell // A typo the TypeScript parser accepts.
+		input: "fail_threshhold: low\n", //nolint:misspell // A typo the TypeScript parser accepts.
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "key is case sensitive",
+		input: "FailThreshold: high\n",
+	}, {
+		name:  "first key wins",
+		input: "threshold: low\nfailThreshold: high\n",
+		want:  ptr(dotsnyk.SeverityHigh),
+	}, {
+		name:  "later key is not validated",
+		input: "failThreshold: high\nthreshold: bogus\n",
+		want:  ptr(dotsnyk.SeverityHigh),
+	}, {
+		name:  "empty string falls through",
+		input: "failThreshold: ''\nfail_threshold: low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "null falls through",
+		input: "failThreshold: ~\nthreshold: low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "false falls through",
+		input: "failThreshold: false\nthreshold: low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "zero falls through",
+		input: "failThreshold: 0\nthreshold: high\n",
+		want:  ptr(dotsnyk.SeverityHigh),
+	}, {
+		name:  "float zero falls through",
+		input: "failThreshold: 0.0\nthreshold: low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "NaN falls through",
+		input: "failThreshold: .nan\nthreshold: low\n",
+		want:  ptr(dotsnyk.SeverityLow),
+	}, {
+		name:  "empty only",
+		input: "failThreshold: ''\n",
+	}, {
+		name:  "number is ignored",
+		input: "failThreshold: 5\nthreshold: high\n",
+	}, {
+		name:  "true is ignored",
+		input: "failThreshold: true\n",
+	}, {
+		name:  "date is ignored",
+		input: "failThreshold: 2024-01-01\n",
+	}, {
+		name:  "sequence is ignored",
+		input: "failThreshold: [high]\n",
+	}, {
+		name:  "empty sequence is ignored",
+		input: "failThreshold: []\nthreshold: low\n",
+	}, {
+		name:  "mapping is ignored",
+		input: "failThreshold: {a: 1}\n",
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := dotsnyk.Unmarshal(bytes.NewBufferString(tc.input))
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.want, p.FailThreshold)
+		})
+	}
+}
+
+func TestPolicy_Unmarshal_UnknownFailThreshold(t *testing.T) {
+	testCases := []struct {
+		name    string
+		input   string
+		wantErr string
+	}{{
+		name:    "unknown word",
+		input:   "failThreshold: bogus\n",
+		wantErr: `invalid .snyk policy: line 1: unknown threshold value "bogus"`,
+	}, {
+		name:    "critical",
+		input:   "failThreshold: critical\n",
+		wantErr: `invalid .snyk policy: line 1: unknown threshold value "critical"`,
+	}, {
+		name:    "uppercase critical",
+		input:   "version: v1.25.1\nfailThreshold: CRITICAL\n",
+		wantErr: `invalid .snyk policy: line 2: unknown threshold value "critical"`,
+	}, {
+		name:    "alias key",
+		input:   "fail_threshold: bogus\n",
+		wantErr: `invalid .snyk policy: line 1: unknown threshold value "bogus"`,
+	}, {
+		name:    "whitespace only",
+		input:   "failThreshold: '   '\n",
+		wantErr: `invalid .snyk policy: line 1: unknown threshold value ""`,
+	}, {
+		name:    "quoted number",
+		input:   "failThreshold: '5'\n",
+		wantErr: `invalid .snyk policy: line 1: unknown threshold value "5"`,
+	}, {
+		name:    "quoted null",
+		input:   "failThreshold: 'null'\n",
+		wantErr: `invalid .snyk policy: line 1: unknown threshold value "null"`,
+	}}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := dotsnyk.Unmarshal(bytes.NewBufferString(tc.input))
+
+			require.EqualError(t, err, tc.wantErr)
+			var policyErr *dotsnyk.PolicyError
+			assert.ErrorAs(t, err, &policyErr)
+		})
+	}
+}
+
+func TestPolicy_Marshal_FailThreshold(t *testing.T) {
+	p, err := dotsnyk.Unmarshal(bytes.NewBufferString("fail_threshold: ' LOW '\n"))
+	require.NoError(t, err)
+
+	var buf bytes.Buffer
+	require.NoError(t, dotsnyk.Marshal(&buf, p))
+
+	assert.Equal(t, "version: v1.25.1\nfailThreshold: low\nignore: {}\npatch: {}\n", buf.String())
+}
+
 func TestPolicy_Unmarshal_FromFile(t *testing.T) {
 	fd, err := os.Open("testdata/ignore.yaml")
 	require.NoError(t, err)
