@@ -102,14 +102,32 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 			}},
 		},
 	}, {
-		file: "path-not-string.snyk",
+		file: "path-key-not-string.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{vulnCXCT: {{"*": {Reason: ptr("kept")}}}},
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {{
+				"*":               {Reason: ptr("kept")},
+				"a,b":             {Reason: ptr("joined")},
+				"[object Object]": {Reason: ptr("an object")},
+			}}},
+			Patch: dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardPath{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "a,b", Line: 6,
+				Reason: "dependency path is a sequence, so it is read as text",
+			}, &dotsnyk.NonStandardPath{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "[object Object]", Line: 8,
+				Reason: "dependency path is a mapping, so it is read as text",
+			}},
+		},
+	}, {
+		file: "path-is-sequence.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {{"*": {}}}},
 			Patch:   dotsnyk.RuleSet{},
-			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
-				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Line: 6,
-				Reason: "dependency path must be a string, got a sequence",
+			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardPath{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 4,
+				Reason: "dependency path maps to a sequence, so it applies with no settings",
 			}},
 		},
 	}, {
@@ -281,5 +299,12 @@ func TestWarning_String(t *testing.T) {
 		(&dotsnyk.DroppedField{
 			Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "*", Field: "ignoredBy", Line: 5,
 			Reason: "cannot unmarshal !!str `someone`",
+		}).String())
+	assert.Equal(t,
+		"line 4: ignore rule for SNYK-JS-CXCT-535487 at '*' is read as the TypeScript implementation reads it: "+
+			"dependency path maps to a sequence, so it applies with no settings",
+		(&dotsnyk.NonStandardPath{
+			Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 4,
+			Reason: "dependency path maps to a sequence, so it applies with no settings",
 		}).String())
 }

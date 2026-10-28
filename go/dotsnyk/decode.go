@@ -178,11 +178,27 @@ func (d *policyDecoder) appendEntry(entries []RuleEntry, section Section, vulnID
 		keyNode, body := node.Content[i], resolveAlias(node.Content[i+1])
 
 		var path string
-		if err := keyNode.Decode(&path); err != nil {
-			skip("", keyNode, "dependency path must be a string, got "+describeNode(keyNode))
-			continue
+		switch key := resolveAlias(keyNode); key.Kind {
+		case yaml.MappingNode, yaml.SequenceNode:
+			var err error
+			if path, err = textPath(key); err != nil {
+				return nil, fmt.Errorf("line %d: %w", keyNode.Line, err)
+			}
+			d.warn(keyNode, &NonStandardPath{Section: section, VulnID: vulnID, Path: path, Line: keyNode.Line,
+				Reason: "dependency path is " + describeNode(key) + ", so it is read as text"})
+		default:
+			if err := keyNode.Decode(&path); err != nil {
+				skip("", keyNode, "dependency path must be a string, got "+describeNode(keyNode))
+				continue
+			}
 		}
 		if isNullNode(body) {
+			entry[path] = &Rule{}
+			continue
+		}
+		if body.Kind == yaml.SequenceNode {
+			d.warn(body, &NonStandardPath{Section: section, VulnID: vulnID, Path: path, Line: body.Line,
+				Reason: "dependency path maps to a sequence, so it applies with no settings"})
 			entry[path] = &Rule{}
 			continue
 		}
@@ -201,6 +217,24 @@ func (d *policyDecoder) appendEntry(entries []RuleEntry, section Section, vulnID
 		return entries, nil
 	}
 	return append(entries, entry), nil
+}
+
+func textPath(key *yaml.Node) (string, error) {
+	if key.Kind == yaml.MappingNode {
+		return "[object Object]", nil
+	}
+	parts := make([]string, len(key.Content))
+	for i, item := range key.Content {
+		switch item = resolveAlias(item); {
+		case item.Kind == yaml.SequenceNode:
+			return "", errors.New("nested sequences are not supported inside a dependency path")
+		case item.Kind == yaml.MappingNode:
+			parts[i] = "[object Object]"
+		case !isNullNode(item):
+			parts[i] = item.Value
+		}
+	}
+	return strings.Join(parts, ","), nil
 }
 
 func (d *policyDecoder) addRule(entry RuleEntry, section Section, vulnID VulnID, path string, body *yaml.Node) error {

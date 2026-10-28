@@ -4,5 +4,7 @@ ignore:
     - '*':
         reason: kept
       ? [a, b]
-      : reason: dropped
+      : reason: joined
+      ? {a: b}
+      : reason: an object
 patch: {}

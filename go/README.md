@@ -77,20 +77,24 @@ for _, w := range p.Warnings {
   its `expires` or `disregardIfFixable` cannot be read. Both fields decide what
   the rule hides and for how long, so guessing them could hide an issue
   indefinitely. The issue is reported instead, and the other paths in the same
-  list item still apply. A path whose key is not a string, or whose value is
-  not a mapping, is also left out, and the other paths still apply. A field
-  under-indented to the level of its path is read as such a path, which leaves
-  the real path with no settings: it ignores the issue with no expiry, as
-  snyk-policy does. A list item that is not a mapping is left out whole. A
-  vulnerability with no readable rules left is left out too.
+  list item still apply. A path whose value is text, a number or a boolean is
+  also left out, and the other paths still apply. A field under-indented to the
+  level of its path is read as such a path, which leaves the real path with no
+  settings, as snyk-policy does. A list item that is not a mapping is left out
+  whole. A vulnerability with no readable rules left is left out too.
 - **`DroppedField`.** The rule is kept without the field when a descriptive
   field cannot be read: `reason`, `reasonType`, `source`, `from`, `ignoredBy`,
   `created` or `patched`.
+- **`NonStandardPath`.** The path is kept the way snyk-policy reads it when its
+  value is a sequence, which applies it with no settings, or when its key is a
+  sequence or a mapping, which is turned into text: `[a, b]` becomes `a,b` and
+  a mapping becomes `[object Object]`.
 
 Problems with the file as a whole still return an error: invalid YAML, tab
 indentation, a top level or rule set that is not a mapping, a vulnerability ID
 that does not map to a list, the old `.snyk` format, a duplicate vulnerability
-ID or rule field, and a vulnerability ID or rule field that is not a string.
+ID or rule field, a vulnerability ID or rule field that is not a string, and a
+dependency path key with a nested sequence.
 
 ## Status
 
@@ -122,7 +126,7 @@ almost always with `dotsnyk` being the stricter of the two:
 | `<<:` merge key inside a rule entry | treated as a literal dependency path | merged |
 | Two YAML documents in one file | first document wins | `js-yaml` errors |
 | Tab indentation | error, with the line number | error |
-| Under-indented rule body | entry skipped, reported in `Policy.Warnings` | `'*'` applied with no settings, stray keys become separate entries |
+| Under-indented rule body | `'*'` applied with no settings, stray keys skipped and reported in `Policy.Warnings` | `'*'` applied with no settings, stray keys become separate entries |
 | Aliases, duplicate keys, document-level merge | same | same |
 
 The strictness is not obviously wrong — a user who writes garbage into `.snyk`
