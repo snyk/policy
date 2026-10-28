@@ -61,9 +61,12 @@ func Unmarshal(r io.Reader) (*Policy, error) {
 	return &p, nil
 }
 
-// Marshal writes a serialized policy to w.
+// Marshal writes a serialized policy to w. Like the TypeScript export, it always
+// writes the current spec version, whatever p.Version holds, and leaves p as is.
 func Marshal(w io.Writer, p *Policy) error {
-	if err := yaml.NewEncoder(w).Encode(p); err != nil {
+	out := *p
+	out.Version = specVersion
+	if err := yaml.NewEncoder(w).Encode(&out); err != nil {
 		return fmt.Errorf("failed to encode snyk policy: %w", err)
 	}
 	return nil

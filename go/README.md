@@ -140,6 +140,8 @@ almost always with `dotsnyk` being the stricter of the two:
 | `ignoredBy: someone`, `reason: [a, b]` | field dropped, rule kept, reported in `Policy.Warnings` | untyped, passes through |
 | `version: v2.0.0` | accepted | error |
 | `version: 1` (non-string) | coerced to `"1"` | defaults to `v1` |
+| No `version`, or `version: v1` | kept as written, `""` when missing | `v1.0.0` |
+| `version` on save | always `v1.25.1` | always `v1.25.1` |
 | `<<:` merge key inside a rule entry | treated as a literal dependency path | merged |
 | Two YAML documents in one file | first document wins | `js-yaml` errors |
 | Tab indentation | error, with the line number | error |
