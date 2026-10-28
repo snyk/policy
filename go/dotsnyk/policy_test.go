@@ -444,6 +444,9 @@ func TestPolicy_Unmarshal_InvalidCases(t *testing.T) {
 		file:    "duplicate-rule-field.snyk",
 		wantErr: `invalid .snyk policy: line 6: mapping key "reason" already defined at line 5`,
 	}, {
+		file:    "path-key-nested-sequence.snyk",
+		wantErr: "invalid .snyk policy: line 4: nested sequences are not supported inside a dependency path",
+	}, {
 		file:    "vuln-aliased-old-format.snyk",
 		wantErr: "old, unsupported .snyk format detected",
 	}, {
