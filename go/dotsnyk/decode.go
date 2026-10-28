@@ -16,6 +16,19 @@ import (
 // rule it cannot read in full is reported in Warnings rather than failing the
 // whole policy.
 func (p *Policy) UnmarshalYAML(node *yaml.Node) error {
+	return p.decode(node, nil)
+}
+
+type sourcedPolicy struct {
+	policy *Policy
+	lines  []string
+}
+
+func (s *sourcedPolicy) UnmarshalYAML(node *yaml.Node) error {
+	return s.policy.decode(node, s.lines)
+}
+
+func (p *Policy) decode(node *yaml.Node, lines []string) error {
 	if node.Kind != yaml.MappingNode {
 		if isNullNode(node) {
 			return nil
@@ -39,7 +52,7 @@ func (p *Policy) UnmarshalYAML(node *yaml.Node) error {
 		FailThreshold: shadow.FailThreshold,
 		Exclude:       shadow.Exclude,
 	}
-	var d policyDecoder
+	d := policyDecoder{lines: lines}
 	if err := d.ruleSet(SectionIgnore, &shadow.Ignore, &decoded.Ignore); err != nil {
 		return err
 	}
@@ -59,6 +72,8 @@ type positionedWarning struct {
 
 type policyDecoder struct {
 	warnings []positionedWarning
+	lines    []string
+	expiries map[expiryKey]expiry
 }
 
 func (d *policyDecoder) warn(at *yaml.Node, w Warning) {
@@ -211,6 +226,19 @@ func (d *policyDecoder) addRule(entry RuleEntry, section Section, vulnID VulnID,
 
 	kept := len(d.warnings)
 	rule := &Rule{}
+	if value, ok := values["expires"]; ok {
+		e := d.expiry(resolveAlias(&value))
+		if e.reason != "" {
+			d.warn(&value, &SkippedRule{Section: section, VulnID: vulnID, Path: path, Line: value.Line, Reason: "expires: " + e.reason})
+			return nil
+		}
+		rule.Expires = copyTime(e.at)
+		if e.nonStandard {
+			d.warn(&value, &NonStandardExpiry{
+				Section: section, VulnID: vulnID, Path: path, Line: value.Line, Value: resolveAlias(&value).Value, Expires: copyTime(e.at),
+			})
+		}
+	}
 	for _, field := range ruleFields {
 		value, ok := values[field.name]
 		if !ok {
@@ -239,7 +267,6 @@ type ruleField struct {
 
 var ruleFields = []ruleField{
 	{name: "created", decode: func(r *Rule, n *yaml.Node) string { return decodeTime(n, &r.Created) }},
-	{name: "expires", skipsRule: true, decode: func(r *Rule, n *yaml.Node) string { return decodeTime(n, &r.Expires) }},
 	{name: "patched", decode: func(r *Rule, n *yaml.Node) string { return decodeTime(n, &r.Patched) }},
 	{name: "ignoredBy", decode: func(r *Rule, n *yaml.Node) string { return decodeValue(n, &r.IgnoredBy) }},
 	{name: "reason", decode: func(r *Rule, n *yaml.Node) string { return decodeValue(n, &r.Reason) }},
@@ -249,6 +276,14 @@ var ruleFields = []ruleField{
 	{name: "disregardIfFixable", skipsRule: true, decode: func(r *Rule, n *yaml.Node) string {
 		return decodeValue(n, &r.DisregardIfFixable)
 	}},
+}
+
+func copyTime(t *time.Time) *time.Time {
+	if t == nil {
+		return nil
+	}
+	c := *t
+	return &c
 }
 
 func decodeTime(node *yaml.Node, dst **time.Time) string {
@@ -261,13 +296,12 @@ func decodeTime(node *yaml.Node, dst **time.Time) string {
 	if node.Tag == tagNull {
 		return fmt.Sprintf("'%s' is tagged !!null", node.Value)
 	}
-	for _, layout := range lenientTimeFormats {
-		if parsed, err := time.Parse(layout, node.Value); err == nil {
-			*dst = &parsed
-			return ""
-		}
+	parsed, ok := lenientTimestamp(node.Value)
+	if !ok {
+		return fmt.Sprintf("'%s' is not a valid timestamp", node.Value)
 	}
-	return fmt.Sprintf("'%s' is not a valid timestamp", node.Value)
+	*dst = &parsed
+	return ""
 }
 
 func decodeValue[T any](node *yaml.Node, dst **T) string {
