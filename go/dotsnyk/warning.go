@@ -1,6 +1,9 @@
 package dotsnyk
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // Section names the part of a policy that holds a rule.
 type Section string
@@ -11,9 +14,10 @@ const (
 	SectionPatch  = Section("patch")
 )
 
-// Warning reports a rule that Unmarshal could not read in full. The rest of the
-// policy is unaffected. A Warning is a *SkippedRule, a *DroppedField or a
-// *NonStandardPath.
+// Warning reports a rule that Unmarshal could not read in full, or read with a
+// meaning other than the one its text states. The rest of the policy is
+// unaffected. A Warning is a *SkippedRule, a *DroppedField, a *NonStandardPath
+// or a *NonStandardExpiry.
 type Warning interface {
 	fmt.Stringer
 	warning()
@@ -74,3 +78,27 @@ func (w *NonStandardPath) String() string {
 }
 
 func (*NonStandardPath) warning() {}
+
+// NonStandardExpiry reports a rule kept with an expiry other than the time its
+// expires states, or with an expires that is not a valid timestamp. Expires is
+// when the TypeScript implementation stops applying the rule for that value, or
+// nil when it never does.
+type NonStandardExpiry struct {
+	Section Section
+	VulnID  VulnID
+	Path    string
+	Line    int
+	Value   string
+	Expires *time.Time
+}
+
+func (w *NonStandardExpiry) String() string {
+	outcome := "never expires"
+	if w.Expires != nil {
+		outcome = "expires at " + w.Expires.Format(time.RFC3339Nano)
+	}
+	return fmt.Sprintf("line %d: %s rule for %s at '%s' %s: expires: '%s' is read as the TypeScript implementation reads it",
+		w.Line, w.Section, w.VulnID, w.Path, outcome, w.Value)
+}
+
+func (*NonStandardExpiry) warning() {}

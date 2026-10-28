@@ -60,6 +60,13 @@ you want a flat list of ignores, you build it yourself for now.
 Timestamps are parsed leniently: RFC 3339 with and without a zone,
 space-separated, and date-only forms are all accepted.
 
+`expires` is read the way the TypeScript implementation reads it, because it
+decides when an issue comes back. That implementation compares the value with
+the current time as text, so a value that is not a timestamp still expires at a
+fixed moment, or never. `Rule.Expires` holds that moment, or nil for never. A
+timestamp keeps the time it states, unless the text comparison expires it more
+than a second away.
+
 ## Rules that cannot be read
 
 A problem inside one rule does not fail the file. `Unmarshal` returns every
@@ -70,11 +77,12 @@ vulnerability ID, dependency path, line and reason:
 for _, w := range p.Warnings {
     log.Println(w)
 }
-// line 6: skipped ignore rule for SNYK-JS-CXCT-535487 at '*': expires: 'not-a-date' is not a valid timestamp
+// line 6: ignore rule for SNYK-JS-CXCT-535487 at '*' never expires: expires: 'not-a-date' is read as the TypeScript implementation reads it
 ```
 
 - **`SkippedRule`.** A dependency path is left out of `Ignore` or `Patch` when
-  its `expires` or `disregardIfFixable` cannot be read. Both fields decide what
+  its `disregardIfFixable` cannot be read, or its `expires` is a list, a
+  mapping, or has a tag that does not fit the value. Both fields decide what
   the rule hides and for how long, so guessing them could hide an issue
   indefinitely. The issue is reported instead, and the other paths in the same
   list item still apply. A path whose value is text, a number or a boolean is
@@ -89,6 +97,10 @@ for _, w := range p.Warnings {
   value is a sequence, which applies it with no settings, or when its key is a
   sequence or a mapping, which is turned into text: `[a, b]` becomes `a,b` and
   a mapping becomes `[object Object]`.
+- **`NonStandardExpiry`.** The rule is kept with the expiry the TypeScript
+  implementation gives it, when `expires` is not a valid timestamp, such as
+  `never` or `2030/01/01`, or when that expiry differs from the time written,
+  such as a quoted time with a zone offset.
 
 Problems with the file as a whole still return an error: invalid YAML, tab
 indentation, a top level or rule set that is not a mapping, a vulnerability ID
@@ -116,8 +128,6 @@ almost always with `dotsnyk` being the stricter of the two:
 | --- | --- | --- |
 | Top-level scalar or sequence | error, `policy must be a mapping` | empty policy, no error |
 | Non-list `patch` entry | error, `old, unsupported .snyk format detected` | entry dropped, no error |
-| `expires: not-a-date` | rule skipped, reported in `Policy.Warnings` | kept as a string and compared to the current time as text |
-| `expires: '...+02:00'` | offset preserved | JS `Date`, normalised to UTC |
 | Date-only, space-separated, zone-less timestamps | accepted via a fixed format list | accepted via JS `Date` parsing |
 | `reason: 5` | coerced to `"5"` | untyped, passes through |
 | `ignoredBy: someone`, `reason: [a, b]` | field dropped, rule kept, reported in `Policy.Warnings` | untyped, passes through |
@@ -128,6 +138,7 @@ almost always with `dotsnyk` being the stricter of the two:
 | Tab indentation | error, with the line number | error |
 | Under-indented rule body | `'*'` applied with no settings, stray keys skipped and reported in `Policy.Warnings` | `'*'` applied with no settings, stray keys become separate entries |
 | Aliases, duplicate keys, document-level merge | same | same |
+| `expires: never`, `expires: 2030/01/01` | expires at the same moment, reported in `Policy.Warnings` | compared to the current time as text |
 
 The strictness is not obviously wrong — a user who writes garbage into `.snyk`
 gets a diagnostic here and silence from the TypeScript parser — but it is a

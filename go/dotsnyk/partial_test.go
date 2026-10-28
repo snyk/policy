@@ -23,8 +23,9 @@ const (
 
 func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 	var (
-		expires2099 = time.Date(2099, time.January, 1, 0, 0, 0, 0, time.UTC)
-		patched2021 = time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC)
+		expires2099    = time.Date(2099, time.January, 1, 0, 0, 0, 0, time.UTC)
+		patched2021    = time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC)
+		rolledOver2100 = time.Date(2100, time.February, 14, 0, 0, 0, 0, time.UTC)
 	)
 
 	testCases := []struct {
@@ -34,11 +35,10 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "bad-timestamp.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{},
+			Ignore:  dotsnyk.RuleSet{vulnCXCT: {{"*": {Reason: ptr("bad ts")}}}},
 			Patch:   dotsnyk.RuleSet{},
-			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
-				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
-				Reason: "expires: 'not-a-date' is not a valid timestamp",
+			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardExpiry{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6, Value: "not-a-date",
 			}},
 		},
 	}, {
@@ -146,12 +146,15 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 			Version: "v1.25.0",
 			Ignore: dotsnyk.RuleSet{vulnCXCT: {{
 				"a > b": {Reason: ptr("valid"), Expires: ptr(expires2099)},
+				"c > d": {},
 				"e > f": {Reason: ptr("kept without author")},
 			}}},
 			Patch: dotsnyk.RuleSet{},
-			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
-				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "c > d", Line: 9,
-				Reason: "expires: 'soon' is not a valid timestamp",
+			Warnings: []dotsnyk.Warning{&dotsnyk.DroppedField{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "c > d", Field: "created", Line: 8,
+				Reason: "'last tuesday' is not a valid timestamp",
+			}, &dotsnyk.NonStandardExpiry{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "c > d", Line: 9, Value: "soon",
 			}, &dotsnyk.DroppedField{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "e > f", Field: "ignoredBy", Line: 12,
 				Reason: "cannot unmarshal !!str `someone`",
@@ -161,17 +164,18 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "shared-anchor.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{},
-			Patch:   dotsnyk.RuleSet{},
-			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
-				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 7,
-				Reason: "expires: 'soon' is not a valid timestamp",
-			}, &dotsnyk.SkippedRule{
-				Section: dotsnyk.SectionIgnore, VulnID: vulnLodash, Path: "*", Line: 7,
-				Reason: "expires: 'soon' is not a valid timestamp",
-			}, &dotsnyk.SkippedRule{
-				Section: dotsnyk.SectionIgnore, VulnID: vulnMinimist, Path: "*", Line: 7,
-				Reason: "expires: 'soon' is not a valid timestamp",
+			Ignore: dotsnyk.RuleSet{
+				vulnCXCT:     {{"*": {Reason: ptr("shared and broken")}}},
+				vulnLodash:   {{"*": {Reason: ptr("shared and broken")}}},
+				vulnMinimist: {{"*": {Reason: ptr("shared and broken")}}},
+			},
+			Patch: dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardExpiry{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 7, Value: "soon",
+			}, &dotsnyk.NonStandardExpiry{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodash, Path: "*", Line: 7, Value: "soon",
+			}, &dotsnyk.NonStandardExpiry{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnMinimist, Path: "*", Line: 7, Value: "soon",
 			}},
 		},
 	}, {
@@ -209,7 +213,10 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
 			Ignore: dotsnyk.RuleSet{
-				vulnCXCT: {{"*": {Reason: ptr("valid"), Expires: ptr(expires2099)}}},
+				vulnCXCT: {
+					{"*": {Reason: ptr("valid"), Expires: ptr(expires2099)}},
+					{"app > cxct": {Reason: ptr("invalid expiry"), Expires: ptr(rolledOver2100)}},
+				},
 				vulnLodash: {{"*": {
 					Reason:    ptr("valid"),
 					IgnoredBy: &dotsnyk.IgnoredBy{Email: ptr("someone@example.com")},
@@ -219,9 +226,9 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 			Patch: dotsnyk.RuleSet{
 				vulnLodash: {{"app > lodash": {Patched: ptr(patched2021)}}},
 			},
-			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardExpiry{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "app > cxct", Line: 9,
-				Reason: "expires: '2099-13-45' is not a valid timestamp",
+				Value: "2099-13-45", Expires: ptr(rolledOver2100),
 			}, &dotsnyk.DroppedField{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnMinimist, Path: "*", Field: "ignoredBy", Line: 18,
 				Reason: "cannot unmarshal !!str `someone`",
@@ -235,12 +242,12 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
 			Ignore: dotsnyk.RuleSet{
-				vulnCXCT: {{"*": {Reason: ptr("shared reason"), Expires: ptr(expires2099)}}},
+				vulnCXCT:   {{"*": {Reason: ptr("shared reason"), Expires: ptr(expires2099)}}},
+				vulnLodash: {{"*": {Reason: ptr("shared reason")}}},
 			},
 			Patch: dotsnyk.RuleSet{},
-			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
-				Section: dotsnyk.SectionIgnore, VulnID: vulnLodash, Path: "*", Line: 10,
-				Reason: "expires: 'soon' is not a valid timestamp",
+			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardExpiry{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnLodash, Path: "*", Line: 10, Value: "soon",
 			}},
 		},
 	}}
@@ -299,6 +306,17 @@ func TestWarning_String(t *testing.T) {
 		(&dotsnyk.DroppedField{
 			Section: dotsnyk.SectionIgnore, VulnID: vulnLodashPrototype, Path: "*", Field: "ignoredBy", Line: 5,
 			Reason: "cannot unmarshal !!str `someone`",
+		}).String())
+	assert.Equal(t,
+		"line 6: ignore rule for SNYK-JS-CXCT-535487 at '*' never expires: expires: 'soon' is read as the TypeScript implementation reads it",
+		(&dotsnyk.NonStandardExpiry{
+			Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6, Value: "soon",
+		}).String())
+	assert.Equal(t,
+		"line 6: ignore rule for SNYK-JS-CXCT-535487 at '*' expires at 2031-01-01T00:00:00Z: expires: '2030/01/01' is read as the TypeScript implementation reads it",
+		(&dotsnyk.NonStandardExpiry{
+			Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6, Value: "2030/01/01",
+			Expires: ptr(time.Date(2031, time.January, 1, 0, 0, 0, 0, time.UTC)),
 		}).String())
 	assert.Equal(t,
 		"line 4: ignore rule for SNYK-JS-CXCT-535487 at '*' is read as the TypeScript implementation reads it: "+
