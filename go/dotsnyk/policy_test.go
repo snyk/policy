@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 
 	"github.com/snyk/policy/go/dotsnyk"
 )
@@ -84,21 +85,25 @@ patch: {}
 	}
 }
 
-func TestPolicy_Marshal_ZeroPolicy(t *testing.T) {
-	var buf bytes.Buffer
-	require.NoError(t, dotsnyk.Marshal(&buf, &dotsnyk.Policy{}))
+func TestPolicy_MarshalYAML_WritesSpecVersion(t *testing.T) {
+	p := dotsnyk.Policy{Version: "v1.0.0"}
 
-	assert.Equal(t, "version: v1.25.1\nignore: {}\npatch: {}\n", buf.String())
+	byValue, err := yaml.Marshal(p)
+	require.NoError(t, err)
+	byPointer, err := yaml.Marshal(&p)
+	require.NoError(t, err)
+
+	assert.Equal(t, "version: v1.25.1\nignore: {}\npatch: {}\n", string(byValue))
+	assert.Equal(t, "version: v1.25.1\nignore: {}\npatch: {}\n", string(byPointer))
+	assert.Equal(t, "v1.0.0", p.Version)
 }
 
-func TestPolicy_Marshal_KeepsCallerVersion(t *testing.T) {
-	p := &dotsnyk.Policy{Version: "v1.0.0"}
-
+func TestPolicy_Marshal_NilPolicy(t *testing.T) {
 	var buf bytes.Buffer
-	require.NoError(t, dotsnyk.Marshal(&buf, p))
+	err := dotsnyk.Marshal(&buf, nil)
 
-	assert.Equal(t, "version: v1.25.1\nignore: {}\npatch: {}\n", buf.String())
-	assert.Equal(t, "v1.0.0", p.Version)
+	require.EqualError(t, err, "failed to encode snyk policy: nil policy")
+	assert.Empty(t, buf.String())
 }
 
 func TestPolicy_Unmarshal_FromFile(t *testing.T) {

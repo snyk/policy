@@ -14,6 +14,8 @@ import (
 
 const specVersion = "v1.25.1"
 
+var errNilPolicy = errors.New("nil policy")
+
 // Policy models the legacy .snyk policy.
 type Policy struct {
 	Version       string          `yaml:"version"`
@@ -61,15 +63,24 @@ func Unmarshal(r io.Reader) (*Policy, error) {
 	return &p, nil
 }
 
-// Marshal writes a serialized policy to w. Like the TypeScript export, it always
-// writes the current spec version, whatever p.Version holds, and leaves p as is.
+// Marshal writes a serialized policy to w.
 func Marshal(w io.Writer, p *Policy) error {
-	out := *p
-	out.Version = specVersion
-	if err := yaml.NewEncoder(w).Encode(&out); err != nil {
+	if p == nil {
+		return fmt.Errorf("failed to encode snyk policy: %w", errNilPolicy)
+	}
+	if err := yaml.NewEncoder(w).Encode(p); err != nil {
 		return fmt.Errorf("failed to encode snyk policy: %w", err)
 	}
 	return nil
+}
+
+// MarshalYAML encodes the policy with the current spec version, whatever
+// Version holds, as the TypeScript export does.
+func (p Policy) MarshalYAML() (any, error) {
+	type plain Policy
+	out := plain(p)
+	out.Version = specVersion
+	return out, nil
 }
 
 // Severity models an issues severity level.
