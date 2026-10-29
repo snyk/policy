@@ -16,8 +16,8 @@ const (
 
 // Warning reports a rule that Unmarshal could not read in full, or read with a
 // meaning other than the one its text states. The rest of the policy is
-// unaffected. A Warning is a *SkippedRule, a *DroppedField, a *NonStandardPath
-// or a *NonStandardExpiry.
+// unaffected. A Warning is a *SkippedRule, a *DroppedField, a *NonStandardPath,
+// a *NonStandardExpiry or a *CoercedField.
 type Warning interface {
 	fmt.Stringer
 	warning()
@@ -102,3 +102,21 @@ func (w *NonStandardExpiry) String() string {
 }
 
 func (*NonStandardExpiry) warning() {}
+
+// CoercedField reports a rule kept with a field whose value has the wrong type,
+// read the way the TypeScript implementation reads it.
+type CoercedField struct {
+	Section Section
+	VulnID  VulnID
+	Path    string
+	Field   string
+	Line    int
+	Reason  string
+}
+
+func (w *CoercedField) String() string {
+	return fmt.Sprintf("line %d: coerced %s in %s rule for %s at '%s': %s",
+		w.Line, w.Field, w.Section, w.VulnID, w.Path, w.Reason)
+}
+
+func (*CoercedField) warning() {}

@@ -127,7 +127,7 @@ ignore:
 	assert.Equal(t, utcTime(0, time.January, 1, 0, 0, 0, 0), p.Ignore[vulnCXCT][0]["*"].Expires)
 }
 
-func TestPolicy_Unmarshal_SkipsRuleWithNonStandardExpiryAndUnreadableDisregardIfFixable(t *testing.T) {
+func TestPolicy_Unmarshal_KeepsRuleWithNonStandardExpiryAndNonBooleanDisregardIfFixable(t *testing.T) {
 	p, err := dotsnyk.Unmarshal(strings.NewReader(`version: v1.25.0
 ignore:
   SNYK-JS-CXCT-535487:
@@ -137,10 +137,12 @@ ignore:
 `))
 	require.NoError(t, err)
 
-	assert.Empty(t, p.Ignore)
-	assert.Equal(t, []dotsnyk.Warning{&dotsnyk.SkippedRule{
-		Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
-		Reason: "disregardIfFixable: cannot unmarshal !!str `maybe` into bool",
+	assert.Equal(t, dotsnyk.RuleSet{vulnCXCT: {{"*": {DisregardIfFixable: ptr(true)}}}}, p.Ignore)
+	assert.Equal(t, []dotsnyk.Warning{&dotsnyk.NonStandardExpiry{
+		Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 5, Value: "never",
+	}, &dotsnyk.CoercedField{
+		Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Field: "disregardIfFixable", Line: 6,
+		Reason: `"maybe" is not a boolean, read as true`,
 	}}, p.Warnings)
 }
 

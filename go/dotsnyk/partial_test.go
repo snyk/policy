@@ -67,11 +67,14 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "disregard-not-bool.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore:  dotsnyk.RuleSet{},
-			Patch:   dotsnyk.RuleSet{},
-			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
-				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 6,
-				Reason: "disregardIfFixable: cannot unmarshal !!str `maybe` into bool",
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {{"*": {
+				Reason:             ptr("unclear flag"),
+				DisregardIfFixable: ptr(true),
+			}}}},
+			Patch: dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.CoercedField{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Field: "disregardIfFixable", Line: 6,
+				Reason: `"maybe" is not a boolean, read as true`,
 			}},
 		},
 	}, {
@@ -271,6 +274,80 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 	assertEveryCaseIsCovered(t, partialCases, partialDir, covered)
 }
 
+func TestPolicy_Unmarshal_ReadsDisregardIfFixableAsSnykPolicyDoes(t *testing.T) {
+	testCases := []struct {
+		value   string
+		want    *bool
+		warning string
+	}{
+		{value: "true", want: ptr(true)},
+		{value: "False", want: ptr(false)},
+		{value: "~", want: nil},
+		{value: "''", want: nil},
+		{value: "'false'", want: ptr(true), warning: `"false" is not a boolean, read as true`},
+		{value: "no", want: ptr(true), warning: `"no" is not a boolean, read as true`},
+		{value: "off", want: ptr(true), warning: `"off" is not a boolean, read as true`},
+		{value: "yes", want: ptr(true), warning: `"yes" is not a boolean, read as true`},
+		{value: "'0'", want: ptr(true), warning: `"0" is not a boolean, read as true`},
+		{value: "1", want: ptr(true), warning: `"1" is not a boolean, read as true`},
+		{value: "0", want: ptr(false), warning: `"0" is not a boolean, read as false`},
+		{value: "0x0", want: ptr(false), warning: `"0x0" is not a boolean, read as false`},
+		{value: "0.0", want: ptr(false), warning: `"0.0" is not a boolean, read as false`},
+		{value: ".nan", want: ptr(false), warning: `".nan" is not a boolean, read as false`},
+		{value: "0.5", want: ptr(true), warning: `"0.5" is not a boolean, read as true`},
+		{value: ".0", want: ptr(false), warning: `".0" is not a boolean, read as false`},
+		{value: "0_0", want: ptr(false), warning: `"0_0" is not a boolean, read as false`},
+		{value: "0o0", want: ptr(true), warning: `"0o0" is not a boolean, read as true`},
+		{value: "+.0", want: ptr(true), warning: `"+.0" is not a boolean, read as true`},
+		{value: "0:00.0", want: ptr(false), warning: `"0:00.0" is not a boolean, read as false`},
+		{value: "00.0", want: ptr(true), warning: `"00.0" is not a boolean, read as true`},
+		{value: "0_", want: ptr(true), warning: `"0_" is not a boolean, read as true`},
+		{value: "0x_", want: ptr(true), warning: `"0x_" is not a boolean, read as true`},
+		{value: "1e-400", want: ptr(false), warning: `"1e-400" is not a boolean, read as false`},
+		{value: "! 0", want: ptr(true), warning: `"0" is not a boolean, read as true`},
+		{value: "!!js/undefined x", want: ptr(false), warning: `"x" is not a boolean, read as false`},
+		{value: "!!str 0", want: ptr(true), warning: `"0" is not a boolean, read as true`},
+		{value: "2030-01-01", want: ptr(true), warning: `"2030-01-01" is not a boolean, read as true`},
+		{value: "[]", want: ptr(true), warning: "a sequence is not a boolean, read as true"},
+		{value: "{}", want: ptr(true), warning: "a mapping is not a boolean, read as true"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.value, func(t *testing.T) {
+			assert.Equal(t, policyWithDisregardIfFixable(tc.want, tc.warning), *unmarshalDisregardIfFixable(t, tc.value))
+		})
+	}
+}
+
+func TestPolicy_Unmarshal_ReadsDisregardIfFixableAsTrueWhenSnykPolicyRejectsTheFile(t *testing.T) {
+	for _, value := range []string{"!!bool 0", "!!int 0o0", "!!null x", "!foo 0"} {
+		t.Run(value, func(t *testing.T) {
+			got := unmarshalDisregardIfFixable(t, value)
+
+			assert.Equal(t, ptr(true), got.Ignore[vulnCXCT][0]["*"].DisregardIfFixable)
+		})
+	}
+}
+
+func unmarshalDisregardIfFixable(t *testing.T, value string) *dotsnyk.Policy {
+	t.Helper()
+	p, err := dotsnyk.Unmarshal(strings.NewReader(
+		"ignore:\n  SNYK-JS-CXCT-535487:\n    - '*':\n        disregardIfFixable: " + value + "\n"))
+	require.NoError(t, err)
+	return p
+}
+
+func policyWithDisregardIfFixable(want *bool, warning string) dotsnyk.Policy {
+	p := dotsnyk.Policy{Ignore: dotsnyk.RuleSet{vulnCXCT: {{"*": {DisregardIfFixable: want}}}}}
+	if warning != "" {
+		p.Warnings = []dotsnyk.Warning{&dotsnyk.CoercedField{
+			Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Field: "disregardIfFixable", Line: 4,
+			Reason: warning,
+		}}
+	}
+	return p
+}
+
 func TestPolicy_Unmarshal_RejectsExcessiveAliasing(t *testing.T) {
 	var doc strings.Builder
 	doc.WriteString("entry: &entry\n")
@@ -324,5 +401,11 @@ func TestWarning_String(t *testing.T) {
 		(&dotsnyk.NonStandardPath{
 			Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Line: 4,
 			Reason: "dependency path maps to a sequence, so it applies with no settings",
+		}).String())
+	assert.Equal(t,
+		`line 6: coerced disregardIfFixable in ignore rule for SNYK-JS-CXCT-535487 at '*': "false" is not a boolean, read as true`,
+		(&dotsnyk.CoercedField{
+			Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "*", Field: "disregardIfFixable", Line: 6,
+			Reason: `"false" is not a boolean, read as true`,
 		}).String())
 }
