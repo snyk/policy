@@ -219,9 +219,6 @@ func (d *policyDecoder) ruleMapping(section Section, node *yaml.Node, dst *RuleS
 	return nil
 }
 
-// entryList holds a vulnerability's entries split as snyk-policy splits them:
-// the first path of each list item keeps the item's place, and the others are
-// moved after every item.
 type entryList struct {
 	kept, moved []RuleEntry
 }
@@ -288,13 +285,12 @@ func (d *policyDecoder) appendEntry(list *entryList, section Section, vulnID Vul
 }
 
 type pathNode struct {
-	path string
-	body *yaml.Node
+	path    string
+	body    *yaml.Node
+	index   uint64
+	isIndex bool
 }
 
-// pathNodes lists an entry's dependency paths in the order a JavaScript object
-// gives its keys, which decides the path snyk-policy keeps in place. A path
-// whose key is not a string is listed with no body.
 func (d *policyDecoder) pathNodes(section Section, vulnID VulnID, skip func(string, *yaml.Node, string), node *yaml.Node) ([]pathNode, error) {
 	paths := make([]pathNode, 0, len(node.Content)/2)
 	seen := make(map[string]*yaml.Node, len(node.Content)/2)
@@ -323,18 +319,17 @@ func (d *policyDecoder) pathNodes(section Section, vulnID VulnID, skip func(stri
 			return nil, fmt.Errorf("line %d: mapping key %q already defined at line %d", keyNode.Line, path, first.Line)
 		}
 		seen[path] = keyNode
-		paths = append(paths, pathNode{path: path, body: resolveAlias(node.Content[i+1])})
+		index, isIndex := arrayIndex(path)
+		paths = append(paths, pathNode{path: path, body: resolveAlias(node.Content[i+1]), index: index, isIndex: isIndex})
 	}
 
 	slices.SortStableFunc(paths, func(a, b pathNode) int {
-		ai, aIndex := arrayIndex(a)
-		bi, bIndex := arrayIndex(b)
 		switch {
-		case aIndex && bIndex:
-			return cmp.Compare(ai, bi)
-		case aIndex:
+		case a.isIndex && b.isIndex:
+			return cmp.Compare(a.index, b.index)
+		case a.isIndex:
 			return -1
-		case bIndex:
+		case b.isIndex:
 			return 1
 		default:
 			return 0
@@ -343,12 +338,9 @@ func (d *policyDecoder) pathNodes(section Section, vulnID VulnID, skip func(stri
 	return paths, nil
 }
 
-func arrayIndex(p pathNode) (uint64, bool) {
-	if p.body == nil {
-		return 0, false
-	}
-	n, err := strconv.ParseUint(p.path, 10, 32)
-	if err != nil || n == math.MaxUint32 || strconv.FormatUint(n, 10) != p.path {
+func arrayIndex(path string) (uint64, bool) {
+	n, err := strconv.ParseUint(path, 10, 32)
+	if err != nil || n == math.MaxUint32 || strconv.FormatUint(n, 10) != path {
 		return 0, false
 	}
 	return n, true

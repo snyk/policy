@@ -54,8 +54,10 @@ The model mirrors the YAML document as it is written rather than presenting a
 friendly view of it. `Policy.Ignore` and `Policy.Patch` are
 `map[VulnID][]RuleEntry`, where a `RuleEntry` is itself a
 `map[string]*Rule` keyed by dependency path — the same nesting the file has,
-including the sequence layer that almost always holds exactly one element. If
-you want a flat list of ignores, you build it yourself for now.
+including the sequence layer that almost always holds exactly one element. A
+list item with several dependency paths is split into one entry per path, as
+snyk-policy does, so a decoded `RuleEntry` holds a single path. If you want a
+flat list of ignores, you build it yourself for now.
 
 Timestamps are parsed leniently: RFC 3339 with and without a zone,
 space-separated, and date-only forms are all accepted.
@@ -112,8 +114,9 @@ for _, w := range p.Warnings {
 Problems with the file as a whole still return an error: invalid YAML, tab
 indentation, a top level or rule set that is not a mapping, a vulnerability ID
 that does not map to a list, the old `.snyk` format, a duplicate vulnerability
-ID or rule field, a vulnerability ID or rule field that is not a string, a
-dependency path key with a nested sequence, and an unknown `failThreshold`.
+ID or rule field, a dependency path repeated in one list item, a
+vulnerability ID or rule field that is not a string, a dependency path key with
+a nested sequence, and an unknown `failThreshold`.
 
 ## Status
 
@@ -151,6 +154,7 @@ almost always with `dotsnyk` being the stricter of the two:
 | Tab indentation | error, with the line number | error |
 | Under-indented rule body | `'*'` applied with no settings, stray keys skipped and reported in `Policy.Warnings` | `'*'` applied with no settings, stray keys become separate entries |
 | Several dependency paths in one list item | same: one entry per path, the first in the item's place and the rest after the vulnerability's other items | split the same way |
+| A list item with several paths reused through a YAML anchor | split again at each use | split at the first use only, later uses keep only the first path |
 | Aliases, duplicate keys, document-level merge | same | same |
 | `expires: never`, `expires: 2030/01/01` | expires at the same moment, reported in `Policy.Warnings` | compared to the current time as text |
 
@@ -161,7 +165,7 @@ difference, and picking a winner for each row is deliberately deferred.
 ## Known limitations
 
 - **Key order is not preserved.** Rules are stored in maps, so `Load` followed by
-  `Marshal` will reorder vulnerability IDs and dependency paths. The content
+  `Marshal` will reorder vulnerability IDs. The content
   round-trips; the layout does not.
 - **Unreadable rules are not written back.** `Marshal` writes only what the
   policy holds, so a rule or field reported in `Policy.Warnings` is gone after a

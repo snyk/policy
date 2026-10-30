@@ -182,6 +182,24 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 			}},
 		},
 	}, {
+		file: "split-paths-nonstandard.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {
+				{"7": {Reason: ptr("read as an index")}},
+				{"app > a": {Reason: ptr("first in the file")}},
+				{"app > b": {}},
+			}},
+			Patch: dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardPath{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "7", Line: 6,
+				Reason: "dependency path is a sequence, so it is read as text",
+			}, &dotsnyk.NonStandardPath{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "app > b", Line: 8,
+				Reason: "dependency path maps to a sequence, so it applies with no settings",
+			}},
+		},
+	}, {
 		file: "shared-anchor.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
