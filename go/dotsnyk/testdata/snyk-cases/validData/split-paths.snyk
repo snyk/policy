@@ -1,0 +1,24 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - app > a:
+        reason: first item, first path
+      app > b:
+        reason: first item, second path
+      app > c:
+        reason: first item, third path
+    - app > d:
+        reason: second item, first path
+      app > e:
+        reason: second item, second path
+    - app > f:
+        reason: third item
+  SNYK-JS-LODASH-567746:
+    - app > lodash:
+        reason: one path
+patch:
+  SNYK-JS-LODASH-567746:
+    - app > lodash:
+        patched: 2021-01-01T00:00:00Z
+      app > other > lodash:
+        patched: 2021-01-01T00:00:00Z

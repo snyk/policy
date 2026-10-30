@@ -150,6 +150,7 @@ almost always with `dotsnyk` being the stricter of the two:
 | Two YAML documents in one file | first document wins | `js-yaml` errors |
 | Tab indentation | error, with the line number | error |
 | Under-indented rule body | `'*'` applied with no settings, stray keys skipped and reported in `Policy.Warnings` | `'*'` applied with no settings, stray keys become separate entries |
+| Several dependency paths in one list item | same: one entry per path, the first in the item's place and the rest after the vulnerability's other items | split the same way |
 | Aliases, duplicate keys, document-level merge | same | same |
 | `expires: never`, `expires: 2030/01/01` | expires at the same moment, reported in `Policy.Warnings` | compared to the current time as text |
 

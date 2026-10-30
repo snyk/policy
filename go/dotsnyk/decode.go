@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"math"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -193,33 +195,41 @@ func (d *policyDecoder) ruleMapping(section Section, node *yaml.Node, dst *RuleS
 	rules := make(RuleSet, len(entryNodes))
 	for _, vulnID := range slices.Sorted(maps.Keys(entryNodes)) {
 		nodes := entryNodes[vulnID]
-		var entries []RuleEntry
+		var list entryList
 		if nodes != nil {
-			entries = make([]RuleEntry, 0, len(nodes))
+			list.kept = make([]RuleEntry, 0, len(nodes))
 		}
 		for _, n := range nodes {
 			if n.node == nil {
-				entries = append(entries, nil)
+				list.kept = append(list.kept, nil)
 				continue
 			}
-			var err error
-			if entries, err = d.appendEntry(entries, section, vulnID, n.node); err != nil {
+			if err := d.appendEntry(&list, section, vulnID, n.node); err != nil {
 				return err
 			}
 		}
-		if len(nodes) > 0 && len(entries) == 0 {
+		list.kept = append(list.kept, list.moved...)
+		if len(nodes) > 0 && len(list.kept) == 0 {
 			continue
 		}
-		rules[vulnID] = entries
+		rules[vulnID] = list.kept
 	}
 
 	*dst = rules
 	return nil
 }
 
-func (d *policyDecoder) appendEntry(entries []RuleEntry, section Section, vulnID VulnID, node *yaml.Node) ([]RuleEntry, error) {
+// entryList holds a vulnerability's entries split as snyk-policy splits them:
+// the first path of each list item keeps the item's place, and the others are
+// moved after every item.
+type entryList struct {
+	kept, moved []RuleEntry
+}
+
+func (d *policyDecoder) appendEntry(list *entryList, section Section, vulnID VulnID, node *yaml.Node) error {
 	if isNullNode(node) {
-		return append(entries, nil), nil
+		list.kept = append(list.kept, nil)
+		return nil
 	}
 
 	skip := func(path string, at *yaml.Node, reason string) {
@@ -228,12 +238,68 @@ func (d *policyDecoder) appendEntry(entries []RuleEntry, section Section, vulnID
 
 	if node.Kind != yaml.MappingNode {
 		skip("", node, "entry must be a mapping of dependency paths, got "+describeNode(node))
-		return entries, nil
+		return nil
+	}
+	if len(node.Content) == 0 {
+		list.kept = append(list.kept, RuleEntry{})
+		return nil
 	}
 
-	entry := make(RuleEntry, len(node.Content)/2)
+	paths, err := d.pathNodes(section, vulnID, skip, node)
+	if err != nil {
+		return err
+	}
+
+	for i, p := range paths {
+		if p.body == nil {
+			continue
+		}
+
+		entry := RuleEntry{}
+		switch {
+		case isNullNode(p.body):
+			entry[p.path] = &Rule{}
+		case p.body.Kind == yaml.SequenceNode:
+			d.warn(p.body, &NonStandardPath{
+				Section: section, VulnID: vulnID, Path: p.path, Line: p.body.Line,
+				Reason: "dependency path maps to a sequence, so it applies with no settings",
+			})
+			entry[p.path] = &Rule{}
+		case p.body.Kind != yaml.MappingNode:
+			skip(p.path, p.body, fmt.Sprintf(
+				"dependency path must map to a set of ignore settings, but it is %s; check the indentation", describeNode(p.body)))
+			continue
+		default:
+			if err := d.addRule(entry, section, vulnID, p.path, p.body); err != nil {
+				return err
+			}
+		}
+		if len(entry) == 0 {
+			continue
+		}
+
+		if i == 0 {
+			list.kept = append(list.kept, entry)
+		} else {
+			list.moved = append(list.moved, entry)
+		}
+	}
+	return nil
+}
+
+type pathNode struct {
+	path string
+	body *yaml.Node
+}
+
+// pathNodes lists an entry's dependency paths in the order a JavaScript object
+// gives its keys, which decides the path snyk-policy keeps in place. A path
+// whose key is not a string is listed with no body.
+func (d *policyDecoder) pathNodes(section Section, vulnID VulnID, skip func(string, *yaml.Node, string), node *yaml.Node) ([]pathNode, error) {
+	paths := make([]pathNode, 0, len(node.Content)/2)
+	seen := make(map[string]*yaml.Node, len(node.Content)/2)
 	for i := 0; i+1 < len(node.Content); i += 2 {
-		keyNode, body := node.Content[i], resolveAlias(node.Content[i+1])
+		keyNode := node.Content[i]
 
 		var path string
 		switch key := resolveAlias(keyNode); key.Kind {
@@ -249,36 +315,43 @@ func (d *policyDecoder) appendEntry(entries []RuleEntry, section Section, vulnID
 		default:
 			if err := keyNode.Decode(&path); err != nil {
 				skip("", keyNode, "dependency path must be a string, got "+describeNode(keyNode))
+				paths = append(paths, pathNode{})
 				continue
 			}
 		}
-		if isNullNode(body) {
-			entry[path] = &Rule{}
-			continue
+		if first, ok := seen[path]; ok {
+			return nil, fmt.Errorf("line %d: mapping key %q already defined at line %d", keyNode.Line, path, first.Line)
 		}
-		if body.Kind == yaml.SequenceNode {
-			d.warn(body, &NonStandardPath{
-				Section: section, VulnID: vulnID, Path: path, Line: body.Line,
-				Reason: "dependency path maps to a sequence, so it applies with no settings",
-			})
-			entry[path] = &Rule{}
-			continue
-		}
-		if body.Kind != yaml.MappingNode {
-			skip(path, body, fmt.Sprintf(
-				"dependency path must map to a set of ignore settings, but it is %s; check the indentation", describeNode(body)))
-			continue
-		}
-
-		if err := d.addRule(entry, section, vulnID, path, body); err != nil {
-			return nil, err
-		}
+		seen[path] = keyNode
+		paths = append(paths, pathNode{path: path, body: resolveAlias(node.Content[i+1])})
 	}
 
-	if len(entry) == 0 && len(node.Content) > 0 {
-		return entries, nil
+	slices.SortStableFunc(paths, func(a, b pathNode) int {
+		ai, aIndex := arrayIndex(a)
+		bi, bIndex := arrayIndex(b)
+		switch {
+		case aIndex && bIndex:
+			return cmp.Compare(ai, bi)
+		case aIndex:
+			return -1
+		case bIndex:
+			return 1
+		default:
+			return 0
+		}
+	})
+	return paths, nil
+}
+
+func arrayIndex(p pathNode) (uint64, bool) {
+	if p.body == nil {
+		return 0, false
 	}
-	return append(entries, entry), nil
+	n, err := strconv.ParseUint(p.path, 10, 32)
+	if err != nil || n == math.MaxUint32 || strconv.FormatUint(n, 10) != p.path {
+		return 0, false
+	}
+	return n, true
 }
 
 func textPath(key *yaml.Node, line int) (string, error) {

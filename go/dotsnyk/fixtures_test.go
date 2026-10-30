@@ -135,22 +135,20 @@ func TestPolicy_Unmarshal_RepoFixtures(t *testing.T) {
 		file: "issues/SC-1106/missing-dash.snyk",
 		want: dotsnyk.Policy{
 			// The second path has no leading `-`, so YAML folds it into the
-			// first sequence item: two dependency paths in one RuleEntry
-			// instead of two entries.
+			// first sequence item. It is split into its own entry and moved
+			// after the other items, as lib/ does.
 			Ignore: dotsnyk.RuleSet{vulnHawk: {
-				{
-					"request > hawk": {
-						Reason:  ptr("no patch available"),
-						Expires: ptr(expired2016FebMilli324),
-					},
-					"octonode > request > hawk": {
-						Reason:  ptr("None given"),
-						Expires: ptr(expired2016MayMilli066),
-					},
-				},
+				{"request > hawk": {
+					Reason:  ptr("no patch available"),
+					Expires: ptr(expired2016FebMilli324),
+				}},
 				{"npm > request > hawk": {
 					Reason:  ptr("no patch available"),
 					Expires: ptr(expired2016FebMilli325),
+				}},
+				{"octonode > request > hawk": {
+					Reason:  ptr("None given"),
+					Expires: ptr(expired2016MayMilli066),
 				}},
 			}},
 		},

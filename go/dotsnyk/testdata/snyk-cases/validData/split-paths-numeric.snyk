@@ -1,0 +1,11 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - app > a:
+        reason: string path
+      "42":
+        reason: index path
+      7:
+        reason: smaller index path
+      "007":
+        reason: not an index

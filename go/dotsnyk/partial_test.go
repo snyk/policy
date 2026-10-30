@@ -108,11 +108,11 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "path-key-not-string.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore: dotsnyk.RuleSet{vulnCXCT: {{
-				"*":               {Reason: ptr("kept")},
-				"a,b":             {Reason: ptr("joined")},
-				"[object Object]": {Reason: ptr("an object")},
-			}}},
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {
+				{"*": {Reason: ptr("kept")}},
+				{"a,b": {Reason: ptr("joined")}},
+				{"[object Object]": {Reason: ptr("an object")}},
+			}},
 			Patch: dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.NonStandardPath{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "a,b", Line: 6,
@@ -147,11 +147,11 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 		file: "sibling-paths.snyk",
 		want: dotsnyk.Policy{
 			Version: "v1.25.0",
-			Ignore: dotsnyk.RuleSet{vulnCXCT: {{
-				"a > b": {Reason: ptr("valid"), Expires: ptr(expires2099)},
-				"c > d": {},
-				"e > f": {Reason: ptr("kept without author")},
-			}}},
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {
+				{"a > b": {Reason: ptr("valid"), Expires: ptr(expires2099)}},
+				{"c > d": {}},
+				{"e > f": {Reason: ptr("kept without author")}},
+			}},
 			Patch: dotsnyk.RuleSet{},
 			Warnings: []dotsnyk.Warning{&dotsnyk.DroppedField{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "c > d", Field: "created", Line: 8,
@@ -161,6 +161,24 @@ func TestPolicy_Unmarshal_PartialCases(t *testing.T) {
 			}, &dotsnyk.DroppedField{
 				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "e > f", Field: "ignoredBy", Line: 12,
 				Reason: "cannot unmarshal !!str `someone`",
+			}},
+		},
+	}, {
+		file: "split-paths-skipped.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {
+				{"app > c": {}},
+				{"app > b": {Reason: ptr("moved after the other items")}},
+				{"app > d": {Reason: ptr("under-indented path read as its own")}},
+			}},
+			Patch: dotsnyk.RuleSet{},
+			Warnings: []dotsnyk.Warning{&dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "app > a", Line: 4,
+				Reason: `dependency path must map to a set of ignore settings, but it is scalar "not a mapping"; check the indentation`,
+			}, &dotsnyk.SkippedRule{
+				Section: dotsnyk.SectionIgnore, VulnID: vulnCXCT, Path: "reason", Line: 8,
+				Reason: `dependency path must map to a set of ignore settings, but it is scalar "under-indented"; check the indentation`,
 			}},
 		},
 	}, {
