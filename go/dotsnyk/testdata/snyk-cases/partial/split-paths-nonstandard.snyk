@@ -1,0 +1,9 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - app > a:
+        reason: first in the file
+      [7]:
+        reason: read as an index
+      app > b: [not, settings]
+patch: {}

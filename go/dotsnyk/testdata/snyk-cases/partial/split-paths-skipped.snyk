@@ -1,0 +1,11 @@
+version: v1.25.0
+ignore:
+  SNYK-JS-CXCT-535487:
+    - app > a: not a mapping
+      app > b:
+        reason: moved after the other items
+    - app > c:
+      reason: under-indented
+      app > d:
+        reason: under-indented path read as its own
+patch: {}

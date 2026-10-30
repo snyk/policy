@@ -422,6 +422,7 @@ func TestPolicy_Unmarshal_ValidDataCases(t *testing.T) {
 		expires2099Jun = time.Date(2099, time.June, 1, 0, 0, 0, 0, time.UTC)
 		expired2020    = time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC)
 		created2024    = time.Date(2024, time.January, 15, 9, 0, 0, 0, time.UTC)
+		patched2021    = time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC)
 
 		expires2116Milli136 = time.Date(2116, time.March, 1, 14, 30, 4, 136_000_000, time.UTC)
 		expires2116Milli137 = time.Date(2116, time.March, 1, 14, 30, 4, 137_000_000, time.UTC)
@@ -507,6 +508,37 @@ func TestPolicy_Unmarshal_ValidDataCases(t *testing.T) {
 				}},
 			}},
 			Patch: dotsnyk.RuleSet{},
+		},
+	}, {
+		file: "split-paths.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{
+				vulnCXCT: {
+					{"app > a": {Reason: ptr("first item, first path")}},
+					{"app > d": {Reason: ptr("second item, first path")}},
+					{"app > f": {Reason: ptr("third item")}},
+					{"app > b": {Reason: ptr("first item, second path")}},
+					{"app > c": {Reason: ptr("first item, third path")}},
+					{"app > e": {Reason: ptr("second item, second path")}},
+				},
+				vulnLodash: {{"app > lodash": {Reason: ptr("one path")}}},
+			},
+			Patch: dotsnyk.RuleSet{vulnLodash: {
+				{"app > lodash": {Patched: ptr(patched2021)}},
+				{"app > other > lodash": {Patched: ptr(patched2021)}},
+			}},
+		},
+	}, {
+		file: "split-paths-numeric.snyk",
+		want: dotsnyk.Policy{
+			Version: "v1.25.0",
+			Ignore: dotsnyk.RuleSet{vulnCXCT: {
+				{"7": {Reason: ptr("smaller index path")}},
+				{"42": {Reason: ptr("index path")}},
+				{"app > a": {Reason: ptr("string path")}},
+				{"007": {Reason: ptr("not an index")}},
+			}},
 		},
 	}, {
 		file: "multiple-vulns.snyk",
@@ -698,6 +730,9 @@ func TestPolicy_Unmarshal_InvalidCases(t *testing.T) {
 	}, {
 		file:    "path-key-nested-sequence.snyk",
 		wantErr: "invalid .snyk policy: line 4: nested sequences are not supported inside a dependency path",
+	}, {
+		file:    "duplicate-path.snyk",
+		wantErr: `invalid .snyk policy: line 6: mapping key "app > a" already defined at line 4`,
 	}, {
 		file:    "vuln-aliased-old-format.snyk",
 		wantErr: "old, unsupported .snyk format detected",
