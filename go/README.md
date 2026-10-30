@@ -112,8 +112,8 @@ for _, w := range p.Warnings {
 Problems with the file as a whole still return an error: invalid YAML, tab
 indentation, a top level or rule set that is not a mapping, a vulnerability ID
 that does not map to a list, the old `.snyk` format, a duplicate vulnerability
-ID or rule field, a vulnerability ID or rule field that is not a string, and a
-dependency path key with a nested sequence.
+ID or rule field, a vulnerability ID or rule field that is not a string, a
+dependency path key with a nested sequence, and an unknown `failThreshold`.
 
 ## Status
 
@@ -142,6 +142,10 @@ almost always with `dotsnyk` being the stricter of the two:
 | `version: 1` (non-string) | coerced to `"1"` | defaults to `v1` |
 | No `version`, or `version: v1` | kept as written, `""` when missing | defaults to `v1`, stored as `v1.0.0` |
 | `version` on save | always `v1.25.1` | always `v1.25.1` |
+| `failThreshold: ' HIGH '` | `high` | `high` |
+| `fail_threshold`, `failthreshold`, `threshold`, `fail_threshhold` | read in that order when `failThreshold` is missing or falsy in JavaScript, such as empty, null, `false` or `0` | same |
+| `failThreshold: critical`, `failThreshold: bogus` | error, `unknown threshold value` | error |
+| `failThreshold: 5`, `true`, a date, a list or a mapping | ignored | ignored |
 | `<<:` merge key inside a rule entry | treated as a literal dependency path | merged |
 | Two YAML documents in one file | first document wins | `js-yaml` errors |
 | Tab indentation | error, with the line number | error |
@@ -162,8 +166,11 @@ difference, and picking a winner for each row is deliberately deferred.
   policy holds, so a rule or field reported in `Policy.Warnings` is gone after a
   load and save, as unknown keys already are. A `CoercedField` is the exception:
   it is written back as the boolean it was read as.
-- **`failThreshold` is not validated.** Any string is accepted, not just the four
-  `Severity` values.
+- **`failThreshold` is read, not applied.** Only `low`, `medium` and `high` are
+  accepted, as in the TypeScript implementation, so `critical` is rejected even
+  though `SeverityCritical` exists. `Marshal` does not check the value, so a
+  policy with `FailThreshold` set to `SeverityCritical` writes a file that
+  neither parser loads.
 - **The parser is partial.** It covers `ignore` and `patch`. There is no
   `suggest`, and no matching or filtering — `lib/filter` has no Go equivalent.
 
