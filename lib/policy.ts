@@ -1,5 +1,5 @@
 import newDebug from 'debug';
-import { lstatSync, promises as fs, Stats } from 'fs';
+import { lstatSync, promises as fs, Stats, statSync } from 'fs';
 import * as path from 'path';
 import { tryRequire } from './try-require';
 import add from './add';
@@ -78,6 +78,15 @@ interface loadOptions {
   'trust-policies'?: boolean;
 }
 
+// a path to an existing file is loaded as the policy, whatever it is named
+function isFile(filename: string): boolean {
+  try {
+    return statSync(filename).isFile();
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Loads a policy from disk. If `root` is an array of strings, the policies will be merged together.
  * @param root the root directory to load the policy from (default is `process.cwd())`
@@ -110,13 +119,13 @@ export function load(
     // use it as our filename
     filename = root[0];
   } else {
-    if (root.indexOf('.snyk') === -1) {
+    if (root.indexOf('.snyk') === -1 && !isFile(root)) {
       root = path.resolve(root, '.snyk');
     }
     filename = root;
   }
 
-  if (filename.indexOf('.snyk') === -1) {
+  if (filename.indexOf('.snyk') === -1 && !isFile(filename)) {
     filename = path.resolve(filename, '.snyk');
   }
   // Check if filename is directory and resolve to correct file path
