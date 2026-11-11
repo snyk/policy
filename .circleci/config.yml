@@ -92,6 +92,8 @@ jobs:
           command: cd go && go test ./... -count=1
   release:
     <<: *defaults
+    docker:
+      - image: cimg/node:24.19.0
     steps:
       - checkout
       - npmrc
@@ -100,7 +102,7 @@ jobs:
           name: Release on GitHub and npm (OIDC Trusted Publishing)
           command: |
             export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
-            npx semantic-release@^24
+            npx semantic-release@25.0.3
       - run:
           name: Release the Go module on GitHub
           working_directory: go
