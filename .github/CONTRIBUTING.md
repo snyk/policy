@@ -29,6 +29,10 @@ Must be one of the following:
 
 To release a major you need to add `BREAKING CHANGE: ` to the start of the body and the detail of the breaking change.
 
+## Releasing
+
+Merging to `master` runs the CircleCI `Release` job. It uses semantic-release to pick the next version from the commit messages, tag it, and publish `snyk-policy` to npm through npm Trusted Publishing with a CircleCI OIDC token (see `.circleci/config.yml`). A release is only cut when the merged commits include a releasable type such as `feat` or `fix`.
+
 ## Code standards
 
 Ensure that your code adheres to the included `.jshintrc` and `.jscsrc` configs.
