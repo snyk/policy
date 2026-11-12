@@ -83,6 +83,22 @@ test('policy.load (single .snyk in path name but at upper level)', async () => {
   expect(res).toStrictEqual(expected);
 });
 
+test('policy.load (file with a custom name)', async () => {
+  const filename = fixtures + '/custom-filename/policy.yml';
+  const res = await policy.load(filename);
+
+  expect(res.__filename).toBe(path.relative(process.cwd(), filename));
+  expect(Object.keys(res.ignore)).toStrictEqual(['npm:hawk:20160119']);
+});
+
+test('policy.load (multiple - file with a custom name first)', async () => {
+  const filename = fixtures + '/custom-filename/policy.yml';
+  const res = await policy.load([filename, fixtures + '/patch']);
+
+  expect(res.__filename).toBe(path.relative(process.cwd(), filename));
+  expect(Object.keys(res.ignore)).toStrictEqual(['npm:hawk:20160119']);
+});
+
 test('policy.load (multiple - ignore first)', async () => {
   const res = await policy.load([fixtures + '/ignore', fixtures + '/patch']);
 
